@@ -1,0 +1,90 @@
+﻿<Window x:Class="GlowSequencer.View.MusicSegmentsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GlowSequencer.View"
+        Title="Music segments" Height="350" Width="600"
+        DataContext="{Binding CurrentDocument, Source={StaticResource vm_Main}}">
+
+    <Window.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Style.Triggers>
+                <Trigger Property="IsReadOnly" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="local:MusicSegmentCommands.AddSegment" CanExecute="CommandBinding_CanExecuteAlways" Executed="CommandBinding_ExecuteAddSegment" />
+        <CommandBinding Command="local:MusicSegmentCommands.DeleteSegment" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteDeleteSegment" />
+        <CommandBinding Command="local:MusicSegmentCommands.SetAsDefault" CanExecute="CommandBinding_CanExecuteIfNotDefault" Executed="CommandBinding_ExecuteSetAsDefault" />
+    </Window.CommandBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="150"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0,228,0,0" Visibility="Hidden">
+            <Button Margin="5" Padding="5" Command="ApplicationCommands.New" Content="New"/>
+            <Button Margin="5" Padding="5" Content="Edit"/>
+            <Button Margin="5" Padding="5" Content="Delete"/>
+        </StackPanel>
+
+        <ListView x:Name="segmentsListBox" ItemsSource="{Binding MusicSegments}" IsSynchronizedWithCurrentItem="True" Loaded="ListView_Loaded" SizeChanged="ListView_SizeChanged" Margin="0,0,0,25" SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDefault}" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Label" Width="280" DisplayMemberBinding="{Binding Label}" />
+                    <GridViewColumn Header="BPM" Width="50" DisplayMemberBinding="{Binding Bpm}" />
+                    <GridViewColumn Header="Beats per bar" Width="90" DisplayMemberBinding="{Binding BeatsPerBar}"/>
+                    <GridViewColumn Header="Time origin" Width="90" DisplayMemberBinding="{Binding TimeOrigin, Converter={StaticResource conv_TimeSpanToString}}"/>
+                    <GridViewColumn Header="Blocks" Width="50" DisplayMemberBinding="{Binding ReferringBlocksDummies.Count}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <Button Content="Add" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Bottom" Width="75" Command="local:MusicSegmentCommands.AddSegment" />
+        <Button Content="Delete" HorizontalAlignment="Left" Margin="85,0,0,0" VerticalAlignment="Bottom" Width="75" Command="local:MusicSegmentCommands.DeleteSegment" CommandParameter="{Binding MusicSegments/}"/>
+        <Button Content="Set as default" HorizontalAlignment="Left" Margin="165,0,0,0" VerticalAlignment="Bottom" Width="100" Command="local:MusicSegmentCommands.SetAsDefault" CommandParameter="{Binding MusicSegments/}"/>
+
+        <Border Grid.Row="1" Margin="0,5,0,0" BorderThickness="0,1,0,0">
+            <Border.BorderBrush>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveBorderColorKey}}"/>
+            </Border.BorderBrush>
+            <StackPanel Orientation="Vertical" DataContext="{Binding MusicSegments/}">
+                <Label FontWeight="Bold" Content="Music segment properties"/>
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <Label Style="{StaticResource s_FormLabel}" Content="Label:"/>
+                    <TextBox Width="250" Text="{Binding Label}" IsReadOnly="{Binding IsReadOnly}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <Label Style="{StaticResource s_FormLabel}" Content="BPM:"/>
+                    <TextBox Width="40" Text="{Binding Bpm}" IsReadOnly="{Binding IsReadOnly}" />
+                    <Label Style="{StaticResource s_FormLabel}" Width="Auto" Content="Beats per bar:"/>
+                    <TextBox Width="40" Text="{Binding BeatsPerBar}" IsReadOnly="{Binding IsReadOnly}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <Label Style="{StaticResource s_FormLabel}" Content="Time origin:"/>
+                    <TextBox Width="120" Text="{Binding TimeOrigin, Converter={StaticResource conv_TimeSpanToString}}" IsReadOnly="{Binding IsReadOnly}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <Label Style="{StaticResource s_FormLabel}" Content="Referring blocks:"/>
+                    <TextBlock Text="{Binding ReferringBlocksDummies.Count}" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+</Window>

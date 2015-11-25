@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="GlowSequencer.View.TimeUnitEditControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="25" d:DesignWidth="360">
+    <ContentControl x:Name="layoutRoot">
+        <StackPanel Orientation="Horizontal" DataContext="{Binding Value}">
+            <TextBox x:Name="secondsTextBox" Width="85" Text="{Binding Seconds, StringFormat='0.###', TargetNullValue='?'}" HorizontalContentAlignment="Right"/>
+            <TextBox x:Name="totalBeatsTextBox" Width="85" Text="{Binding TotalBeats, StringFormat='0.###', TargetNullValue='?'}" HorizontalContentAlignment="Right"/>
+            <TextBox x:Name="barsTextBox" Width="35" Text="{Binding Bars, TargetNullValue='?'}" HorizontalContentAlignment="Right"/>
+            <TextBox x:Name="beatsTextBox" Width="45" Text="{Binding Beats, StringFormat='0.###', TargetNullValue='?'}" HorizontalContentAlignment="Right" Margin="5,0,0,0"/>
+
+            <ComboBox x:Name="unitComboBox" Width="100" SelectedIndex="{Binding DataContext.ActiveUnit, ElementName=layoutRoot, Mode=TwoWay}" SelectionChanged="unitComboBox_SelectionChanged" Margin="5,0,0,0">
+                <ComboBoxItem>seconds</ComboBoxItem>
+                <ComboBoxItem IsEnabled="{Binding HasMusicData}">beats</ComboBoxItem>
+                <ComboBoxItem IsEnabled="{Binding HasMusicData}">bars &amp; beats</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+    </ContentControl>
+</UserControl>

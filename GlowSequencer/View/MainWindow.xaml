@@ -1,0 +1,243 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GlowSequencer.View"
+        xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="GlowSequencer.View.MainWindow"
+        Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="600" Width="960"
+        SizeChanged="Window_SizeChanged"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        DataContext="{StaticResource vm_Main}">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="CommandBinding_ExecuteClose"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="ApplicationCommands.New" Executed="CommandBinding_ExecuteNew"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="ApplicationCommands.Open" Executed="CommandBinding_ExecuteOpen"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="ApplicationCommands.Save" Executed="CommandBinding_ExecuteSave"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="ApplicationCommands.SaveAs" Executed="CommandBinding_ExecuteSaveAs"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.ExportGlo" Executed="CommandBinding_ExecuteExportGlo"  CanExecute="CommandBinding_CanExecuteAlways" />
+
+        <CommandBinding Command="ApplicationCommands.Undo" Executed="CommandBinding_ExecuteUndo" CanExecute="CommandBinding_CanExecuteUndo" />
+        <CommandBinding Command="ApplicationCommands.Redo" Executed="CommandBinding_ExecuteRedo" CanExecute="CommandBinding_CanExecuteRedo" />
+        <CommandBinding Command="ApplicationCommands.SelectAll" Executed="CommandBinding_ExecuteSelectAll"  CanExecute="CommandBinding_CanExecuteAlways" />
+
+        <CommandBinding Command="ApplicationCommands.Cut" Executed="CommandBinding_ExecuteCut"  CanExecute="CommandBinding_CanExecuteIfSelected" />
+        <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_ExecuteCopy"  CanExecute="CommandBinding_CanExecuteIfSelected" />
+        <CommandBinding Command="ApplicationCommands.Paste" Executed="CommandBinding_ExecutePaste"  CanExecute="CommandBinding_CanExecuteIfClipboard" />
+        <CommandBinding Command="ApplicationCommands.Delete" Executed="CommandBinding_ExecuteDelete"  CanExecute="CommandBinding_CanExecuteIfSelected" />
+        <CommandBinding Command="local:SequencerCommands.InsertBlock" Executed="CommandBinding_ExecuteInsertBlock"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.GroupBlocks" Executed="CommandBinding_ExecuteGroupBlocks"  CanExecute="CommandBinding_CanExecuteIfGroupable" />
+        <CommandBinding Command="local:SequencerCommands.UngroupBlocks" Executed="CommandBinding_ExecuteUngroupBlocks"  CanExecute="CommandBinding_CanExecuteIfUngroupable" />
+        <CommandBinding Command="local:SequencerCommands.MoveToFront" Executed="CommandBinding_ExecuteMoveToFront"  CanExecute="CommandBinding_CanExecuteIfSelected" />
+        <CommandBinding Command="local:SequencerCommands.MoveToBack" Executed="CommandBinding_ExecuteMoveToBack"  CanExecute="CommandBinding_CanExecuteIfSelected" />
+
+        <CommandBinding Command="local:SequencerCommands.SwapRampColors" Executed="CommandBinding_ExecuteSwapRampColors" CanExecute="CommandBinding_CanExecuteIfDeterminateGradient" />
+
+        <CommandBinding Command="local:SequencerCommands.AddTrack" Executed="CommandBinding_ExecuteAddTrack"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.RenameTrack" Executed="CommandBinding_ExecuteRenameTrack"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.DuplicateTrack" Executed="CommandBinding_ExecuteDuplicateTrack"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.DeleteTrack" Executed="CommandBinding_ExecuteDeleteTrack"  CanExecute="CommandBinding_CanExecuteIfMoreThanOneTrack" />
+
+        <CommandBinding Command="local:SequencerCommands.MusicManageSegments" Executed="CommandBinding_ExecuteMusicManageSegments"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.About" Executed="CommandBinding_ExecuteAbout"  CanExecute="CommandBinding_CanExecuteAlways" />
+    </Window.CommandBindings>
+
+    <Grid DataContext="{Binding CurrentDocument}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="1*" MinHeight="160"/>
+        </Grid.RowDefinitions>
+
+        <Menu>
+            <MenuItem Header="_File">
+                <MenuItem Header="_New session" Command="ApplicationCommands.New"/>
+                <MenuItem Header="_Open session ..." Command="ApplicationCommands.Open"/>
+                <MenuItem Header="_Save session" Command="ApplicationCommands.Save"/>
+                <MenuItem Header="S_ave session as ..." Command="ApplicationCommands.SaveAs"/>
+                <Separator />
+                <MenuItem Header="_Export *.glo files ..." Command="local:SequencerCommands.ExportGlo"/>
+                <Separator />
+                <MenuItem Header="E_xit" Command="ApplicationCommands.Close"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="ApplicationCommands.Undo" />
+                <MenuItem Header="_Redo" Command="ApplicationCommands.Redo" />
+                <Separator />
+                <MenuItem Header="_Select all" Command="ApplicationCommands.SelectAll" />
+            </MenuItem>
+            <MenuItem Header="_Block">
+                <MenuItem Header="_Insert">
+                    <MenuItem Header="_Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
+                    <MenuItem Header="_Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
+                    <MenuItem Header="_Subsequence" Command="local:SequencerCommands.InsertBlock" CommandParameter="subsequence">
+                        <MenuItem Header="TODO" IsEnabled="False" />
+                    </MenuItem>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Cu_t" Command="ApplicationCommands.Cut" />
+                <MenuItem Header="_Copy" Command="ApplicationCommands.Copy" />
+                <MenuItem Header="_Paste" Command="ApplicationCommands.Paste" />
+                <MenuItem Header="_Delete" Command="ApplicationCommands.Delete" />
+                <Separator />
+                <MenuItem Header="_Group" Command="local:SequencerCommands.GroupBlocks" />
+                <MenuItem Header="_Ungroup" Command="local:SequencerCommands.UngroupBlocks" />
+            </MenuItem>
+            <MenuItem Header="_Track">
+                <MenuItem Header="_Add" Command="local:SequencerCommands.AddTrack" />
+                <Separator/>
+                <MenuItem Header="_Rename" Command="local:SequencerCommands.RenameTrack" CommandParameter="{Binding SelectedTrack}"/>
+                <MenuItem Header="D_uplicate" Command="local:SequencerCommands.DuplicateTrack" CommandParameter="{Binding SelectedTrack}"/>
+                <MenuItem Header="_Delete" Command="local:SequencerCommands.DeleteTrack" CommandParameter="{Binding SelectedTrack}"/>
+            </MenuItem>
+            <MenuItem Header="_Music">
+                <MenuItem Header="_Load file ..."/>
+                <Separator/>
+                <MenuItem Header="_Active segment">
+                    <MenuItem Header="_Synchronize with block selection" IsCheckable="True" IsChecked="{Binding SynchronizeActiveWithSelection}"/>
+                    <MenuItem Header="_Fade out inactive blocks" IsCheckable="True" IsChecked="{Binding FadeAwayOtherBlocks}"/>
+                </MenuItem>
+                <MenuItem Header="_Manage segments ..." Command="local:SequencerCommands.MusicManageSegments"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Command="local:SequencerCommands.About"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid x:Name="mainTimeline" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <ComboBox VerticalAlignment="Center" Margin="5" ItemsSource="{Binding MusicSegments}" ItemTemplate="{StaticResource MusicSegmentLabel}" SelectedItem="{Binding ActiveMusicSegment}">
+                <ComboBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Synchronize with block selection" IsCheckable="True" IsChecked="{Binding SynchronizeActiveWithSelection}"/>
+                        <MenuItem Header="Fade out inactive blocks" IsCheckable="True" IsChecked="{Binding FadeAwayOtherBlocks}"/>
+                    </ContextMenu>
+                </ComboBox.ContextMenu>
+            </ComboBox>
+
+            <ScrollViewer x:Name="trackLabelsScroller" Grid.Row="1" VerticalScrollBarVisibility="Hidden" ScrollChanged="trackLabelsScroller_ScrollChanged" HorizontalScrollBarVisibility="Visible" PanningMode="Both">
+                <ItemsControl ItemsSource="{Binding Tracks}" Background="Transparent" MouseWheel="timeline_MouseWheel">
+                    <ItemsControl.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Add track" Command="local:SequencerCommands.AddTrack" />
+                        </ContextMenu>
+                    </ItemsControl.ContextMenu>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="70" Style="{StaticResource s_TimelineTrackRow}"
+								PreviewMouseDown="timelineTrack_PreviewMouseDown" MouseDown="timelineTrackLabel_MouseDown">
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Add track" Command="local:SequencerCommands.AddTrack" CommandParameter="{Binding}" />
+                                        <Separator/>
+                                        <MenuItem Header="Rename track" FontWeight="Bold" Command="local:SequencerCommands.RenameTrack" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="Duplicate track" Command="local:SequencerCommands.DuplicateTrack" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="Delete track" Command="local:SequencerCommands.DeleteTrack" CommandParameter="{Binding}"/>
+                                    </ContextMenu>
+                                </Border.ContextMenu>
+                                <Label Content="{Binding Label}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <GridSplitter Grid.Column="1" Grid.RowSpan="2" ResizeDirection="Columns" HorizontalAlignment="Stretch" />
+
+            <local:TimelineGrid x:Name="timelineGrid" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
+                                GridScale="{Binding TimePixelScale, Mode=OneWay}"
+                                GridInterval="{Binding GridInterval, Mode=OneWay}"
+                                MusicSegment="{Binding ActiveMusicSegment, Mode=OneWay}" />
+
+            <ScrollViewer x:Name="trackBlocksScroller" Grid.Column="2" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible"
+                          PanningMode="Both"
+                          ScrollChanged="trackBlocksScroller_ScrollChanged">
+                <Grid Width="{Binding TimelineWidth}" HorizontalAlignment="Left">
+
+                    <ItemsControl ItemsSource="{Binding Tracks}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="70" Style="{StaticResource s_TimelineTrackRow}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+
+                    <ItemsControl x:Name="timeline" ItemsSource="{Binding AllBlocks}" Style="{StaticResource s_TimelineBlockContainer}"
+                                  Background="Transparent"
+                                  PreviewMouseDown="timeline_PreviewMouseDown" MouseDown="timeline_MouseDown" MouseWheel="timeline_MouseWheel" MouseUp="timeline_MouseUp" MouseMove="timeline_MouseMove">
+                        <ItemsControl.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Insert Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
+                                <MenuItem Header="Insert Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
+                                <Separator/>
+                                <MenuItem Header="Group" Command="local:SequencerCommands.GroupBlocks" />
+                                <MenuItem Header="Ungroup" Command="local:SequencerCommands.UngroupBlocks" />
+                                <Separator />
+                                <MenuItem Header="Move to front" Command="local:SequencerCommands.MoveToFront" />
+                                <MenuItem Header="Move to back" Command="local:SequencerCommands.MoveToBack" />
+                                <Separator />
+                                <MenuItem Header="Cut" Command="ApplicationCommands.Cut" />
+                                <MenuItem Header="Copy" Command="ApplicationCommands.Copy" />
+                                <MenuItem Header="Paste" Command="ApplicationCommands.Paste" />
+                                <MenuItem Header="Delete" Command="ApplicationCommands.Delete" />
+                            </ContextMenu>
+                        </ItemsControl.ContextMenu>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="{x:Type ContentPresenter}" BasedOn="{StaticResource s_TimelineBlockContainerContent}">
+                                <Setter Property="Focusable" Value="True"/>
+                                <EventSetter Event="UIElement.MouseDown" Handler="timelineBlock_MouseDown"/>
+                                <EventSetter Event="UIElement.MouseMove" Handler="timelineBlock_MouseMove"/>
+                                <EventSetter Event="UIElement.MouseUp" Handler="timelineBlock_MouseUp"/>
+                                <EventSetter Event="UIElement.QueryCursor" Handler="timelineBlock_QueryCursor"/>
+                                <Setter Property="IsManipulationEnabled" Value="True"/>
+                                <EventSetter Event="UIElement.ManipulationStarting" Handler="timelineBlock_ManipulationStarting"/>
+                                <EventSetter Event="UIElement.ManipulationDelta" Handler="timelineBlock_ManipulationDelta"/>
+                                <EventSetter Event="UIElement.ManipulationCompleted" Handler="timelineBlock_ManipulationCompleted"/>
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                    </ItemsControl>
+
+
+                    <Canvas x:Name="timelineCanvas">
+                        <Line x:Name="selectionCursor"
+							Canvas.Left="{Binding CursorPixelPosition}" Y2="1" Stretch="Fill"
+							Height="{Binding ActualHeight, ElementName=timelineCanvas}"
+							Stroke="Black" StrokeDashArray="1 2" StrokeThickness="2" SnapsToDevicePixels="True"
+							IsHitTestVisible="False"/>
+
+                        <Rectangle x:Name="dragSelectionRect" StrokeThickness="1" Visibility="Hidden" IsHitTestVisible="False">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{StaticResource {x:Static SystemColors.HighlightColorKey}}" Opacity="0.15"/>
+                            </Rectangle.Fill>
+                            <Rectangle.Stroke>
+                                <SolidColorBrush Color="{StaticResource {x:Static SystemColors.HotTrackColorKey}}" Opacity="0.4"/>
+                            </Rectangle.Stroke>
+                        </Rectangle>
+                    </Canvas>
+
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <GridSplitter HorizontalAlignment="Stretch" Height="5" ResizeDirection="Rows" Grid.Row="2"/>
+
+        <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Grid.Row="3" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
+    </Grid>
+</Window>

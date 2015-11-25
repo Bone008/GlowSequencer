@@ -1,0 +1,10 @@
+﻿<Window x:Class="GlowPlayer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GlowPlayer" Height="500" Width="500" Loaded="Window_Loaded">
+    <Grid>
+        <Border BorderBrush="Black" BorderThickness="10">
+            <Canvas x:Name="colorPanel" Background="White" />
+        </Border>
+    </Grid>
+</Window>

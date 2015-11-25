@@ -1,0 +1,421 @@
+﻿<Application x:Class="GlowSequencer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
+             xmlns:model="clr-namespace:GlowSequencer.Model"
+             xmlns:util="clr-namespace:GlowSequencer.Util"
+             xmlns:view="clr-namespace:GlowSequencer.View"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             StartupUri="View/MainWindow.xaml">
+    <Application.Resources>
+        <vm:MainViewModel x:Key="vm_Main" />
+        <vm:GlobalViewParameters x:Key="vm_Global" CurrentColorMode="ColorCanvas" />
+
+        <util:ColorToBrushValueConverter x:Key="conv_ColorToBrush" />
+        <util:NullToVisiblityConverter x:Key="conv_NullToVisibility" />
+        <BooleanToVisibilityConverter x:Key="conv_BoolToVisibility" />
+        <util:TimeSpanToStringConverter x:Key="conv_TimeSpanToString" />
+        <util:InvertedValueConverter x:Key="conv_Invert" />
+
+        <Thickness x:Key="thickness_VerticalScrollBarRight" Right="{StaticResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}"/>
+
+        <!-- Global style for color pickers -->
+        <Style TargetType="xctk:ColorPicker">
+            <Setter Property="UsingAlphaChannel" Value="False"/>
+            <Setter Property="ShowAvailableColors" Value="False"/>
+            <!--<Setter Property="ShowRecentColors" Value="False"/>-->
+            <Setter Property="ColorMode" Value="{Binding Source={StaticResource vm_Global}, Mode=TwoWay, Path=CurrentColorMode}"/>
+        </Style>
+
+        <!-- Global style for text boxes -->
+        <Style TargetType="TextBox">
+            <Setter Property="util:TextFieldBehavior.BindOnEnter" Value="True"/>
+            <Setter Property="util:TextFieldBehavior.SelectOnFocus" Value="True"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="ContextMenu">
+            <EventSetter Event="ContextMenuOpening" Handler="AnyContextMenu_Opening" />
+        </Style>
+
+        <Style x:Key="s_FormLabel" TargetType="Label">
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Padding" Value="10,5"/>
+        </Style>
+
+
+        <Style x:Key="s_TimelineTrackRow" TargetType="{x:Type Border}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Background" Value="#33999999" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                    <Setter Property="Background" Value="Transparent" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+
+        <Style x:Key="s_TimelineBlockContainerContent" TargetType="{x:Type ContentPresenter}">
+            <Setter Property="Canvas.Left" Value="{Binding DisplayOffset}"/>
+            <Setter Property="Canvas.Top" Value="{Binding DisplayTopOffset}"/>
+            <Setter Property="Width" Value="{Binding DisplayWidth}"/>
+            <Setter Property="Height" Value="{Binding DisplayHeight}"/>
+            <Setter Property="Clip" Value="{Binding DisplayClip}" />
+        </Style>
+
+        <Style x:Key="s_TimelineBlockContainer" TargetType="ItemsControl">
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <Canvas />
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource s_TimelineBlockContainerContent}" />
+
+            <Style.Resources>
+                <Style x:Key="s_TimelineBlock" TargetType="FrameworkElement">
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Source={StaticResource vm_Main}, Path=CurrentDocument.FadeAwayOtherBlocks}" Value="True"/>
+                                <Condition Binding="{Binding IsSegmentActive}" Value="False"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Opacity" Value="0.5" />
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+
+                <Style x:Key="s_TimelineBorderedBlock" TargetType="Border" BasedOn="{StaticResource s_TimelineBlock}">
+                    <Setter Property="Margin" Value="0,4"/>
+                    <!--<Setter Property="HorizontalAlignment" Value="Left"/>
+                    <Setter Property="Width" Value="{Binding DisplayWidth}"/>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TransformGroup>
+                                <TranslateTransform X="{Binding DisplayOffset}"/>
+                            </TransformGroup>
+                        </Setter.Value>
+                    </Setter>-->
+
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                            <Setter Property="BorderBrush" Value="Black" />
+                            <Setter Property="BorderThickness" Value="3" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                            <Setter Property="BorderBrush" Value="Gray" />
+                            <Setter Property="BorderThickness" Value="1" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+
+                <DataTemplate DataType="{x:Type vm:ColorBlockViewModel}">
+                    <!--<Border Style="{StaticResource s_TimelineBorderedBlock}" Background="{Binding RenderedColor, Converter={StaticResource conv_ColorToBrush}}" />-->
+                    <Border Style="{StaticResource s_TimelineBorderedBlock}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5" ColorInterpolationMode="SRgbLinearInterpolation">
+                                <GradientStop Color="{Binding RenderedColor1}" Offset="0"/>
+                                <GradientStop Color="{Binding RenderedColor2}" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type vm:RampBlockViewModel}">
+                    <Border Style="{StaticResource s_TimelineBorderedBlock}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5" ColorInterpolationMode="SRgbLinearInterpolation">
+                                <GradientStop Color="{Binding StartColor}" Offset="0"/>
+                                <GradientStop Color="{Binding EndColor}" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type vm:GroupBlockViewModel}">
+                    <Grid Style="{StaticResource s_TimelineBlock}">
+                        <!-- dynamic resource because otherwise it leads to a infinitely nesting loop -->
+                        <ItemsControl ItemsSource="{Binding Children}" Style="{DynamicResource s_TimelineBlockContainer}">
+                            <ItemsControl.RenderTransform>
+                                <TranslateTransform Y="{Binding DisplayTopOffset, Converter={StaticResource conv_Invert}}"/>
+                            </ItemsControl.RenderTransform>
+                        </ItemsControl>
+                        <Rectangle Margin="-3,0" Fill="Transparent">
+                            <Rectangle.Style>
+                                <Style TargetType="Rectangle">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Stroke" Value="#FF333355" />
+                                            <Setter Property="StrokeThickness" Value="3" />
+                                            <Setter Property="StrokeDashArray" Value="3 2" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                                            <Setter Property="Stroke" Value="Gray" />
+                                            <Setter Property="StrokeThickness" Value="1" />
+                                            <Setter Property="StrokeDashArray" Value="9 6" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Rectangle.Style>
+                        </Rectangle>
+                    </Grid>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type vm:LoopBlockViewModel}">
+                    <Canvas x:Name="containerCanvas" Style="{StaticResource s_TimelineBlock}" ClipToBounds="False">
+                        <ItemsControl ItemsSource="{Binding ChildrenRepetitions}" Height="{Binding ElementName=containerCanvas, Path=ActualHeight}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.RenderTransform>
+                                <TranslateTransform Y="{Binding DisplayTopOffset, Converter={StaticResource conv_Invert}}"/>
+                            </ItemsControl.RenderTransform>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ItemsControl
+                                                Width="{Binding DataContext.DisplayWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}"
+                                                ItemsSource="{Binding}"
+                                                Style="{DynamicResource s_TimelineBlockContainer}">
+                                    </ItemsControl>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Border Width="{Binding ElementName=containerCanvas, Path=ActualWidth}" Height="{Binding ElementName=containerCanvas, Path=ActualHeight}">
+                            <Rectangle Margin="-3,0" Fill="Transparent">
+                                <Rectangle.Style>
+                                    <Style TargetType="Rectangle">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Stroke" Value="#FF333355" />
+                                                <Setter Property="StrokeThickness" Value="3" />
+                                                <Setter Property="StrokeDashArray" Value="3 2" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                                                <Setter Property="Stroke" Value="Gray" />
+                                                <Setter Property="StrokeThickness" Value="1" />
+                                                <Setter Property="StrokeDashArray" Value="9 6" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+                        </Border>
+                    </Canvas>
+                </DataTemplate>
+            </Style.Resources>
+        </Style>
+
+
+        <DataTemplate x:Key="MusicSegmentLabel" DataType="{x:Type vm:MusicSegmentViewModel}">
+            <TextBlock Text="{Binding Label}" />
+        </DataTemplate>
+
+
+
+        <DataTemplate x:Key="GenericProperties" DataType="{x:Type vm:SelectionProperties}">
+            <DataTemplate.Resources>
+                <DataTemplate x:Key="PropertiesColor">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Color:" Style="{StaticResource s_FormLabel}"/>
+                            <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+
+                <DataTemplate x:Key="PropertiesRamp">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="Start color:" Style="{StaticResource s_FormLabel}"/>
+                            <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="End color:" Style="{StaticResource s_FormLabel}"/>
+                            <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="" Style="{StaticResource s_FormLabel}"/>
+                            <Button Content="Swap" Width="60" Command="view:SequencerCommands.SwapRampColors" CommandParameter="{Binding}" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+
+                <DataTemplate x:Key="PropertiesLoop">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="Repetitions:" Style="{StaticResource s_FormLabel}"/>
+                            <TextBox Width="50" HorizontalContentAlignment="Right" Text="{Binding Repetitions, TargetNullValue='?'}" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </DataTemplate.Resources>
+
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Label FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5">
+                    <TextBlock Text="{Binding TypeLabel, StringFormat='\{0} block properties'}" />
+                </Label>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
+                    <Label Content="Music segment:" Style="{StaticResource s_FormLabel}"/>
+                    <ComboBox Width="250"
+                              ItemsSource="{Binding CurrentDocument.MusicSegments, Source={StaticResource vm_Main}}" ItemTemplate="{StaticResource MusicSegmentLabel}"
+                              SelectedItem="{Binding SegmentContext}"
+                              IsEnabled="{Binding IsMusicSegmentModifiable}" />
+                    <Button Content="Manage" Command="view:SequencerCommands.MusicManageSegments" Width="60" Margin="5,0,0,0"/>
+                </StackPanel>
+
+                <WrapPanel Orientation="Vertical" Grid.Row="1">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Label Content="Tracks:" Style="{StaticResource s_FormLabel}"/>
+                        <ItemsControl ItemsSource="{Binding TrackAffiliation}" Padding="0,5">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding AffiliationState}" IsEnabled="{Binding CanModify}"  Content="{Binding Track.Label}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="Start time:" Style="{StaticResource s_FormLabel}"/>
+                            <view:TimeUnitEditControl x:Name="editStartTime" Value="{Binding StartTimeComplex}" ActiveUnit="0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="End time:" Style="{StaticResource s_FormLabel}"/>
+                            <view:TimeUnitEditControl Value="{Binding EndTimeComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="Duration:" Style="{StaticResource s_FormLabel}"/>
+                            <view:TimeUnitEditControl Value="{Binding DurationComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <Label Content="" Style="{StaticResource s_FormLabel}"/>
+                            <CheckBox Content="Synchronize units" Margin="85,0,0,0" VerticalAlignment="Center" IsChecked="True" IsEnabled="False"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ContentPresenter Content="{Binding}">
+                        <ContentPresenter.Resources>
+                            <Style TargetType="ContentPresenter">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Color">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource PropertiesColor}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Ramp">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource PropertiesRamp}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Loop">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource PropertiesLoop}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Mixed">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentPresenter.Resources>
+                    </ContentPresenter>
+                </WrapPanel>
+            </Grid>
+        </DataTemplate>
+
+
+        <!--
+        <DataTemplate x:Key="BlockProperties" DataType="{x:Type vm:BlockViewModel}">
+            <DataTemplate.Resources>
+                <DataTemplate DataType="{x:Type vm:ColorBlockViewModel}">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Color:" Style="{StaticResource s_FormLabel}"/>
+                            <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type vm:RampBlockViewModel}">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Start color:" Style="{StaticResource s_FormLabel}"/>
+                            <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="End color:" Style="{StaticResource s_FormLabel}"/>
+                            <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </DataTemplate.Resources>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Label FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5">
+                    <TextBlock Text="{Binding TypeLabel, StringFormat='\{0} block properties'}" />
+                </Label>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
+                    <Label Content="Music segment:" Style="{StaticResource s_FormLabel}"/>
+                    <ComboBox Width="250"
+                              ItemsSource="{Binding CurrentDocument.MusicSegments, Source={StaticResource vm_Main}}" ItemTemplate="{StaticResource MusicSegmentLabel}"
+                              SelectedItem="{Binding SegmentContext}"/>
+                    <Button Content="Manage" Command="view:SequencerCommands.MusicManageSegments" Width="50"/>
+                </StackPanel>
+
+                <WrapPanel Orientation="Vertical" Grid.Row="1">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Label Content="Tracks:" Style="{StaticResource s_FormLabel}"/>
+                        <ItemsControl ItemsSource="{Binding AllTracks}" Padding="0,5">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding Item2, Mode=OneWay}" Content="{Binding Item1.Label}" Checked="TrackCheckBox_CheckedChanged" Unchecked="TrackCheckBox_CheckedChanged" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Start time:" Style="{StaticResource s_FormLabel}"/>
+                            <view:TimeUnitEditControl x:Name="editStartTime" Value="{Binding StartTimeComplex}" ActiveUnit="0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="End time:" Style="{StaticResource s_FormLabel}"/>
+                            <view:TimeUnitEditControl Value="{Binding EndTimeComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="Duration:" Style="{StaticResource s_FormLabel}"/>
+                            <view:TimeUnitEditControl Value="{Binding DurationComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="" Style="{StaticResource s_FormLabel}"/>
+                            <CheckBox Content="Synchronize units" Margin="80,0,0,0" VerticalAlignment="Center" IsChecked="True" IsEnabled="False"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ContentPresenter Content="{Binding}" />
+                </WrapPanel>
+            </Grid>
+        </DataTemplate>
+        -->
+
+
+        <ControlTemplate x:Key="ContentOnlyTemplate" TargetType="Button">
+            <ContentPresenter/>
+        </ControlTemplate>
+
+    </Application.Resources>
+</Application>
