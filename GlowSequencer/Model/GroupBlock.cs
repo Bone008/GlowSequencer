@@ -136,8 +136,8 @@ namespace GlowSequencer.Model
         protected override void PopulateFromXML(XElement element)
         {
             base.PopulateFromXML(element);
-            _overlayStartColor = GloColor.FromHexString((string)element.Element("overlay-start"));
-            _overlayEndColor = GloColor.FromHexString((string)element.Element("overlay-end"));
+            _overlayStartColor = GloColor.FromHexString((string)element.Element("overlay-start") ?? "ffffff");
+            _overlayEndColor = GloColor.FromHexString((string)element.Element("overlay-end") ?? "ffffff");
             foreach (XElement childElem in element.ElementOrEmpty("children").Elements("block"))
                 _children.Add(Block.FromXML(timeline, childElem));
         }

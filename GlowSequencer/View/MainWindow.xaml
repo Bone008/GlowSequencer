@@ -6,7 +6,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="GlowSequencer.View.MainWindow"
         Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="600" Width="960"
-        SizeChanged="Window_SizeChanged"
+        SizeChanged="Window_SizeChanged" Closing="Window_Closing"
         PreviewKeyDown="Window_PreviewKeyDown"
         DataContext="{StaticResource vm_Main}">
 

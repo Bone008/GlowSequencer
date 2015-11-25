@@ -42,6 +42,9 @@ namespace GlowSequencer.ViewModel
             timeline.SetupNew();
             CurrentDocument = new SequencerViewModel(timeline) { CurrentWinWidth = TransferWinWidth() };
 
+            IsDirty = false;
+            CurrentDocument.ActionManager.CollectionChanged += (_, __) => IsDirty = true;
+
 #if DEBUG
             timeline.SetupTestData();
             CurrentDocument.SelectBlock(CurrentDocument.AllBlocks[0], false);
@@ -53,6 +56,9 @@ namespace GlowSequencer.ViewModel
             Timeline timeline = FileSerializer.LoadFromFile(file);
             FilePath = file;
             CurrentDocument = new SequencerViewModel(timeline) { CurrentWinWidth = TransferWinWidth() };
+
+            IsDirty = false;
+            CurrentDocument.ActionManager.CollectionChanged += (_, __) => IsDirty = true;
         }
 
         public void SaveDocument()

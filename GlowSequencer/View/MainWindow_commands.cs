@@ -91,14 +91,32 @@ namespace GlowSequencer.View
 
 
 
+        private bool ConfirmUnchanged()
+        {
+            var result = MessageBox.Show("Do you want to save the changes made to the current document?", "Unsaved Changes", MessageBoxButton.YesNoCancel);
+
+            switch (result)
+            {
+                case MessageBoxResult.Cancel: return false; // do not do operation
+                case MessageBoxResult.No: return true; // do operation without saving
+                case MessageBoxResult.Yes: return TrySave(); // save, then do operation if successful
+                default: throw new NotImplementedException("unexpected message box result");
+            }
+        }
 
         private void CommandBinding_ExecuteClose(object sender, ExecutedRoutedEventArgs e)
         {
+            if (main.IsDirty && !ConfirmUnchanged())
+                return;
+
             this.Close();
         }
 
         private void CommandBinding_ExecuteNew(object sender, ExecutedRoutedEventArgs e)
         {
+            if (main.IsDirty && !ConfirmUnchanged())
+                return;
+
             main.OpenNewDocument();
         }
 
@@ -111,6 +129,9 @@ namespace GlowSequencer.View
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
+                if (main.IsDirty && !ConfirmUnchanged())
+                    return;
+
                 main.OpenDocument(diag.FileName);
                 //Model.Timeline timeline = FileSerializer.LoadFromFile(diag.FileName);
                 //DataContext = sequencer = new SequencerViewModel(timeline) { CurrentWinWidth = sequencer.CurrentWinWidth };
@@ -119,13 +140,25 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteSave(object sender, ExecutedRoutedEventArgs e)
         {
-            if (main.FilePath != null)
-                main.SaveDocument();
-            else
-                CommandBinding_ExecuteSaveAs(sender, e);
+            TrySave();
+        }
+        private void CommandBinding_ExecuteSaveAs(object sender, ExecutedRoutedEventArgs e)
+        {
+            TrySaveAs();
         }
 
-        private void CommandBinding_ExecuteSaveAs(object sender, ExecutedRoutedEventArgs e)
+        private bool TrySave()
+        {
+            if (main.FilePath != null)
+            {
+                main.SaveDocument();
+                return true;
+            }
+            else
+                return TrySaveAs();
+        }
+
+        private bool TrySaveAs()
         {
             var diag = new Microsoft.Win32.SaveFileDialog();
             diag.FileName = main.DocumentName;
@@ -137,8 +170,9 @@ namespace GlowSequencer.View
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
                 main.SaveDocumentAs(diag.FileName);
-                //FileSerializer.SaveToFile(sequencer.GetModel(), diag.FileName);
+                return true;
             }
+            return false;
         }
 
 

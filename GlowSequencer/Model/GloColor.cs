@@ -103,6 +103,9 @@ namespace GlowSequencer.Model
 
         public static GloColor FromHexString(string str)
         {
+            if (str == null)
+                throw new ArgumentNullException("str");
+
             if (str.StartsWith("0x"))
                 str = str.Substring(2);
 

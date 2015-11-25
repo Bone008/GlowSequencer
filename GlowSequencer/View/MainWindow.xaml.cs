@@ -529,5 +529,11 @@ namespace GlowSequencer.View
                 sequencer.CurrentWinWidth = ActualWidth;
         }
 
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (main.IsDirty && !ConfirmUnchanged())
+                e.Cancel = true;
+        }
+
     }
 }
