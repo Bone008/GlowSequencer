@@ -55,6 +55,8 @@ namespace GlowSequencer.View
         {
             InitializeComponent();
             main = (MainViewModel)DataContext;
+
+            sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
         }
 
         private void trackLabelsScroller_ScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -69,6 +71,7 @@ namespace GlowSequencer.View
             if (e.HorizontalChange != 0)
             {
                 timelineGrid.GridOffset = e.HorizontalOffset;
+                sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
             }
         }
 
@@ -526,13 +529,43 @@ namespace GlowSequencer.View
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (e.WidthChanged)
+            {
                 sequencer.CurrentWinWidth = ActualWidth;
+                sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (main.IsDirty && !ConfirmUnchanged())
                 e.Cancel = true;
+        }
+
+        private void statusBarTimeValue_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // at some point, double clicking the readonly values could convert them into a text field to adjust the view/cursor position by entering values;
+            // the feature was postponed because it was deemed low priority; this is the start of its implementation
+#if DEBUG
+            // find first binding of a descendant
+            DependencyObject dep = (DependencyObject)e.Source;
+            BindingExpression binding = null;
+            do
+            {
+                if(VisualTreeHelper.GetChildrenCount(dep) < 1)
+                {
+                    MessageBox.Show("Internal error: Could not locate property to modify!");
+                    return;
+                }
+                dep = VisualTreeHelper.GetChild(dep, 0);
+                if (dep is FrameworkElement)
+                {
+                    var fe = (FrameworkElement)dep;
+                    binding = fe.GetBindingExpression(TextBlock.TextProperty) ?? fe.GetBindingExpression(Run.TextProperty);
+                }
+            } while (binding == null);
+
+            MessageBox.Show(binding.ResolvedSourcePropertyName + " = " + binding.ResolvedSource);
+#endif
         }
 
     }

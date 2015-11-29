@@ -26,6 +26,7 @@ namespace GlowSequencer.ViewModel
             set
             {
                 if (value == null) return;
+                if (_setter == null) throw new InvalidOperationException("time unit is readonly");
 
                 // even though this instance will be discarded shortly, the local value still needs to be changed;
                 // the control that invoked the setter will query its source value one more time and will jump back to the old value if this is not set
@@ -69,12 +70,12 @@ namespace GlowSequencer.ViewModel
             return (_absolute ? 1 : 0);
         }
 
-        public static TimeUnit Wrap(float? seconds, MusicSegment musicData, Action<float> setter)
+        public static TimeUnit Wrap(float? seconds, MusicSegment musicData, Action<float> setter = null)
         {
             return new TimeUnit { _seconds = seconds, _setter = setter, _musicData = musicData };
         }
 
-        public static TimeUnit WrapAbsolute(float? seconds, MusicSegment musicData, Action<float> setter)
+        public static TimeUnit WrapAbsolute(float? seconds, MusicSegment musicData, Action<float> setter = null)
         {
             return new TimeUnit { _seconds = seconds, _setter = setter, _musicData = musicData, _absolute = true };
         }

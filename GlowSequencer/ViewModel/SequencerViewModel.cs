@@ -26,6 +26,8 @@ namespace GlowSequencer.ViewModel
         private float _timePixelScale = 100;
 
         // data from the view
+        private double _viewportLeftOffsetPx = 0;
+        private double _viewportWidthPx = 0;
         private double _currentWinWidth = 1000;
         //private double _horizontalTimelineOffset = 0;
 
@@ -47,11 +49,15 @@ namespace GlowSequencer.ViewModel
         public ObservableCollection<BlockViewModel> SelectedBlocks { get; private set; }
 
 
-        public float CursorPosition { get { return _cursorPosition; } set { SetProperty(ref _cursorPosition, Math.Max(0, value)); Notify("CursorPixelPosition"); } }
+        public float CursorPosition { get { return _cursorPosition; } set { SetProperty(ref _cursorPosition, Math.Max(0, value)); } }
+        public TimeUnit CursorPositionComplex { get { return TimeUnit.WrapAbsolute(_cursorPosition, _activeMusicSegment.GetModel(), v => CursorPosition = v); } }
 
         public double CursorPixelPosition { get { return _cursorPosition * TimePixelScale; } }
 
-        public double CurrentWinWidth { get { return _currentWinWidth; } set { SetProperty(ref _currentWinWidth, value); Notify("TimelineWidth"); } }
+
+        public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute((float)_viewportLeftOffsetPx / TimePixelScale, _activeMusicSegment.GetModel()); } }
+        public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute((float)(_viewportLeftOffsetPx + _viewportWidthPx) / TimePixelScale, _activeMusicSegment.GetModel()); } }
+        public double CurrentWinWidth { get { return _currentWinWidth; } set { SetProperty(ref _currentWinWidth, value); } }
 
 
         public double TimelineWidth
@@ -106,7 +112,7 @@ namespace GlowSequencer.ViewModel
 
 
         /// <summary>Pixels per second.</summary>
-        public float TimePixelScale { get { return _timePixelScale; } set { SetProperty(ref _timePixelScale, value); Notify("CursorPixelPosition"); } }
+        public float TimePixelScale { get { return _timePixelScale; } set { SetProperty(ref _timePixelScale, Math.Max(value, 1 / 60.0f)); } }
 
         public SequencerViewModel(Timeline model)
         {
@@ -133,8 +139,12 @@ namespace GlowSequencer.ViewModel
                 Notify("TimelineWidth");
             };
 
-            ForwardPropertyEvents("TimePixelScale", this, "TimelineWidth", "GridInterval");
-            ForwardPropertyEvents("ActiveMusicSegment", this, "GridInterval");
+            ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", "CursorPositionComplex");
+            ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
+                                                          "TimelineWidth", "GridInterval");
+            ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex","GridInterval");
+
+            ForwardPropertyEvents("CurrentWinWidth", this, "TimelineWidth");
 
             Tracks.CollectionChanged += (_, e) =>
             {
@@ -190,8 +200,16 @@ namespace GlowSequencer.ViewModel
             return ActiveMusicSegment.TimeOriginSeconds;
         }
 
-
-
+        /// <summary>
+        /// Called by the view to inform the VM about the state of the blocks viewport.
+        /// </summary>
+        public void SetViewportState(double viewportOffsetPx, double viewportWidth)
+        {
+            _viewportLeftOffsetPx = viewportOffsetPx;
+            _viewportWidthPx = viewportWidth;
+            Notify("CurrentViewLeftPositionComplex");
+            Notify("CurrentViewRightPositionComplex");
+        }
 
         // ===== Commands =====
 
@@ -418,7 +436,7 @@ namespace GlowSequencer.ViewModel
                         block.RemoveFromTrack(track, ActionManager);
                     else
                         ActionManager.RecordRemove(model.Blocks, block);
-                    
+
                     //block.Tracks.Remove(track);
                     //if (block.Tracks.Count == 0)
                     //    ActionManager.RecordRemove(model.Blocks, block);

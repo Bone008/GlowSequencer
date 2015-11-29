@@ -49,6 +49,7 @@
             <RowDefinition Height="2*"/>
             <RowDefinition Height="5"/>
             <RowDefinition Height="1*" MinHeight="160"/>
+            <RowDefinition Height="24"/>
         </Grid.RowDefinitions>
 
         <Menu>
@@ -239,5 +240,53 @@
         <GridSplitter HorizontalAlignment="Stretch" Height="5" ResizeDirection="Rows" Grid.Row="2"/>
 
         <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Grid.Row="3" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
+
+        <Border Grid.Row="4" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
+                BorderThickness="0,1,0,0" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+            <Grid>
+                <TextBlock Margin="10,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Run Text="{Binding SelectedBlocks.Count, Mode=OneWay}" />
+                    <Run>selected</Run>
+                </TextBlock>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <StackPanel.Resources>
+                        <DataTemplate x:Key="unitStatusBarDisplay" DataType="{x:Type vm:TimeUnit}">
+                            <Grid Background="#FFDEDEDE" Width="150">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="11*" />
+                                    <ColumnDefinition Width="7*" />
+                                    <ColumnDefinition Width="6*" />
+                                </Grid.ColumnDefinitions>
+                                <Border BorderThickness="0,0,1,0" BorderBrush="Gray" Padding="0,0,3,0">
+                                    <Button Background="Transparent" Template="{StaticResource ContentOnlyTemplate}" MouseDoubleClick="statusBarTimeValue_MouseDoubleClick">
+                                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                                               Text="{Binding Seconds, Mode=OneWay, StringFormat='0.000 s'}" />
+                                    </Button>
+                                </Border>
+                                <Button Background="Transparent" Grid.Column="1" Template="{StaticResource ContentOnlyTemplate}" MouseDoubleClick="statusBarTimeValue_MouseDoubleClick">
+                                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                           >
+                                    <!-- Visibility="{Binding HasMusicData, Converter={StaticResource conv_BoolToVisibility}}" -->
+                                        <Run Text="{Binding Bars, Mode=OneWay}"/>
+                                        <Run Text="b" />
+                                    </TextBlock>
+                                </Button>
+                                <Button Background="Transparent" Grid.Column="2" Template="{StaticResource ContentOnlyTemplate}" MouseDoubleClick="statusBarTimeValue_MouseDoubleClick">
+                                    <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"
+                                    Text="{Binding Beats, Mode=OneWay, StringFormat='0.##'}" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </StackPanel.Resources>
+                    <Label>View</Label>
+                    <ContentControl Content="{Binding CurrentViewLeftPositionComplex}" ContentTemplate="{StaticResource unitStatusBarDisplay}" ToolTip="Left edge of view" />
+                    <Label>-</Label>
+                    <ContentControl Content="{Binding CurrentViewRightPositionComplex}" ContentTemplate="{StaticResource unitStatusBarDisplay}" ToolTip="Right edge of view" />
+                    <Label Width="100" HorizontalContentAlignment="Right">Cursor</Label>
+                    <ContentControl Content="{Binding CursorPositionComplex}" ContentTemplate="{StaticResource unitStatusBarDisplay}" ToolTip="Position of cursor" />
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
