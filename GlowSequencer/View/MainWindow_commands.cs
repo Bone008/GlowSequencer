@@ -106,9 +106,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteClose(object sender, ExecutedRoutedEventArgs e)
         {
-            if (main.IsDirty && !ConfirmUnchanged())
-                return;
-
+            // unsaved confimration dialog will be handled by the Closing event handler
             this.Close();
         }
 
