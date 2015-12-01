@@ -466,7 +466,7 @@ namespace GlowSequencer.View
             }
             else if (Keyboard.Modifiers == ModifierKeys.Shift)
             {
-                trackBlocksScroller.ScrollToHorizontalOffset(trackBlocksScroller.HorizontalOffset + e.Delta);
+                trackBlocksScroller.ScrollToHorizontalOffset(trackBlocksScroller.HorizontalOffset - e.Delta);
             }
         }
 
