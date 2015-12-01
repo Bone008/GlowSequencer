@@ -74,38 +74,38 @@ namespace GlowSequencer
                 // After painting is complete, all samples that just pass through a single block are redundant.
 
                 Sample[] samples = CollectSamples(track.Blocks);
-                GloCommandContainer container = SamplesToCommands(samples);
-                OptimizeCommands(container.Commands);
+                GloCommandContainer commandContainer = SamplesToCommands(samples);
+                OptimizeCommands(commandContainer.Commands);
 
                 // write to file
                 string sanitizedTrackName = System.IO.Path.GetInvalidFileNameChars().Aggregate(track.Label, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
                 string file = filenameBase + sanitizedTrackName + filenameSuffix;
-                WriteCommands(container, file);
+                WriteCommands(commandContainer, file);
             }
 
 
             // old algorithm for comparison
-            foreach (var track in timeline.Tracks)
-            {
-                GloCommandContainer container = new GloCommandContainer(null, "END");
-                try
-                {
-                    var ctx = new GloSequenceContext(track, container);
-                    ctx.Append(track.Blocks);
-                    ctx.Postprocess();
-                }
-                catch (InvalidOperationException e)
-                {
-                    // TO_DO showing the error as a message box from here breaks layer architecture
-                    System.Windows.MessageBox.Show("Error while exporting track '" + track.Label + "': " + e.Message);
-                    return false;
-                }
+            //foreach (var track in timeline.Tracks)
+            //{
+            //    GloCommandContainer container = new GloCommandContainer(null, "END");
+            //    try
+            //    {
+            //        var ctx = new GloSequenceContext(track, container);
+            //        ctx.Append(track.Blocks);
+            //        ctx.Postprocess();
+            //    }
+            //    catch (InvalidOperationException e)
+            //    {
+            //        // TO_DO showing the error as a message box from here breaks layer architecture
+            //        System.Windows.MessageBox.Show("Error while exporting track '" + track.Label + "': " + e.Message);
+            //        return false;
+            //    }
 
-                // write to file
-                string sanitizedTrackName = System.IO.Path.GetInvalidFileNameChars().Aggregate(track.Label, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
-                string file = filenameBase + sanitizedTrackName + "_old" + filenameSuffix;
-                WriteCommands(container, file);
-            }
+            //    // write to file
+            //    string sanitizedTrackName = System.IO.Path.GetInvalidFileNameChars().Aggregate(track.Label, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
+            //    string file = filenameBase + sanitizedTrackName + "_old" + filenameSuffix;
+            //    WriteCommands(container, file);
+            //}
 
             return true;
         }
