@@ -24,6 +24,16 @@ namespace GlowSequencer.Model
             this.b = b;
         }
 
+        public void Normalize()
+        {
+            if (r < 0) r = 0;
+            if (g < 0) g = 0;
+            if (b < 0) b = 0;
+            if (r > 255) r = 255;
+            if (g > 255) g = 255;
+            if (b > 255) b = 255;
+        }
+
         public string ToHexString()
         {
             return r.ToString("x2") + g.ToString("x2") + b.ToString("x2");
@@ -90,14 +100,9 @@ namespace GlowSequencer.Model
 
         public static GloColor FromRGB(int r, int g, int b)
         {
-            if (r < 0) r = 0;
-            if (g < 0) g = 0;
-            if (b < 0) b = 0;
-            if (r > 255) r = 255;
-            if (g > 255) g = 255;
-            if (b > 255) b = 255;
-
-            return new GloColor(r, g, b);
+            var col = new GloColor(r, g, b);
+            col.Normalize();
+            return col;
         }
 
 
@@ -123,8 +128,11 @@ namespace GlowSequencer.Model
                 return c1;
             if (pct >= 1)
                 return c2;
+            if (c1 == c2)
+                return c1;
 
             return (1 - pct) * c1 + pct * c2;
         }
+
     }
 }

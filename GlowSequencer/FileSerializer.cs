@@ -47,6 +47,9 @@ namespace GlowSequencer
 
             public GloColor ColorAt(int tick)
             {
+                if (startColor == endColor)
+                    return startColor;
+
                 return GloColor.Blend(startColor, endColor, (tick - startTime) / (double)(endTime - startTime));
             }
 
@@ -138,6 +141,14 @@ namespace GlowSequencer
 
             // samples where the block does not change are redundant
             samples = samples.Where(s => s.blockBefore != s.blockAfter).ToArray();
+            
+            // make absolutely sure all colors are in [0..255] range
+            foreach (var s in samples)
+            {
+                s.colBefore.Normalize();
+                s.colAfter.Normalize();
+            }
+
             return samples;
         }
 
