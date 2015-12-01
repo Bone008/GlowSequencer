@@ -291,13 +291,23 @@ namespace GlowSequencer.View
         private void CopyToClipboard()
         {
             XElement clipboard = new XElement("clipboard");
-            //int trackBaseline = sequencer.SelectedTrack.GetIndex();
-            //clipboard.SetAttributeValue("relative-to-track", trackBaseline);
             clipboard.Add(sequencer.SelectedBlocks.Select(b => b.GetModel().ToXML()));
 
-            // TODO transform tracks to minimum absolute indices [0....[
-            //foreach (XElement trackRef in clipboard.Descendants("track-reference"))
-            //    trackRef.Value = (int)trackRef - trackBaseline + "";
+            var trackRefs = clipboard.Descendants("track-reference");
+            var indices = trackRefs.Select(elem => (int)elem);
+            int imin = indices.Min();
+            int imax = indices.Max();
+
+            int trackBaseline = sequencer.SelectedTrack.GetIndex();
+            //clipboard.SetAttributeValue("relative-to-track", trackBaseline);
+
+            // clamp baseline between min and max tracks
+            trackBaseline = Math.Min(trackBaseline, imax);
+            trackBaseline = Math.Max(trackBaseline, imin);
+
+            // shift tracks to indices relative to baseline (may be negative)
+            foreach (XElement tref in trackRefs)
+                tref.Value = (int)tref - trackBaseline + "";
 
             string clipboardXml = clipboard.ToString(SaveOptions.DisableFormatting);
             Clipboard.SetData(CLIPBOARD_BLOCKS_FORMAT, clipboardXml);
@@ -310,18 +320,29 @@ namespace GlowSequencer.View
                 return;
 
             XElement clipboard = XElement.Parse(clipboardXml);
-            Model.Block[] pastedBlocks = clipboard.Elements("block").Select(blockElem => Model.Block.FromXML(sequencer.GetModel(), blockElem)).ToArray();
-
-            //int trackBaseline = (int)clipboard.Attribute("relative-to-track");
-
-            Model.Timeline tl = sequencer.GetModel();
-            var indices = pastedBlocks.SelectMany(b => b.Tracks.Select(g => g.GetIndex()));
+            var trackRefs = clipboard.Descendants("track-reference");
+            var indices = trackRefs.Select(elem => (int)elem);
             int oldFrom = indices.Min();
             int oldTo = indices.Max();
-            int trackDelta = sequencer.SelectedTrack.GetIndex() - oldFrom;
+
+            //int trackBaseline = (int)clipboard.Attribute("relative-to-track");
+            int trackBaseline = sequencer.SelectedTrack.GetIndex();
+
             // stay within range of the tracks
-            trackDelta = Math.Max(-oldFrom, trackDelta);
-            trackDelta = Math.Min(tl.Tracks.Count - 1 - oldTo, trackDelta);
+            trackBaseline = Math.Max(-oldFrom, trackBaseline);
+            trackBaseline = Math.Min(sequencer.GetModel().Tracks.Count - 1 - oldTo, trackBaseline);
+
+            if (oldFrom + trackBaseline < 0)
+            {
+                MessageBox.Show(this, "There are not enough tracks to fit the contents of the clipboard!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // shift relative indices back to absolute ones
+            foreach (XElement tref in trackRefs)
+                tref.Value = (int)tref + trackBaseline + "";
+
+            Model.Block[] pastedBlocks = clipboard.Elements("block").Select(blockElem => Model.Block.FromXML(sequencer.GetModel(), blockElem)).ToArray();
 
 
             float timeBaseline = pastedBlocks.Min(b => b.StartTime);
@@ -334,33 +355,12 @@ namespace GlowSequencer.View
                     // adjust to cursor position
                     block.StartTime += timeDelta;
 
-                    // move vertically
-                    if (trackDelta != 0)
-                    {
-                        if (block is Model.GroupBlock)
-                        {
-                            foreach (var child in ((Model.GroupBlock)block).Children)
-                                ShiftTracks(child, trackDelta);
-                            ((Model.GroupBlock)block).RecalcTracks();
-                        }
-                        else
-                            ShiftTracks(block, trackDelta);
-                    }
-
                     sequencer.ActionManager.RecordAdd(sequencer.GetModel().Blocks, block);
                     //sequencer.GetModel().Blocks.Add(block);
                 }
             }
 
             sequencer.SelectBlocks(pastedBlocks.Select(b => BlockViewModel.FromModel(sequencer, b)), false);
-        }
-
-        private void ShiftTracks(Model.Block block, int delta)
-        {
-            var newTracks = block.Tracks.Select(g => sequencer.GetModel().Tracks[g.GetIndex() + delta]).ToList();
-            block.Tracks.Clear();
-            foreach (var g in newTracks)
-                block.Tracks.Add(g);
         }
 
         private void CommandBinding_ExecuteDelete(object sender, ExecutedRoutedEventArgs e)
