@@ -11,7 +11,7 @@ using System.Xml.Linq;
 
 namespace GlowSequencer.View
 {
-    public class SequencerCommands
+    public static class SequencerCommands
     {
         public static readonly RoutedUICommand ExportGlo = new RoutedUICommand("", "ExportGlo", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
 

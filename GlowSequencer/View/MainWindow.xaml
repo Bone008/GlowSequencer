@@ -42,6 +42,10 @@
         <CommandBinding Command="local:SequencerCommands.MusicManageSegments" Executed="CommandBinding_ExecuteMusicManageSegments"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.About" Executed="CommandBinding_ExecuteAbout"  CanExecute="CommandBinding_CanExecuteAlways" />
     </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="I" Modifiers="Control" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
+        <KeyBinding Key="I" Modifiers="Control+Shift" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
+    </Window.InputBindings>
 
     <Grid DataContext="{Binding CurrentDocument}">
         <Grid.RowDefinitions>
@@ -71,9 +75,9 @@
             </MenuItem>
             <MenuItem Header="_Block">
                 <MenuItem Header="_Insert">
-                    <MenuItem Header="_Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
-                    <MenuItem Header="_Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
-                    <MenuItem Header="_Subsequence" Command="local:SequencerCommands.InsertBlock" CommandParameter="subsequence">
+                    <MenuItem Header="_Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" InputGestureText="Ctrl+I" />
+                    <MenuItem Header="_Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" InputGestureText="Ctrl+Shift+I" />
+                    <MenuItem Header="_Subsequence">
                         <MenuItem Header="TODO" IsEnabled="False" />
                     </MenuItem>
                 </MenuItem>
@@ -94,7 +98,7 @@
                 <MenuItem Header="_Delete" Command="local:SequencerCommands.DeleteTrack" CommandParameter="{Binding SelectedTrack}"/>
             </MenuItem>
             <MenuItem Header="_Music">
-                <MenuItem Header="_Load file ..."/>
+                <MenuItem Header="_Load file ... [TODO]" IsEnabled="False" />
                 <Separator/>
                 <MenuItem Header="_Active segment">
                     <MenuItem Header="_Synchronize with block selection" IsCheckable="True" IsChecked="{Binding SynchronizeActiveWithSelection}"/>
@@ -185,8 +189,8 @@
                                   PreviewMouseDown="timeline_PreviewMouseDown" MouseDown="timeline_MouseDown" MouseWheel="timeline_MouseWheel" MouseUp="timeline_MouseUp" MouseMove="timeline_MouseMove">
                         <ItemsControl.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Insert Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
-                                <MenuItem Header="Insert Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
+                                <MenuItem Header="Insert Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" InputGestureText="Ctrl+I" />
+                                <MenuItem Header="Insert Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" InputGestureText="Ctrl+Shift+I" />
                                 <Separator/>
                                 <MenuItem Header="Group" Command="local:SequencerCommands.GroupBlocks" />
                                 <MenuItem Header="Ungroup" Command="local:SequencerCommands.UngroupBlocks" />
