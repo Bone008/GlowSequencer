@@ -45,8 +45,12 @@ namespace GlowSequencer.Model
             string separator = " ";
 
             int n;
+            int padWidth;
             if (baseLabel == Track.DEFAULT_BASE_LABEL)
+            {
                 n = Tracks.Count + 1;
+                padWidth = 2;
+            }
             else
             {
                 Match m = Regex.Match(baseLabel, @"(.+?)( ?)(\d+)$");
@@ -55,15 +59,19 @@ namespace GlowSequencer.Model
                     baseLabel = m.Groups[1].Value;
                     separator = m.Groups[2].Value;
                     n = int.Parse(m.Groups[3].Value) + 1;
+                    padWidth = m.Groups[3].Length;
                 }
                 else
+                {
                     n = 2;
+                    padWidth = 2;
+                }
             }
 
             string label;
             do
             {
-                label = baseLabel + separator + (n++);
+                label = baseLabel + separator + (n++).ToString().PadLeft(padWidth, '0');
             }
             while (Tracks.Any(g => g.Label.Equals(label, StringComparison.InvariantCultureIgnoreCase)));
 
