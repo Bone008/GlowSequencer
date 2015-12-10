@@ -33,6 +33,8 @@
         <CommandBinding Command="local:SequencerCommands.MoveToBack" Executed="CommandBinding_ExecuteMoveToBack"  CanExecute="CommandBinding_CanExecuteIfSelected" />
 
         <CommandBinding Command="local:SequencerCommands.SwapRampColors" Executed="CommandBinding_ExecuteSwapRampColors" CanExecute="CommandBinding_CanExecuteIfDeterminateGradient" />
+        <CommandBinding Command="local:SequencerCommands.TrackAffiliationAll" Executed="CommandBinding_ExecutedTrackAffiliationAll" CanExecute="CommandBinding_CanExecuteIfTrackAffiliationNotAll" />
+        <CommandBinding Command="local:SequencerCommands.TrackAffiliationInvert" Executed="CommandBinding_ExecutedTrackAffiliationInvert" CanExecute="CommandBinding_CanExecuteIfTrackAffiliationNotAll" />
 
         <CommandBinding Command="local:SequencerCommands.AddTrack" Executed="CommandBinding_ExecuteAddTrack"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.RenameTrack" Executed="CommandBinding_ExecuteRenameTrack"  CanExecute="CommandBinding_CanExecuteAlways" />

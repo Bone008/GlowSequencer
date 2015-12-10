@@ -22,6 +22,8 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand MoveToBack = new RoutedCommand();
 
         public static readonly RoutedCommand SwapRampColors = new RoutedCommand();
+        public static readonly RoutedCommand TrackAffiliationAll = new RoutedCommand();
+        public static readonly RoutedCommand TrackAffiliationInvert = new RoutedCommand();
 
         public static readonly RoutedCommand AddTrack = new RoutedCommand();
         public static readonly RoutedCommand RenameTrack = new RoutedUICommand("", "RenameTrack", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.F2) });
@@ -87,6 +89,13 @@ namespace GlowSequencer.View
         {
             ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
             e.CanExecute = (props.StartColor != System.Windows.Media.Colors.Transparent && props.EndColor != System.Windows.Media.Colors.Transparent);
+        }
+
+        private void CommandBinding_CanExecuteIfTrackAffiliationNotAll(object sender, CanExecuteRoutedEventArgs e)
+        {
+            ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
+            e.CanExecute = (sequencer.SelectedBlocks.Any()
+                            && props.TrackAffiliation.Any(aff => aff.CanModify && !aff.AffiliationState.GetValueOrDefault(false)));
         }
 
 
@@ -271,6 +280,30 @@ namespace GlowSequencer.View
                 props.EndColor = tmp;
             }
         }
+
+        private void CommandBinding_ExecutedTrackAffiliationAll(object sender, ExecutedRoutedEventArgs e)
+        {
+            ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
+            using (sequencer.ActionManager.CreateTransaction(false))
+            {
+                foreach (var aff in props.TrackAffiliation)
+                    aff.AffiliationState = true;
+            }
+        }
+
+        private void CommandBinding_ExecutedTrackAffiliationInvert(object sender, ExecutedRoutedEventArgs e)
+        {
+            ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
+            using (sequencer.ActionManager.CreateTransaction(false))
+            {
+                var toTrue = props.TrackAffiliation.Where(aff => aff.AffiliationState.HasValue && !aff.AffiliationState.Value).ToList();
+                var toFalse = props.TrackAffiliation.Where(aff => aff.AffiliationState.HasValue && aff.AffiliationState.Value).ToList();
+
+                foreach (var aff in toTrue) aff.AffiliationState = true;
+                foreach (var aff in toFalse) aff.AffiliationState = false;
+            }
+        }
+
 
 
         private void CommandBinding_ExecuteCut(object sender, ExecutedRoutedEventArgs e)

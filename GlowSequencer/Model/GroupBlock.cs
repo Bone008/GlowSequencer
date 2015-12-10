@@ -103,6 +103,16 @@ namespace GlowSequencer.Model
             return false;
         }
 
+        public override void ShiftTracks(int delta, GuiLabs.Undo.ActionManager am = null)
+        {
+            am.RecordAction(() => { }, RecalcTracks);
+
+            foreach (var child in Children)
+                child.ShiftTracks(delta, am);
+
+            RecalcTracks();
+        }
+
         public override float GetMinDuration()
         {
             return Math.Max(base.GetMinDuration(), _children.Max(b => (float?)b.GetEndTime()).GetValueOrDefault(0));

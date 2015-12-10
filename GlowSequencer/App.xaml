@@ -276,7 +276,11 @@
 
                 <WrapPanel Orientation="Vertical" Grid.Row="1">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Label Content="Tracks:" Style="{StaticResource s_FormLabel}"/>
+                        <StackPanel Orientation="Vertical">
+                            <Label Content="Tracks:" Style="{StaticResource s_FormLabel}"/>
+                            <Button Content="All" Command="view:SequencerCommands.TrackAffiliationAll" CommandParameter="{Binding}" Width="40" HorizontalAlignment="Right" Margin="10,0" />
+                            <Button Content="Invert" Command="view:SequencerCommands.TrackAffiliationInvert" CommandParameter="{Binding}" Width="40" HorizontalAlignment="Right" Margin="10,5" />
+                        </StackPanel>
                         <ItemsControl ItemsSource="{Binding TrackAffiliation}" Padding="0,5">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>

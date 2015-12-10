@@ -49,5 +49,20 @@ namespace GlowSequencer.Util
         {
             return x == null ? (int?)null : (int?)Math.Floor(x.Value);
         }
+
+        public static int Clamp(int value, int min, int max)
+        {
+            return Math.Min(max, Math.Max(min, value));
+        }
+
+        public static float Clamp(float value, float min, float max)
+        {
+            return Math.Min(max, Math.Max(min, value));
+        }
+
+        public static double Clamp(double value, double min, double max)
+        {
+            return Math.Min(max, Math.Max(min, value));
+        }
     }
 }

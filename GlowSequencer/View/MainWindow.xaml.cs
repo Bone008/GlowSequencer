@@ -1,4 +1,5 @@
-﻿using GlowSequencer.ViewModel;
+﻿using GlowSequencer.Util;
+using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,7 +48,8 @@ namespace GlowSequencer.View
         private bool selectionIsAdditiveDrag = false;
 
         private BlockDragMode dragMode = BlockDragMode.None;
-        private Point dragStart = new Point();
+        private Point dragStart = new Point(); // start of the drag, relative to the timeline
+        private int dragTrackBaseline = -1;
         private List<DraggedBlockData> draggedBlocks = null;
 
 
@@ -166,6 +168,7 @@ namespace GlowSequencer.View
                 // record initial information
                 dragMode = mode;
                 dragStart = e.GetPosition(timeline); // always relative to timeline
+                dragTrackBaseline = GetTrackIndexFromOffset(dragStart.Y);
                 draggedBlocks = sequencer.SelectedBlocks.Select(b => new DraggedBlockData { block = b, initialDuration = b.Duration, initialStartTime = b.StartTime }).ToList();
 
                 controlBlock.CaptureMouse();
@@ -195,6 +198,7 @@ namespace GlowSequencer.View
                 // reset drag state
                 dragMode = BlockDragMode.None;
                 dragStart = new Point();
+                dragTrackBaseline = -1;
                 draggedBlocks = null;
 
                 controlBlock.ReleaseMouseCapture();
@@ -213,7 +217,7 @@ namespace GlowSequencer.View
                 return;
 
             Vector delta = e.GetPosition(timeline) - dragStart;
-            HandleDrag(block, delta.X);
+            HandleDrag(block, delta);
         }
 
 
@@ -239,6 +243,7 @@ namespace GlowSequencer.View
             // record initial information
             dragMode = mode;
             dragStart = e.Manipulators.First().GetPosition(timeline); // always relative to timeline
+            dragTrackBaseline = GetTrackIndexFromOffset(dragStart.Y);
             draggedBlocks = sequencer.SelectedBlocks.Select(b => new DraggedBlockData { block = b, initialDuration = b.Duration, initialStartTime = b.StartTime }).ToList();
 
 
@@ -259,6 +264,7 @@ namespace GlowSequencer.View
             // reset drag state
             dragMode = BlockDragMode.None;
             dragStart = new Point();
+            dragTrackBaseline = -1;
             draggedBlocks = null;
 
             e.Handled = true;
@@ -271,21 +277,16 @@ namespace GlowSequencer.View
 
             BlockViewModel block = ((sender as FrameworkElement).DataContext as BlockViewModel);
             // don't use CumulativeManipulation, that gets messed up when the block changes position
-            HandleDrag(block, (e.Manipulators.First().GetPosition(timeline) - dragStart).X);
+            HandleDrag(block, (e.Manipulators.First().GetPosition(timeline) - dragStart));
 
             e.Handled = true;
         }
 
-        private int c = 1000;
-        private void HandleDrag(BlockViewModel principal, double deltaPx)
+        private void HandleDrag(BlockViewModel principal, Vector delta)
         {
-            float deltaT = (float)(deltaPx / sequencer.TimePixelScale);
+            float deltaT = (float)(delta.X / sequencer.TimePixelScale);
 
-            if (deltaT == 0)
-                return;
-
-            Debug.WriteLine(c++ + ": moving by " + deltaPx);
-
+            
             DraggedBlockData principalData = draggedBlocks.Single(db => db.block == principal);
 
             // adjust delta according to constraints
@@ -317,15 +318,20 @@ namespace GlowSequencer.View
                         deltaT = minDurationDelta;
                     break;
                 case BlockDragMode.Block:
-                    snappedStartTime = SnapValue(principalData.initialStartTime + deltaT);
-                    deltaT = snappedStartTime - principalData.initialStartTime;
+                    // adjust back to zero if in orthogonal drag mode
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)/* && dragTrackBaseline != GetTrackIndexFromOffset(dragStart.Y)*/)
+                        deltaT = 0;
+                    else
+                    {
+                        snappedStartTime = SnapValue(principalData.initialStartTime + deltaT);
+                        deltaT = snappedStartTime - principalData.initialStartTime;
 
-                    minStartTime = draggedBlocks.Min(b => b.initialStartTime);
-                    if (deltaT < -minStartTime)
-                        deltaT = -minStartTime;
+                        minStartTime = draggedBlocks.Min(b => b.initialStartTime);
+                        if (deltaT < -minStartTime)
+                            deltaT = -minStartTime;
+                    }
                     break;
             }
-
 
             using (sequencer.ActionManager.CreateTransaction())
             {
@@ -354,6 +360,33 @@ namespace GlowSequencer.View
                         break;
                 }
             }
+
+
+            // vertical drag
+            int currentTrackIndex = GetTrackIndexFromOffset(dragStart.Y + delta.Y);
+            if (dragMode == BlockDragMode.Block && currentTrackIndex != dragTrackBaseline)
+            {
+                int trackDelta = currentTrackIndex - dragTrackBaseline;
+
+                int rangeMin = draggedBlocks.Min(b => b.block.GetModel().Tracks.Min(t => t.GetIndex()));
+                int rangeMax = draggedBlocks.Max(b => b.block.GetModel().Tracks.Max(t => t.GetIndex()));
+                Debug.WriteLine("clamping {0} to {1}", -rangeMin, sequencer.Tracks.Count - rangeMax - 1);
+                trackDelta = MathUtil.Clamp(trackDelta, -rangeMin, sequencer.Tracks.Count - rangeMax - 1);
+
+                if (trackDelta != 0)
+                {
+                    using (sequencer.ActionManager.CreateTransaction(false))
+                    {
+                        foreach (var b in draggedBlocks)
+                        {
+                            b.block.GetModel().ShiftTracks(trackDelta, sequencer.ActionManager);
+                        }
+                    }
+
+                    // set current index as the new baseline
+                    dragTrackBaseline = currentTrackIndex;
+                }
+            }
         }
 
         private float SnapValue(float v)
@@ -368,6 +401,13 @@ namespace GlowSequencer.View
                 return v;
         }
 
+        /// <summary>Returns the (clamped) index of the track represented by an offset.</summary>
+        /// <param name="offset">y offset relative to the timeline</param>
+        /// <returns></returns>
+        private int GetTrackIndexFromOffset(double offset)
+        {
+            return MathUtil.Clamp(MathUtil.FloorToInt(offset / TIMELINE_TRACK_HEIGHT), 0, sequencer.Tracks.Count - 1);
+        }
 
 
         private void timeline_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -552,7 +592,7 @@ namespace GlowSequencer.View
             BindingExpression binding = null;
             do
             {
-                if(VisualTreeHelper.GetChildrenCount(dep) < 1)
+                if (VisualTreeHelper.GetChildrenCount(dep) < 1)
                 {
                     MessageBox.Show("Internal error: Could not locate property to modify!");
                     return;

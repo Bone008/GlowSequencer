@@ -83,6 +83,23 @@ namespace GlowSequencer.Model
             return true;
         }
 
+        public virtual void ShiftTracks(int delta, GuiLabs.Undo.ActionManager am = null)
+        {
+            var oldIndices = Tracks.Select(t => t.GetIndex()).ToList();
+            var newIndices = oldIndices.Select(i => i + delta).ToList();
+
+            if (newIndices.Any(i => i < 0 || i >= timeline.Tracks.Count))
+                throw new ArgumentException("shifting tracks would move them out of range", "delta");
+
+            // runtime complexity is horrendeous, but we don't have that many tracks ...
+            foreach (int i in newIndices)
+                if (!oldIndices.Contains(i))
+                    am.RecordAdd(Tracks, timeline.Tracks[i]);
+            foreach (int i in oldIndices)
+                if (!newIndices.Contains(i))
+                    am.RecordRemove(Tracks, timeline.Tracks[i]);
+        }
+
         public object Clone()
         {
             return FromXML(timeline, ToXML());
