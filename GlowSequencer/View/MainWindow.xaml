@@ -7,7 +7,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="GlowSequencer.View.MainWindow"
         Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="600" Width="960"
         SizeChanged="Window_SizeChanged" Closing="Window_Closing"
-        PreviewKeyDown="Window_PreviewKeyDown"
         AllowDrop="True" DragOver="Window_Drag" Drop="Window_Drop"
         DataContext="{StaticResource vm_Main}">
 
@@ -134,7 +133,8 @@
                 </ComboBox.ContextMenu>
             </ComboBox>
 
-            <ScrollViewer x:Name="trackLabelsScroller" Grid.Row="1" VerticalScrollBarVisibility="Hidden" ScrollChanged="trackLabelsScroller_ScrollChanged" HorizontalScrollBarVisibility="Visible" PanningMode="Both">
+            <ScrollViewer x:Name="trackLabelsScroller" Grid.Row="1" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Visible" PanningMode="Both"
+                          ScrollChanged="trackLabelsScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown">
                 <ItemsControl ItemsSource="{Binding Tracks}" Background="Transparent" MouseWheel="timeline_MouseWheel">
                     <ItemsControl.ContextMenu>
                         <ContextMenu>
@@ -170,7 +170,7 @@
 
             <ScrollViewer x:Name="trackBlocksScroller" Grid.Column="2" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible"
                           PanningMode="Both"
-                          ScrollChanged="trackBlocksScroller_ScrollChanged">
+                          ScrollChanged="trackBlocksScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown">
                 <Grid Width="{Binding TimelineWidth}" HorizontalAlignment="Left">
 
                     <ItemsControl ItemsSource="{Binding Tracks}">

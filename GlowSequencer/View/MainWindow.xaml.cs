@@ -38,6 +38,8 @@ namespace GlowSequencer.View
         private const int DRAG_START_END_PIXEl_WINDOW = 6;
         private const int DRAG_START_END_PIXEl_WINDOW_TOUCH = 12;
         private const double TIMELINE_TRACK_HEIGHT = 70;
+        private const double TIMELINE_CURSOR_PADDING_LEFT_PX = 1;
+        private const double TIMELINE_CURSOR_PADDING_RIGHT_PX = 3;
 
 
         private MainViewModel main;
@@ -59,6 +61,7 @@ namespace GlowSequencer.View
             main = (MainViewModel)DataContext;
 
             sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
+            timeline.Focus();
         }
 
         private void trackLabelsScroller_ScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -531,40 +534,84 @@ namespace GlowSequencer.View
         }
 
 
-        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void TimelineScrollers_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.OriginalSource is TextBox || e.OriginalSource is ComboBox || e.OriginalSource is CheckBox || e.OriginalSource is Slider || e.OriginalSource is MenuItem)
-                return;
-
             switch (e.Key)
             {
                 case Key.Home:
-                    trackBlocksScroller.ScrollToLeftEnd();
-                    sequencer.CursorPosition = 0;
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                    {
+                        sequencer.SelectedTrack = sequencer.Tracks[0];
+                        ScrollSelectedTrackIntoView();
+                    }
+                    else
+                    {
+                        sequencer.CursorPosition = 0;
+                        ScrollCursorIntoView();
+                    }
                     e.Handled = true;
                     break;
                 case Key.End:
-                    trackBlocksScroller.ScrollToRightEnd();
-                    sequencer.CursorPosition = sequencer.AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0);
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                    {
+                        sequencer.SelectedTrack = sequencer.Tracks[sequencer.Tracks.Count];
+                        ScrollSelectedTrackIntoView();
+                    }
+                    else
+                    {
+                        sequencer.CursorPixelPosition = timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX;
+                        ScrollCursorIntoView();
+                    }
                     e.Handled = true;
                     break;
                 case Key.Left:
-                    sequencer.CursorPosition -= (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ? 2 / sequencer.TimePixelScale : sequencer.GridInterval);
+                    sequencer.CursorPosition =
+                        (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
+                            sequencer.CursorPosition - 2 / sequencer.TimePixelScale
+                            : SnapValue(sequencer.CursorPosition - sequencer.GridInterval * 0.51f));
+
+                    ScrollCursorIntoView();
                     e.Handled = true;
                     break;
                 case Key.Right:
-                    sequencer.CursorPosition += (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ? 2 / sequencer.TimePixelScale : sequencer.GridInterval);
+                    sequencer.CursorPosition = 
+                        (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
+                            sequencer.CursorPosition + 2 / sequencer.TimePixelScale
+                            : SnapValue(sequencer.CursorPosition + sequencer.GridInterval * 0.51f));
+
+                    if (sequencer.CursorPixelPosition > timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
+                        sequencer.CursorPixelPosition = timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX;
+                    ScrollCursorIntoView();
                     e.Handled = true;
                     break;
                 case Key.Up:
                     sequencer.SelectRelativeTrack(-1);
+                    ScrollSelectedTrackIntoView();
                     e.Handled = true;
                     break;
                 case Key.Down:
                     sequencer.SelectRelativeTrack(+1);
+                    ScrollSelectedTrackIntoView();
                     e.Handled = true;
                     break;
             }
+        }
+
+        private void ScrollCursorIntoView()
+        {
+            if (sequencer.CursorPixelPosition < trackBlocksScroller.HorizontalOffset + TIMELINE_CURSOR_PADDING_LEFT_PX)
+                trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - TIMELINE_CURSOR_PADDING_LEFT_PX);
+            else if (sequencer.CursorPixelPosition > trackBlocksScroller.HorizontalOffset + trackBlocksScroller.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
+                trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - trackBlocksScroller.ActualWidth + TIMELINE_CURSOR_PADDING_RIGHT_PX);
+        }
+
+        private void ScrollSelectedTrackIntoView()
+        {
+            int i = sequencer.SelectedTrack.GetIndex();
+            if (i * TIMELINE_TRACK_HEIGHT < trackBlocksScroller.VerticalOffset)
+                trackBlocksScroller.ScrollToVerticalOffset(i * TIMELINE_TRACK_HEIGHT);
+            else if((i+1) * TIMELINE_TRACK_HEIGHT > trackBlocksScroller.VerticalOffset + trackBlocksScroller.ActualHeight)
+                trackBlocksScroller.ScrollToVerticalOffset((i+1) * TIMELINE_TRACK_HEIGHT - trackBlocksScroller.ActualHeight);
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
