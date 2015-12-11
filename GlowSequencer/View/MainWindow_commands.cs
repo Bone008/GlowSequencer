@@ -14,6 +14,7 @@ namespace GlowSequencer.View
     public static class SequencerCommands
     {
         public static readonly RoutedUICommand ExportGlo = new RoutedUICommand("", "ExportGlo", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
+        public static readonly RoutedUICommand ShowTransferWindow = new RoutedUICommand("", "ShowTransferWindow", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
 
         public static readonly RoutedCommand InsertBlock = new RoutedCommand();
         public static readonly RoutedUICommand GroupBlocks = new RoutedUICommand("", "GroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control) });
@@ -201,6 +202,11 @@ namespace GlowSequencer.View
                 if (main.ExportProgram(diag.FileName))
                     MessageBox.Show(this, "Done!");
             }
+        }
+
+        private void CommandBinding_ExecuteShowTransferWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            new TransferWindow().Show();
         }
 
 
