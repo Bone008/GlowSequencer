@@ -17,6 +17,19 @@ namespace GlowSequencer
     /// </summary>
     public partial class App : Application
     {
+
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            if(e.Args.Length > 0)
+            {
+                string fileToLoad = e.Args[0];
+                
+                var main = (ViewModel.MainViewModel) Resources["vm_Main"];
+                main.OpenDocument(fileToLoad);
+            }
+        }
+
+
         //private void TrackCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         //{
         //    CheckBox cb = (CheckBox)sender;

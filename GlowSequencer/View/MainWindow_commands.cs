@@ -130,8 +130,8 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteOpen(object sender, ExecutedRoutedEventArgs e)
         {
             var diag = new Microsoft.Win32.OpenFileDialog();
-            diag.DefaultExt = ".gls";
-            diag.Filter = "Glow Sequence (*.gls)|*.gls|All files|*.*";
+            diag.DefaultExt = FileSerializer.EXTENSION_PROJECT;
+            diag.Filter = string.Format("Glow Sequence (*{0})|*{0}|All files|*.*", FileSerializer.EXTENSION_PROJECT);
             diag.FilterIndex = 0;
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
@@ -170,8 +170,8 @@ namespace GlowSequencer.View
             var diag = new Microsoft.Win32.SaveFileDialog();
             diag.FileName = main.DocumentName;
             diag.AddExtension = true;
-            diag.DefaultExt = ".gls";
-            diag.Filter = "Glow Sequence (*.gls)|*.gls";
+            diag.DefaultExt = FileSerializer.EXTENSION_PROJECT;
+            diag.Filter = string.Format("Glow Sequence (*{0})|*{0}", FileSerializer.EXTENSION_PROJECT);
             diag.FilterIndex = 0;
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
@@ -186,14 +186,14 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteExportGlo(object sender, ExecutedRoutedEventArgs e)
         {
             string exportName = main.DocumentName;
-            if (exportName.EndsWith(".gls", StringComparison.InvariantCultureIgnoreCase))
-                exportName = exportName.Substring(0, exportName.Length - 4);
+            if (exportName.EndsWith(FileSerializer.EXTENSION_EXPORT, StringComparison.InvariantCultureIgnoreCase))
+                exportName = exportName.Substring(0, exportName.Length - FileSerializer.EXTENSION_EXPORT.Length);
 
             var diag = new Microsoft.Win32.SaveFileDialog();
-            diag.FileName = exportName + ".glo";
+            diag.FileName = exportName + FileSerializer.EXTENSION_EXPORT;
             diag.AddExtension = true;
-            diag.DefaultExt = ".glo";
-            diag.Filter = "Aerotech Ultimate Program (*.glo)|*.glo";
+            diag.DefaultExt = FileSerializer.EXTENSION_EXPORT;
+            diag.Filter = string.Format("Aerotech Ultimate Program (*{0})|*{0}", FileSerializer.EXTENSION_EXPORT);
             diag.FilterIndex = 0;
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))

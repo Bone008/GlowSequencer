@@ -51,29 +51,40 @@ namespace GlowSequencer.ViewModel
 #endif
         }
 
-        public void OpenDocument(string file)
+        public bool OpenDocument(string file)
         {
             Timeline timeline = FileSerializer.LoadFromFile(file);
+            if(timeline == null)
+            {
+                OpenNewDocument();
+                return false;
+            }
+
             FilePath = file;
             CurrentDocument = new SequencerViewModel(timeline) { CurrentWinWidth = TransferWinWidth() };
 
             IsDirty = false;
             CurrentDocument.ActionManager.CollectionChanged += (_, __) => IsDirty = true;
+
+            return true;
         }
 
-        public void SaveDocument()
+        public bool SaveDocument()
         {
             if (FilePath == null)
                 throw new InvalidOperationException("quicksave not available");
 
-            SaveDocumentAs(FilePath);
+            return SaveDocumentAs(FilePath);
         }
 
-        public void SaveDocumentAs(string file)
+        public bool SaveDocumentAs(string file)
         {
-            FileSerializer.SaveToFile(CurrentDocument.GetModel(), file);
+            if (!FileSerializer.SaveToFile(CurrentDocument.GetModel(), file))
+                return false;
+
             FilePath = file;
             IsDirty = false;
+            return true;
         }
 
 

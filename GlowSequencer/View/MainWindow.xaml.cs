@@ -286,7 +286,7 @@ namespace GlowSequencer.View
         {
             float deltaT = (float)(delta.X / sequencer.TimePixelScale);
 
-            
+
             DraggedBlockData principalData = draggedBlocks.Single(db => db.block == principal);
 
             // adjust delta according to constraints
@@ -607,6 +607,38 @@ namespace GlowSequencer.View
 
             MessageBox.Show(binding.ResolvedSourcePropertyName + " = " + binding.ResolvedSource);
 #endif
+        }
+
+
+        // support for dropping in files
+
+        private void Window_Drag(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1 && files[0].EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
+                    e.Effects = DragDropEffects.Move;
+                else
+                    e.Effects = DragDropEffects.None;
+
+                e.Handled = true;
+            }
+        }
+
+        private void Window_Drop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+                return;
+
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+            if (files.Length != 1 || !files[0].EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
+                return;
+
+            if (main.IsDirty && !ConfirmUnchanged())
+                return;
+            main.OpenDocument(files[0]);
         }
 
     }

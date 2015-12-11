@@ -8,6 +8,7 @@
         Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="600" Width="960"
         SizeChanged="Window_SizeChanged" Closing="Window_Closing"
         PreviewKeyDown="Window_PreviewKeyDown"
+        AllowDrop="True" DragOver="Window_Drag" Drop="Window_Drop"
         DataContext="{StaticResource vm_Main}">
 
     <Window.CommandBindings>

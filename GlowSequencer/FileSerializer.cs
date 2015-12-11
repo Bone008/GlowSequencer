@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,22 +13,43 @@ namespace GlowSequencer
     public class FileSerializer
     {
         private const int TICKS_PER_SECOND = 100;
+        public const string EXTENSION_PROJECT = ".gls";
+        public const string EXTENSION_EXPORT = ".glo";
 
         public static Timeline LoadFromFile(string filename)
         {
+            try
+            {
+                if (!File.Exists(filename))
+                {
+                    System.Windows.MessageBox.Show("The file \"" + filename + "\" was not found!", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                    return null;
+                }
 
-            XDocument doc = XDocument.Load(filename);
-            return Timeline.FromXML(doc.Root.Element("timeline"));
+                XDocument doc = XDocument.Load(filename);
+                return Timeline.FromXML(doc.Root.Element("timeline"));
+            }
+            catch (IOException e)
+            {
+                System.Windows.MessageBox.Show("The file \"" + filename + "\" could not be opened!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return null;
+            }
         }
 
-        public static void SaveToFile(Timeline timeline, string filename)
+        public static bool SaveToFile(Timeline timeline, string filename)
         {
             XDocument doc = new XDocument();
             doc.Add(new XElement("sequence",
                 new XElement("version", GetProgramVersion()),
                 timeline.ToXML()
             ));
-            doc.Save(filename);
+
+            try { doc.Save(filename); return true; }
+            catch (IOException e)
+            {
+                System.Windows.MessageBox.Show("Could not save to file \"" + filename + "\"!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return false;
+            }
         }
 
 
@@ -141,7 +163,7 @@ namespace GlowSequencer
 
             // samples where the block does not change are redundant
             samples = samples.Where(s => s.blockBefore != s.blockAfter).ToArray();
-            
+
             // make absolutely sure all colors are in [0..255] range
             foreach (var s in samples)
             {
