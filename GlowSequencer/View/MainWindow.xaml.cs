@@ -522,7 +522,7 @@ namespace GlowSequencer.View
 
             sequencer.SelectBlocks(sequencer.AllBlocks
                 .Where(b => timeRangeStart <= b.EndTimeOccupied && timeRangeEnd >= b.StartTime
-                            && trackRangeStart <= b.GetModel().Tracks.Max(t => t.GetIndex()) && trackRangeEnd > b.GetModel().Tracks.Min(t => t.GetIndex())
+                            && b.GetModel().Tracks.Select(t => t.GetIndex()).Any(i => trackRangeStart <= i && trackRangeEnd > i)
                 ),
                 selectionIsAdditiveDrag
             );
