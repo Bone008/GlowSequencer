@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace GlowSequencer.Model
 {
+    // used by the deprecated export algorithm
     public class GloSequenceContext
     {
         private const int TICKS_PER_SECOND = 100;
@@ -125,7 +126,7 @@ namespace GlowSequencer.Model
                         i--;
                         modified = true;
 
-                        // TODO insert comment stating the unmerged delays
+                        // TO_DO insert comment stating the unmerged delays
                     }
                     else if (current is GloRampCommand && next is GloColorCommand && ((GloRampCommand)current).TargetColor == ((GloColorCommand)next).Color)
                     {

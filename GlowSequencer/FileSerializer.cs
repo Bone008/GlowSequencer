@@ -94,18 +94,9 @@ namespace GlowSequencer
         {
             foreach (var track in timeline.Tracks)
             {
-                // Algorithm "back-to-front rendering" := every block paints all affected samples with its data
-                // Each sample stores "color up to this point" and "color from this point forward" along with the block that set the respective half.
-                // After painting is complete, all samples that just pass through a single block are redundant.
-
-                Sample[] samples = CollectSamples(track.Blocks);
-                GloCommandContainer commandContainer = SamplesToCommands(samples);
-                OptimizeCommands(commandContainer.Commands);
-
-                // write to file
-                string sanitizedTrackName = System.IO.Path.GetInvalidFileNameChars().Aggregate(track.Label, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
+                string sanitizedTrackName = Path.GetInvalidFileNameChars().Aggregate(track.Label, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
                 string file = filenameBase + sanitizedTrackName + filenameSuffix;
-                WriteCommands(commandContainer, file);
+                ExportTrack(track, file);
             }
 
 
@@ -134,6 +125,21 @@ namespace GlowSequencer
 
             return true;
         }
+
+        public static void ExportTrack(Track track, string filename)
+        {
+            // Algorithm "back-to-front rendering" := every block paints all affected samples with its data
+            // Each sample stores "color up to this point" and "color from this point forward" along with the block that set the respective half.
+            // After painting is complete, all samples that just pass through a single block are redundant.
+
+            Sample[] samples = CollectSamples(track.Blocks);
+            GloCommandContainer commandContainer = SamplesToCommands(samples);
+            OptimizeCommands(commandContainer.Commands);
+
+            // write to file
+            WriteCommands(commandContainer, filename);
+        }
+
 
         private static Sample[] CollectSamples(IEnumerable<Block> blocks)
         {

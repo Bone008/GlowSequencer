@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,6 +18,16 @@ namespace GlowSequencer
     /// </summary>
     public partial class App : Application
     {
+        public const string FILENAME_TRANSFER_SETTINGS = "transfer_settings.xml";
+
+        public static string GetUserDataDir(bool create = true)
+        {
+            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GlowSequencer");
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            return dir;
+        }
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {

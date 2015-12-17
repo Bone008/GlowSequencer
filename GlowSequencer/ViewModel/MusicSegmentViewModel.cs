@@ -22,7 +22,6 @@ namespace GlowSequencer.ViewModel
         public TimeSpan TimeOrigin { get { return TimeSpan.FromSeconds(_model.TimeOrigin); } set { _model.TimeOrigin = (float)value.TotalSeconds; } }
 
         public bool IsReadOnly { get { return _model.IsReadOnly; } }
-        [Obsolete]
         public bool IsDefault { get { return _model.IsDefault; } }
 
         public ReadOnlyContinuousCollection<object> ReferringBlocksDummies { get; private set; }

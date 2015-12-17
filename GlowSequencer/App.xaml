@@ -45,6 +45,15 @@
             <Setter Property="Padding" Value="10,5"/>
         </Style>
 
+        <Style x:Key="s_FormLabelWide" TargetType="Label" BasedOn="{StaticResource s_FormLabel}">
+            <Setter Property="Width" Value="180"/>
+        </Style>
+        
+        <Style x:Key="s_FormRow" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Margin" Value="0,2" />
+        </Style>
+
 
         <Style x:Key="s_TimelineTrackRow" TargetType="{x:Type Border}">
             <Style.Triggers>
@@ -231,15 +240,15 @@
 
                 <DataTemplate x:Key="PropertiesRamp">
                     <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="Start color:" Style="{StaticResource s_FormLabel}"/>
                             <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="End color:" Style="{StaticResource s_FormLabel}"/>
                             <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="" Style="{StaticResource s_FormLabel}"/>
                             <Button Content="Swap" Width="60" Command="view:SequencerCommands.SwapRampColors" CommandParameter="{Binding}" />
                         </StackPanel>
@@ -248,7 +257,7 @@
 
                 <DataTemplate x:Key="PropertiesLoop">
                     <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="Repetitions:" Style="{StaticResource s_FormLabel}"/>
                             <TextBox Width="50" HorizontalContentAlignment="Right" Text="{Binding Repetitions, TargetNullValue='?'}" />
                         </StackPanel>
@@ -292,20 +301,20 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical" Margin="0,0,0,5">
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="Start time:" Style="{StaticResource s_FormLabel}"/>
                             <view:TimeUnitEditControl x:Name="editStartTime" Value="{Binding StartTimeComplex}" ActiveUnit="0"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="End time:" Style="{StaticResource s_FormLabel}"/>
                             <view:TimeUnitEditControl Value="{Binding EndTimeComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="Duration:" Style="{StaticResource s_FormLabel}"/>
                             <view:TimeUnitEditControl Value="{Binding DurationComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="" Style="{StaticResource s_FormLabel}"/>
                             <CheckBox Content="Synchronize units" Margin="85,0,0,0" VerticalAlignment="Center" IsChecked="True" IsEnabled="False"/>
                         </StackPanel>

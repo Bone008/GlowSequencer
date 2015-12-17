@@ -67,7 +67,7 @@
                 <MenuItem Header="S_ave session as ..." Command="ApplicationCommands.SaveAs"/>
                 <Separator />
                 <MenuItem Header="_Export *.glo files ..." Command="local:SequencerCommands.ExportGlo"/>
-                <MenuItem Header="Transfer to equipment ..." Command="local:SequencerCommands.ShowTransferWindow"/>
+                <MenuItem Header="_Transfer to equipment ..." Command="local:SequencerCommands.ShowTransferWindow"/>
                 <Separator />
                 <MenuItem Header="E_xit" Command="ApplicationCommands.Close"/>
             </MenuItem>

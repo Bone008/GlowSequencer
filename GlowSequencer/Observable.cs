@@ -24,8 +24,11 @@ namespace GlowSequencer
             }
         }
 
-        protected void Notify(string propertyName)
+        protected void Notify([CallerMemberName] string propertyName = null)
         {
+            if (propertyName == null)
+                throw new ArgumentNullException("missing property to notify");
+
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }

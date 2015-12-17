@@ -74,6 +74,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsInput">
+      <HintPath>..\packages\WindowsInput.0.2.0.0\lib\net20\WindowsInput.dll</HintPath>
+    </Reference>
     <Reference Include="Xceed.Wpf.Toolkit">
       <HintPath>..\packages\Extended.Wpf.Toolkit.2.5\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
@@ -92,6 +95,8 @@
     <Compile Include="Model\GroupBlock.cs" />
     <Compile Include="Model\LoopBlock.cs" />
     <Compile Include="Model\SubsequenceBlock.cs" />
+    <Compile Include="TransferToEquipmentController.cs" />
+    <Compile Include="TransferToEquipmentSettings.cs" />
     <Compile Include="Util\InvertedValueConverter.cs" />
     <Compile Include="Util\MathUtil.cs" />
     <Compile Include="Util\TextFieldBehavior.cs" />
@@ -137,6 +142,7 @@
     <Compile Include="View\TimeUnitEditControl.xaml.cs">
       <DependentUpon>TimeUnitEditControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\TransferViewModel.cs" />
     <Compile Include="View\TransferWindow.xaml.cs">
       <DependentUpon>TransferWindow.xaml</DependentUpon>
     </Compile>

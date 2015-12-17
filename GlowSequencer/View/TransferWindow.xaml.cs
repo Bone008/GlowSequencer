@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GlowSequencer.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,19 +20,46 @@ namespace GlowSequencer.View
     /// </summary>
     public partial class TransferWindow : Window
     {
-        public TransferWindow()
+        private TransferViewModel vm;
+
+        public TransferWindow(MainViewModel main)
         {
             InitializeComponent();
+            DataContext = vm = new TransferViewModel(main);
+        }
+
+        private void transferredTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var items = transferredTracks.SelectedItems;
+            vm.SelectedTracks = items.Cast<TrackViewModel>().ToList();
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            vm.CancelTransfer();
         }
 
-        private void Start_Click(object sender, RoutedEventArgs e)
+        private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("TODO");
+            await vm.StartTransferAsync();
         }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ((TextBox)sender).ScrollToEnd();
+        }
+
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            transferredTracks.SelectAll();
+
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (vm.IsTransferInProgress)
+                vm.CancelTransfer();
+        }
+
     }
 }
