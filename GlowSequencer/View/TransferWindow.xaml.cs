@@ -52,7 +52,11 @@ namespace GlowSequencer.View
         private void SelectAll_Click(object sender, RoutedEventArgs e)
         {
             transferredTracks.SelectAll();
+        }
 
+        private void ResetAdvanced_Click(object sender, RoutedEventArgs e)
+        {
+            vm.ResetAdvancedSettings();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

@@ -19,9 +19,6 @@ namespace GlowSequencer
         }
 
         private const string GLO_SUBDIR_NAME = "___tmp";
-        private const int DELAY_BETWWEN_KEYS = 150;
-        private const int DELAY_FOR_UPLOAD = 1500;
-        private const int DELAY_BEFORE_START = 5000;
 
         private TransferToEquipmentSettings settings;
         private IList<Model.Track> tracks;
@@ -29,6 +26,7 @@ namespace GlowSequencer
         // runtime state
         private Process aerotechProc = null;
         private InputSimulator inputSim = null;
+        private bool success = false;
 
         public TransferToEquipmentController(TransferToEquipmentSettings persistedSettings, IList<Model.Track> tracks)
         {
@@ -57,7 +55,7 @@ namespace GlowSequencer
 
                 log.Report("Starting Glo Ultimate App ...");
                 aerotechProc = await Task.Run((Func<Process>)LaunchAerotechProgram, cancel);
-                await Task.Delay(DELAY_BEFORE_START, cancel);
+                await Task.Delay(settings.DelayBeforeStart, cancel);
 
                 ReportProgress(progress, TaskStage.OpenProgram);
 
@@ -65,13 +63,13 @@ namespace GlowSequencer
 
                 log.Report("Navigating to directory ...");
                 Press(VirtualKeyCode.F8);
-                await Task.Delay(DELAY_BETWWEN_KEYS);
+                await Task.Delay(settings.DelayBetweenKeys);
                 Press(VirtualKeyCode.DOWN);
-                await Task.Delay(DELAY_BETWWEN_KEYS);
+                await Task.Delay(settings.DelayBetweenKeys);
                 Press(VirtualKeyCode.RETURN);
-                await Task.Delay(DELAY_BETWWEN_KEYS);
+                await Task.Delay(settings.DelayBetweenKeys);
                 Press(VirtualKeyCode.ESCAPE);
-                await Task.Delay(DELAY_BETWWEN_KEYS);
+                await Task.Delay(settings.DelayBetweenKeys);
 
                 ReportProgress(progress, TaskStage.UploadSequences, 1, tracks.Count + 1);
 
@@ -80,13 +78,13 @@ namespace GlowSequencer
                     log.Report("Uploading track \"" + tracks[i].Label + "\" ...");
 
                     Press(VirtualKeyCode.F8);
-                    await Task.Delay(DELAY_BETWWEN_KEYS, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys, cancel);
                     Press(VirtualKeyCode.DOWN);
-                    await Task.Delay(DELAY_BETWWEN_KEYS, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys, cancel);
                     Press(VirtualKeyCode.RETURN);
-                    await Task.Delay(DELAY_BETWWEN_KEYS + DELAY_FOR_UPLOAD, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys + settings.DelayForUpload, cancel);
                     Press(VirtualKeyCode.DOWN);
-                    await Task.Delay(DELAY_BETWWEN_KEYS, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys, cancel);
 
                     ReportProgress(progress, TaskStage.UploadSequences, i + 2, tracks.Count + 1);
                 }
@@ -95,13 +93,14 @@ namespace GlowSequencer
                 {
                     log.Report("Starting the sequence ...");
                     Press(VirtualKeyCode.F12);
-                    await Task.Delay(DELAY_BETWWEN_KEYS, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys, cancel);
                     Press(VirtualKeyCode.F5);
-                    await Task.Delay(3 * DELAY_BETWWEN_KEYS, cancel);
+                    await Task.Delay(3 * settings.DelayBetweenKeys, cancel);
                 }
 
                 ReportProgress(progress, TaskStage.Completed);
 
+                success = true;
                 Cleanup();
                 log.Report("Done!" + Environment.NewLine);
             }
@@ -132,16 +131,19 @@ namespace GlowSequencer
 
         private void Press(VirtualKeyCode key)
         {
+            if (aerotechProc.HasExited)
+                throw new InvalidOperationException("Process no longer available.");
+
             SetForegroundWindow(aerotechProc.MainWindowHandle);
             inputSim.Keyboard.KeyPress(key);
         }
 
         private void Cleanup()
         {
-            if (aerotechProc != null && !aerotechProc.HasExited)
+            if (aerotechProc != null)
             {
-                if (settings.CloseProgramAfterTransfer)
-                    try { aerotechProc.CloseMainWindow(); /* not sure if we need to care if the process actually terminated */ }
+                if (settings.CloseProgramAfterTransfer || !success)
+                    try { aerotechProc.CloseMainWindow(); }
                     catch (InvalidOperationException) { /* ignore: process/window already gone */ }
 
                 aerotechProc = null;

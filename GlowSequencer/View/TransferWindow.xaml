@@ -33,7 +33,7 @@
                  SelectionChanged="transferredTracks_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:TrackViewModel}">
-                    <TextBlock Text="{Binding Label}" />
+                    <CheckBox Content="{Binding Label}" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}, Path=IsSelected}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
@@ -41,36 +41,42 @@
 
         <Expander Header="Advanced settings" Margin="0,10" BorderBrush="#FFABADB3" BorderThickness="1" Padding="5"
                   IsEnabled="{Binding IsTransferIdle}">
-            <StackPanel Orientation="Vertical">
-                <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for Glo-Ultimate to recognize all clubs after startup.">
-                    <Label Style="{StaticResource s_FormLabelWide}" Content="Delay after program start:" />
-                    <TextBox Width="50" HorizontalContentAlignment="Right" />
-                    <Label>ms</Label>
+            <Grid>
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for Glo-Ultimate to recognize all clubs after startup.">
+                        <Label Style="{StaticResource s_FormLabelWide}" Content="Delay after program start:" />
+                        <TextBox Text="{Binding DelayBeforeStart}" Width="50" HorizontalContentAlignment="Right" />
+                        <Label Content="ms"/>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for an upload to complete before continuing.">
+                        <Label Style="{StaticResource s_FormLabelWide}" Content="Delay for uploads:" />
+                        <TextBox Text="{Binding DelayForUpload}" Width="50" HorizontalContentAlignment="Right" />
+                        <Label Content="ms"/>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait between each simulated key press.">
+                        <Label Style="{StaticResource s_FormLabelWide}" Content="Delay between key presses:" />
+                        <TextBox Text="{Binding DelayBetweenKeys}" Width="50" HorizontalContentAlignment="Right" />
+                        <Label Content="ms"/>
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for an upload to complete before continuing.">
-                    <Label Style="{StaticResource s_FormLabelWide}" Content="Delay for uploads:" />
-                    <TextBox Width="50" HorizontalContentAlignment="Right" />
-                    <Label>ms</Label>
-                </StackPanel>
-                <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait between each simulated key press.">
-                    <Label Style="{StaticResource s_FormLabelWide}" Content="Delay between key presses:" />
-                    <TextBox Width="50" HorizontalContentAlignment="Right" />
-                    <Label>ms</Label>
-                </StackPanel>
-            </StackPanel>
+
+                <Button Content="Reset" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5" Padding="15,1" Click="ResetAdvanced_Click" />
+            </Grid>
         </Expander>
 
-        <TextBlock HorizontalAlignment="Right" TextAlignment="Right">
+        <CheckBox Margin="0,5" Content="Start sequence automatically after successful transfer."
+                  IsChecked="{Binding StartAutomagicallyAfterTransfer}" IsEnabled="{Binding IsTransferIdle}" />
+        <CheckBox Margin="0,5" Content="Close Glo-Ultimate App after successful transfer."
+                  IsChecked="{Binding CloseProgramAfterTransfer}" IsEnabled="{Binding IsTransferIdle}" />
+
+
+        <TextBlock TextWrapping="Wrap" HorizontalAlignment="Right" TextAlignment="Right">
             <Run>All equipment has to be connected to the computer before starting the transfer.</Run>
             <LineBreak />
             <Run>Please do not press any buttons while the Aerotech software is running.</Run>
         </TextBlock>
-
-        <CheckBox Margin="0,5" Content="Start sequence automatically after transfer."
-                  IsChecked="{Binding CloseProgramAfterTransfer}" IsEnabled="{Binding IsTransferIdle}" />
-        <CheckBox Margin="0,5" Content="Close Glo-Ultimate App after transfer."
-                  IsChecked="{Binding StartAutomagicallyAfterTransfer}" IsEnabled="{Binding IsTransferIdle}" />
-
+        
+        
         <Button Width="100" Height="30" HorizontalAlignment="Right" Margin="0,10"
                     Content="Cancel" Click="Cancel_Click"
                     Visibility="{Binding IsTransferInProgress, Converter={StaticResource conv_BoolToVisibility}}" />
@@ -84,7 +90,7 @@
 
         <Label>Log:</Label>
         <TextBox IsReadOnly="True" Height="100" Text="{Binding LogOutput, Mode=OneWay}" VerticalContentAlignment="Top"
-                 HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" TextChanged="TextBox_TextChanged" />
+                 TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" TextChanged="TextBox_TextChanged" />
     </StackPanel>
 
     <!--<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="0,10.2,-0.4,10.4">

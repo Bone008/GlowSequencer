@@ -18,7 +18,6 @@ namespace GlowSequencer.ViewModel
         private TransferToEquipmentSettings persistedSettings = new TransferToEquipmentSettings();
         private ICollection<TrackViewModel> _selectedTracks = new List<TrackViewModel>(0);
 
-        // transient data
         private float _progress = 0;
         private StringBuilder _logOutput = new StringBuilder();
         private TransferToEquipmentController activeTransfer = null;
@@ -27,6 +26,9 @@ namespace GlowSequencer.ViewModel
         public string AerotechAppExePath { get { return persistedSettings.AerotechAppExePath; } set { persistedSettings.AerotechAppExePath = value; Notify(); } }
         public bool StartAutomagicallyAfterTransfer { get { return persistedSettings.StartAutomagicallyAfterTransfer; } set { persistedSettings.StartAutomagicallyAfterTransfer = value; Notify(); } }
         public bool CloseProgramAfterTransfer { get { return persistedSettings.CloseProgramAfterTransfer; } set { persistedSettings.CloseProgramAfterTransfer = value; Notify(); } }
+        public int DelayBeforeStart { get { return persistedSettings.DelayBeforeStart; } set { persistedSettings.DelayBeforeStart = value; Notify(); } }
+        public int DelayForUpload { get { return persistedSettings.DelayForUpload; } set { persistedSettings.DelayForUpload = value; Notify(); } }
+        public int DelayBetweenKeys { get { return persistedSettings.DelayBetweenKeys; } set { persistedSettings.DelayBetweenKeys = value; Notify(); } }
 
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks { get { return main.CurrentDocument.Tracks; } }
         public ICollection<TrackViewModel> SelectedTracks { get { return _selectedTracks; } set { SetProperty(ref _selectedTracks, value); } }
@@ -83,6 +85,14 @@ namespace GlowSequencer.ViewModel
         {
             if (transferCancel != null)
                 transferCancel.Cancel();
+        }
+
+        public void ResetAdvancedSettings()
+        {
+            var def = new TransferToEquipmentSettings();
+            DelayBeforeStart = def.DelayBeforeStart;
+            DelayBetweenKeys = def.DelayBetweenKeys;
+            DelayForUpload = def.DelayForUpload;
         }
 
 
