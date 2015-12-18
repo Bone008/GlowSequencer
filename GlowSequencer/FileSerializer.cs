@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace GlowSequencer
@@ -26,12 +27,26 @@ namespace GlowSequencer
                     return null;
                 }
 
-                XDocument doc = XDocument.Load(filename);
-                return Timeline.FromXML(doc.Root.Element("timeline"));
+                XDocument doc;
+                try
+                {
+                    using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Open), CompressionMode.Decompress))
+                        doc = XDocument.Load(zipStream);
+                }
+                // fallback for old, uncompressed save files
+                catch (InvalidDataException) { doc = XDocument.Load(filename); }
+                
+                Timeline timeline = Timeline.FromXML(doc.Root.Element("timeline"));
+                return timeline;
             }
             catch (IOException e)
             {
                 System.Windows.MessageBox.Show("The file \"" + filename + "\" could not be opened!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return null;
+            }
+            catch(XmlException e)
+            {
+                System.Windows.MessageBox.Show("The file \"" + filename + "\" has been corrupted!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return null;
             }
         }
@@ -44,7 +59,14 @@ namespace GlowSequencer
                 timeline.ToXML()
             ));
 
-            try { doc.Save(filename); return true; }
+            try
+            {
+                using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Create), CompressionMode.Compress))
+                {
+                    doc.Save(zipStream);
+                }
+                return true;
+            }
             catch (IOException e)
             {
                 System.Windows.MessageBox.Show("Could not save to file \"" + filename + "\"!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
