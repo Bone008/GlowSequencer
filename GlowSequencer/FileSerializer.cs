@@ -166,7 +166,7 @@ namespace GlowSequencer
         private static Sample[] CollectSamples(IEnumerable<Block> blocks)
         {
             List<PrimitiveBlock> allBlocks = blocks.SelectMany(b => b.BakePrimitive()).ToList();
-            int length = allBlocks.Max(b => b.endTime);
+            int length = allBlocks.Max(b => (int?)b.endTime) ?? 0;
 
             var samples = new Sample[length + 1];
             for (int i = 0; i < samples.Length; i++)
