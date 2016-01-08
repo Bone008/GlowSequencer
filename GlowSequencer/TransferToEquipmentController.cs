@@ -95,11 +95,24 @@ namespace GlowSequencer
                     Press(VirtualKeyCode.F12);
                     await Task.Delay(settings.DelayBetweenKeys, cancel);
                     Press(VirtualKeyCode.F5);
-                    await Task.Delay(3 * settings.DelayBetweenKeys, cancel);
                 }
 
-                ReportProgress(progress, TaskStage.Completed);
+                if (settings.StartMusicAfterTransfer)
+                {
+                    Process musicProc = settings.GetMusicProcess();
+                    if (musicProc == null)
+                        log.Report("External music program not running, unable to start music!");
+                    else
+                    {
+                        log.Report("Starting music ...");
+                        SetForegroundWindow(musicProc.MainWindowHandle);
+                        inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
+                    }
+                }
 
+                await Task.Delay(settings.DelayBetweenKeys, cancel);
+
+                ReportProgress(progress, TaskStage.Completed);
                 success = true;
                 Cleanup();
                 log.Report("Done!" + Environment.NewLine);

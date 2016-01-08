@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,8 @@ namespace GlowSequencer.ViewModel
         private TransferToEquipmentSettings persistedSettings = new TransferToEquipmentSettings();
         private ICollection<TrackViewModel> _selectedTracks = new List<TrackViewModel>(0);
 
+        private ObservableCollection<Process> _processesWithWindowsContainer = new ObservableCollection<Process>();
+
         private float _progress = 0;
         private StringBuilder _logOutput = new StringBuilder();
         private TransferToEquipmentController activeTransfer = null;
@@ -30,14 +33,34 @@ namespace GlowSequencer.ViewModel
         public int DelayForUpload { get { return persistedSettings.DelayForUpload; } set { persistedSettings.DelayForUpload = value; Notify(); } }
         public int DelayBetweenKeys { get { return persistedSettings.DelayBetweenKeys; } set { persistedSettings.DelayBetweenKeys = value; Notify(); } }
 
+
+        public bool StartMusicAfterTransfer { get { return persistedSettings.StartMusicAfterTransfer; } set { persistedSettings.StartMusicAfterTransfer = value; Notify(); } }
+        public int MusicWindowProcessId
+        {
+            get
+            {
+                return persistedSettings.GetMusicProcessId();
+            }
+            set
+            {
+                var p = Process.GetProcessById(value);
+                persistedSettings.MusicWindowProcessName = p.ProcessName;
+                persistedSettings.MusicWindowTitle = p.MainWindowTitle;
+                Notify();
+            }
+        }
+        public ObservableCollection<Process> ProcessesWithWindows { get { return _processesWithWindowsContainer; } }
+
+
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks { get { return main.CurrentDocument.Tracks; } }
         public ICollection<TrackViewModel> SelectedTracks { get { return _selectedTracks; } set { SetProperty(ref _selectedTracks, value); } }
 
-        public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && _selectedTracks.Count > 0; } }
+        public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && _selectedTracks.Count > 0 && (!StartMusicAfterTransfer || MusicWindowProcessId != 0); } }
         public bool IsTransferIdle { get { return activeTransfer == null; } }
         public bool IsTransferInProgress { get { return activeTransfer != null; } }
         public float TransferProgress { get { return _progress; } private set { SetProperty(ref _progress, value); } }
         public string LogOutput { get { return _logOutput.ToString(); } }
+
 
         public TransferViewModel(MainViewModel main)
         {
@@ -45,8 +68,11 @@ namespace GlowSequencer.ViewModel
             ForwardPropertyEvents("CurrentDocument", main, "AllTracks");
             ForwardPropertyEvents("AerotechAppExePath", this, "CanStartTransfer");
             ForwardPropertyEvents("SelectedTracks", this, "CanStartTransfer");
+            ForwardPropertyEvents("StartMusicAfterTransfer", this, "CanStartTransfer");
+            ForwardPropertyEvents("MusicWindowProcessId", this, "CanStartTransfer");
 
             LoadSettings();
+            RefreshWindowList();
         }
 
         private void AppendLog(string line)
@@ -93,6 +119,22 @@ namespace GlowSequencer.ViewModel
             DelayBeforeStart = def.DelayBeforeStart;
             DelayBetweenKeys = def.DelayBetweenKeys;
             DelayForUpload = def.DelayForUpload;
+        }
+
+        public void RefreshWindowList()
+        {
+            int selectedId = MusicWindowProcessId;
+            _processesWithWindowsContainer.Clear();
+
+            var procs = Process.GetProcesses()
+                .Where(p => p.MainWindowHandle != IntPtr.Zero && p.MainWindowTitle.Length > 0 && p.Id != Process.GetCurrentProcess().Id)
+                .OrderBy(p => p.ProcessName).ToList();
+
+            foreach (var p in procs) _processesWithWindowsContainer.Add(p);
+
+            // set the selection again
+            if (procs.Any(p => p.Id == selectedId))
+                MusicWindowProcessId = selectedId;
         }
 
 

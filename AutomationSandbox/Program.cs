@@ -100,6 +100,6 @@ namespace AutomationSandbox
 
         // Activate an application window.
         [DllImport("USER32.DLL")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }

@@ -206,7 +206,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteShowTransferWindow(object sender, ExecutedRoutedEventArgs e)
         {
-            new TransferWindow(main).Show();
+            Mastermind.OpenTransferWindow(main);
         }
 
 

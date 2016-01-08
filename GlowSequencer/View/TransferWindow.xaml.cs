@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -59,10 +60,28 @@ namespace GlowSequencer.View
             vm.ResetAdvancedSettings();
         }
 
+        private void RefreshList_Click(object sender, RoutedEventArgs e)
+        {
+            vm.RefreshWindowList();
+        }
+        private void StartAutomagically_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (!(bool)((ToggleButton)sender).IsChecked)
+                startExternalCb.IsChecked = false;
+
+            startExternalCb.IsEnabled = (bool)((ToggleButton)sender).IsChecked;
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (vm.IsTransferInProgress)
                 vm.CancelTransfer();
+        }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("activated");
+            vm.RefreshWindowList();
         }
 
     }

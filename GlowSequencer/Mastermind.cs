@@ -12,37 +12,43 @@ namespace GlowSequencer
     {
         private static MusicSegmentsWindow winMusicSegments = null;
         private static AboutWindow winAbout = null;
+        private static TransferWindow winTransfer = null;
 
-        public static void OpenMusicSegmentsWindow()
+        private static void OpenWindow<T>(ref T win, Action closeHandler) where T : Window, new()
         {
-            if (winMusicSegments == null)
-            {
-                winMusicSegments = new MusicSegmentsWindow();
-                winMusicSegments.Owner = Application.Current.MainWindow;
-                winMusicSegments.Show();
+            OpenWindow(ref win, () => new T(), closeHandler);
+        }
 
-                winMusicSegments.Closed += (sender, e) => winMusicSegments = null;
+        private static void OpenWindow<T>(ref T win, Func<T> windowConstructor, Action closeHandler) where T : Window
+        {
+            if (win == null)
+            {
+                win = windowConstructor();
+                win.Owner = Application.Current.MainWindow;
+                win.Show();
+
+                win.Closed += (sender, e) => closeHandler();
             }
             else
             {
-                winMusicSegments.Activate();
+                win.Activate();
             }
+        }
+
+
+        public static void OpenMusicSegmentsWindow()
+        {
+            OpenWindow(ref winMusicSegments, () => winMusicSegments = null);
         }
 
         public static void OpenAboutWindow()
         {
-            if (winAbout == null)
-            {
-                winAbout = new AboutWindow();
-                winAbout.Owner = Application.Current.MainWindow;
-                winAbout.Show();
+            OpenWindow(ref winAbout, () => winAbout = null);
+        }
 
-                winAbout.Closed += (sender, e) => winAbout = null;
-            }
-            else
-            {
-                winAbout.Activate();
-            }
+        public static void OpenTransferWindow(ViewModel.MainViewModel main)
+        {
+            OpenWindow(ref winTransfer, () => new TransferWindow(main), () => winTransfer = null);
         }
     }
 }
