@@ -200,6 +200,11 @@ namespace GlowSequencer.ViewModel
             return model;
         }
 
+        public virtual void ScaleDuration(float factor)
+        {
+            Duration *= factor;
+        }
+
         public virtual void OnTracksCollectionChanged()
         {
             Notify("DisplayTopOffset");

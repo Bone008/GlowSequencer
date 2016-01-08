@@ -33,7 +33,7 @@ namespace GlowSequencer.Model
         public float Bpm
         {
             get { return _bpm; }
-            set { if (IsReadOnly) throw new InvalidOperationException("readonly segment"); SetProperty(ref _bpm, value); }
+            set { if (IsReadOnly) throw new InvalidOperationException("readonly segment"); SetProperty(ref _bpm, Math.Max(1, value)); }
         }
         public int BeatsPerBar
         {

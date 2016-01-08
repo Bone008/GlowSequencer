@@ -2,6 +2,7 @@
 using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -47,7 +48,7 @@ namespace GlowSequencer.View
         public static readonly DependencyProperty GridIntervalProperty =
             DependencyProperty.Register("GridInterval", typeof(float), typeof(TimelineGrid), new FrameworkPropertyMetadata(0.0f) { AffectsRender = true });
         public static readonly DependencyProperty MusicSegmentProperty =
-            DependencyProperty.Register("MusicSegment", typeof(MusicSegmentViewModel), typeof(TimelineGrid), new FrameworkPropertyMetadata(null) { AffectsRender = true });
+            DependencyProperty.Register("MusicSegment", typeof(MusicSegmentViewModel), typeof(TimelineGrid), new FrameworkPropertyMetadata(null) { AffectsRender = true, PropertyChangedCallback = MusicSegment_Changed });
 
 
         public double GridOffset
@@ -78,6 +79,23 @@ namespace GlowSequencer.View
         {
             ClipToBounds = true;
         }
+
+        private static void MusicSegment_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            TimelineGrid grid = (TimelineGrid)d;
+
+            if (e.OldValue as MusicSegmentViewModel != null)
+                ((MusicSegmentViewModel)e.OldValue).PropertyChanged -= grid.MusicSegment_PropertyChanged;
+            if (e.NewValue as MusicSegmentViewModel != null)
+                ((MusicSegmentViewModel)e.NewValue).PropertyChanged += grid.MusicSegment_PropertyChanged;
+        }
+        
+        private void MusicSegment_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Bpm" || e.PropertyName == "BeatsPerBar" || e.PropertyName == "TimeOriginSeconds")
+                InvalidateVisual();
+        }
+
 
         protected override void OnRender(DrawingContext g)
         {

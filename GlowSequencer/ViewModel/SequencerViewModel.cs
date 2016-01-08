@@ -153,47 +153,10 @@ namespace GlowSequencer.ViewModel
             };
         }
 
-        //[Obsolete]
-        //private double CalcThickness(int n)
-        //{
-        //    int beatsPerBar = ActiveMusicSegment.BeatsPerBar;
-
-        //    float interval = GetGridInterval();
-        //    int periodBar = (int)Math.Round(1 / ActiveMusicSegment.GetBeatsPerSecond() / interval * beatsPerBar);
-
-        //    if (periodBar == 0)
-        //        return 1;
-
-        //    if (n % periodBar == 0)
-        //        return 3;
-        //    else if (periodBar >= beatsPerBar && n % (periodBar / beatsPerBar) == 0)
-        //        return 2;
-        //    else
-        //        return 1;
-        //}
-
-        // <summary>
-        // Returns the interval of the grid lines in seconds.
-        // </summary>
-        //[Obsolete]
-        //public float GetGridInterval()
-        //{
-        //    const float minWidth = 10; // this is inaccurate, but whatever
-
-        //    float pixelBerBeat = TimePixelScale / ActiveMusicSegment.GetBeatsPerSecond();
-        //    float optimalBeats = minWidth / pixelBerBeat;
-
-        //    int pow = (int)Math.Log(optimalBeats, 0.5);
-
-        //    float result = 1.0f / ActiveMusicSegment.GetBeatsPerSecond() / (float)Math.Pow(2, pow - 1);
-        //    while (result < Block.MIN_DURATION)
-        //        result *= 2;
-
-        //    return result;
-
-        //    //int pow = (int)Math.Log(TimePixelScale / minWidth, 2);
-        //    //return Math.Max(Block.MIN_DURATION, 2.0f / (float)Math.Pow(2, pow)); // this is equivalent to: minWidth / TimePixelScale, but has snapping to powers of 2
-        //}
+        public void NotifyGridInterval()
+        {
+            Notify("GridInterval");
+        }
 
         public float GetGridOffset()
         {

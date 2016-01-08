@@ -35,6 +35,16 @@ namespace GlowSequencer.ViewModel
             _children = model.Children.Select(b => BlockViewModel.FromModel(sequencer, b));
         }
 
+        public override void ScaleDuration(float factor)
+        {
+            foreach (var child in _children)
+            {
+                child.StartTime *= factor;
+                child.ScaleDuration(factor);
+            }
+            base.ScaleDuration(factor);
+        }
+
         public override void OnTracksCollectionChanged()
         {
             base.OnTracksCollectionChanged();
