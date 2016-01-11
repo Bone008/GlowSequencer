@@ -55,7 +55,7 @@ namespace GlowSequencer.ViewModel
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks { get { return main.CurrentDocument.Tracks; } }
         public ICollection<TrackViewModel> SelectedTracks { get { return _selectedTracks; } set { SetProperty(ref _selectedTracks, value); } }
 
-        public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && _selectedTracks.Count > 0 && (!StartMusicAfterTransfer || MusicWindowProcessId != 0); } }
+        public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && (!StartMusicAfterTransfer || MusicWindowProcessId != 0); } }
         public bool IsTransferIdle { get { return activeTransfer == null; } }
         public bool IsTransferInProgress { get { return activeTransfer != null; } }
         public float TransferProgress { get { return _progress; } private set { SetProperty(ref _progress, value); } }

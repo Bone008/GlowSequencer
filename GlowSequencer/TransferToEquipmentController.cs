@@ -38,18 +38,21 @@ namespace GlowSequencer
         {
             try
             {
-                log.Report("Generating glo files ...");
-                string tmpDir = Path.Combine(Path.GetDirectoryName(settings.AerotechAppExePath), GLO_SUBDIR_NAME);
-                Directory.CreateDirectory(tmpDir);
-
-                for (int i = 0; i < tracks.Count; i++)
+                if (tracks.Count > 0)
                 {
-                    await Task.Run(() =>
+                    log.Report("Generating glo files ...");
+                    string tmpDir = Path.Combine(Path.GetDirectoryName(settings.AerotechAppExePath), GLO_SUBDIR_NAME);
+                    Directory.CreateDirectory(tmpDir);
+
+                    for (int i = 0; i < tracks.Count; i++)
                     {
-                        string file = Path.Combine(tmpDir, string.Format("tmp_{0:0000}.glo", i));
-                        FileSerializer.ExportTrack(tracks[i], file);
-                    }, cancel);
-                    ReportProgress(progress, TaskStage.ExportFiles, i + 1, tracks.Count);
+                        await Task.Run(() =>
+                        {
+                            string file = Path.Combine(tmpDir, string.Format("tmp_{0:0000}.glo", i));
+                            FileSerializer.ExportTrack(tracks[i], file);
+                        }, cancel);
+                        ReportProgress(progress, TaskStage.ExportFiles, i + 1, tracks.Count);
+                    }
                 }
 
 
@@ -61,32 +64,35 @@ namespace GlowSequencer
 
                 inputSim = new InputSimulator();
 
-                log.Report("Navigating to directory ...");
-                Press(VirtualKeyCode.F8);
-                await Task.Delay(settings.DelayBetweenKeys);
-                Press(VirtualKeyCode.DOWN);
-                await Task.Delay(settings.DelayBetweenKeys);
-                Press(VirtualKeyCode.RETURN);
-                await Task.Delay(settings.DelayBetweenKeys);
-                Press(VirtualKeyCode.ESCAPE);
-                await Task.Delay(settings.DelayBetweenKeys);
-
-                ReportProgress(progress, TaskStage.UploadSequences, 1, tracks.Count + 1);
-
-                for (int i = 0; i < tracks.Count; i++)
+                if (tracks.Count > 0)
                 {
-                    log.Report("Uploading track \"" + tracks[i].Label + "\" ...");
-
+                    log.Report("Navigating to directory ...");
                     Press(VirtualKeyCode.F8);
-                    await Task.Delay(settings.DelayBetweenKeys, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys);
                     Press(VirtualKeyCode.DOWN);
-                    await Task.Delay(settings.DelayBetweenKeys, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys);
                     Press(VirtualKeyCode.RETURN);
-                    await Task.Delay(settings.DelayBetweenKeys + settings.DelayForUpload, cancel);
-                    Press(VirtualKeyCode.DOWN);
-                    await Task.Delay(settings.DelayBetweenKeys, cancel);
+                    await Task.Delay(settings.DelayBetweenKeys);
+                    Press(VirtualKeyCode.ESCAPE);
+                    await Task.Delay(settings.DelayBetweenKeys);
 
-                    ReportProgress(progress, TaskStage.UploadSequences, i + 2, tracks.Count + 1);
+                    ReportProgress(progress, TaskStage.UploadSequences, 1, tracks.Count + 1);
+
+                    for (int i = 0; i < tracks.Count; i++)
+                    {
+                        log.Report("Uploading track \"" + tracks[i].Label + "\" ...");
+
+                        Press(VirtualKeyCode.F8);
+                        await Task.Delay(settings.DelayBetweenKeys, cancel);
+                        Press(VirtualKeyCode.DOWN);
+                        await Task.Delay(settings.DelayBetweenKeys, cancel);
+                        Press(VirtualKeyCode.RETURN);
+                        await Task.Delay(settings.DelayBetweenKeys + settings.DelayForUpload, cancel);
+                        Press(VirtualKeyCode.DOWN);
+                        await Task.Delay(settings.DelayBetweenKeys, cancel);
+
+                        ReportProgress(progress, TaskStage.UploadSequences, i + 2, tracks.Count + 1);
+                    }
                 }
 
                 if(settings.StartAutomagicallyAfterTransfer)
