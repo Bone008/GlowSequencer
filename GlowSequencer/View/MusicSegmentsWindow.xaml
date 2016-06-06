@@ -76,7 +76,14 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2">
                     <Label Style="{StaticResource s_FormLabel}" Content="Time origin:"/>
-                    <TextBox Width="120" Text="{Binding TimeOrigin, Converter={StaticResource conv_TimeSpanToString}}" IsReadOnly="{Binding IsReadOnly}" />
+                    <TextBox Width="120"
+                             Text="{Binding TimeOrigin, Converter={StaticResource conv_TimeSpanToString}}"
+                             IsReadOnly="{Binding IsReadOnly}" />
+                    <CheckBox Margin="12,0,0,0" VerticalAlignment="Center"
+                              IsEnabled="{Binding IsReadOnly, Converter={StaticResource conv_Invert}}"
+                              IsChecked="{Binding Source={StaticResource vm_Main}, Path=CurrentDocument.AdjustBlocksWithSegmentChanges}"
+                              Content="Adjust blocks when changing origin or BPM" 
+                              ToolTip="When this option is enabled, all blocks assigned to this segment will be moved when you change its time origin and scaled when you change its BPM." />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2">
                     <Label Style="{StaticResource s_FormLabel}" Content="Referring blocks:"/>

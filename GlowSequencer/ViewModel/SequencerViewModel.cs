@@ -20,6 +20,7 @@ namespace GlowSequencer.ViewModel
         private MusicSegmentViewModel _activeMusicSegment;
         private bool _synchronizeActiveWithSelection = true;
         private bool _fadeAwayOtherBlocks = true;
+        private bool _adjustBlocksWithSegmentChanges = true;
         private TrackViewModel _selectedTrack = null;
 
         private float _cursorPosition = 0;
@@ -108,6 +109,7 @@ namespace GlowSequencer.ViewModel
         public MusicSegmentViewModel ActiveMusicSegment { get { return _activeMusicSegment; } set { SetProperty(ref _activeMusicSegment, value); } }
         public bool SynchronizeActiveWithSelection { get { return _synchronizeActiveWithSelection; } set { SetProperty(ref _synchronizeActiveWithSelection, value); } }
         public bool FadeAwayOtherBlocks { get { return _fadeAwayOtherBlocks; } set { SetProperty(ref _fadeAwayOtherBlocks, value); } }
+        public bool AdjustBlocksWithSegmentChanges { get { return _adjustBlocksWithSegmentChanges; } set { SetProperty(ref _adjustBlocksWithSegmentChanges, value); } }
 
 
 

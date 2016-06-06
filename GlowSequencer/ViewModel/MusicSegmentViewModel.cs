@@ -52,6 +52,10 @@ namespace GlowSequencer.ViewModel
                 sequencer.ActionManager.RecordSetProperty(model, m => m.Bpm, value);
                 value = model.Bpm; // adjust for potential clamp
 
+                // do not touch blocks if the setting is disabled
+                if (!sequencer.AdjustBlocksWithSegmentChanges)
+                    return;
+
                 // sanity check
                 if (oldValue <= 0 || value <= 0)
                     return;
@@ -92,6 +96,10 @@ namespace GlowSequencer.ViewModel
             {
                 float oldValue = model.TimeOrigin;
                 sequencer.ActionManager.RecordSetProperty(model, m => m.TimeOrigin, value);
+
+                // do not touch blocks if the setting is disabled
+                if (!sequencer.AdjustBlocksWithSegmentChanges)
+                    return;
 
                 float delta = value - oldValue;
                 bool confirmedWarning = false;
