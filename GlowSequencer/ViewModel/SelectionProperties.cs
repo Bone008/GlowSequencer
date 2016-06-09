@@ -29,7 +29,8 @@ namespace GlowSequencer.ViewModel
 
         public bool IsMusicSegmentModifiable
         {
-            get { return !selectedBlocks.OfType<GroupBlockViewModel>().Any(); }
+            //get { return !selectedBlocks.OfType<GroupBlockViewModel>().Any(); }
+            get { return true; }
         }
 
         public ReadOnlyContinuousCollection<TrackAffiliationData> TrackAffiliation { get { return sequencer.Tracks.Select(t => new TrackAffiliationData(this, t)); } }

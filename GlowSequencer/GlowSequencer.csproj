@@ -87,6 +87,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ActionManagerExtensions.cs" />
+    <Compile Include="CompatibilityHooks.cs" />
     <Compile Include="FileSerializer.cs" />
     <Compile Include="Mastermind.cs" />
     <Compile Include="Model\GloCommand.cs" />

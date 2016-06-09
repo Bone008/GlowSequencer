@@ -150,6 +150,9 @@ namespace GlowSequencer.Model
             _overlayEndColor = GloColor.FromHexString((string)element.Element("overlay-end") ?? "ffffff");
             foreach (XElement childElem in element.ElementOrEmpty("children").Elements("block"))
                 _children.Add(Block.FromXML(timeline, childElem));
+
+            
+            CompatibilityHooks.GroupBlockFromXML(this);
         }
     }
 }

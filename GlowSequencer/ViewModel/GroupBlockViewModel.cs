@@ -19,7 +19,17 @@ namespace GlowSequencer.ViewModel
         public override MusicSegmentViewModel SegmentContext
         {
             get { return base.SegmentContext; }
-            set {/* noop */}
+            set
+            {
+                if (value == null) throw new ArgumentNullException("value");
+                using (sequencer.ActionManager.CreateTransaction())
+                {
+                    sequencer.ActionManager.RecordSetProperty(model, m => m.SegmentContext, value.GetModel());
+                    model.SegmentContext = value.GetModel();
+                    foreach (var child in model.Children)
+                        sequencer.ActionManager.RecordSetProperty(child, m => m.SegmentContext, value.GetModel());
+                }
+            }
         }
 
         public override bool IsSegmentActive { get { return true; } }

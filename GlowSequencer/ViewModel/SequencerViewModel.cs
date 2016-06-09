@@ -303,8 +303,11 @@ namespace GlowSequencer.ViewModel
             if (!SelectedBlocks.Any())
                 return;
 
+            var relatedSegments = Enumerable.Select(SelectedBlocks, b => b.SegmentContext).Distinct().ToList();
+            MusicSegment segmentForGroup = (relatedSegments.Count == 1 ? relatedSegments.Single().GetModel() : model.MusicSegments[0]);
+
             var group = new LoopBlock(model);
-            //group.SegmentContext = sequencer.SelectedBlocks[0].SegmentContext.GetModel();
+            group.SegmentContext = segmentForGroup;
             group.StartTime = SelectedBlocks.Min(b => b.StartTime);
             foreach (var b in SelectedBlocks)
             {
@@ -315,7 +318,6 @@ namespace GlowSequencer.ViewModel
             {
                 DeleteSelectedBlocks();
                 ActionManager.RecordAdd(model.Blocks, group);
-                //model.Blocks.Add(group);
             }
 
             SelectBlock(BlockViewModel.FromModel(this, group), false);
