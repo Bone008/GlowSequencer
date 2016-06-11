@@ -399,7 +399,7 @@ namespace GlowSequencer.View
                 }
             }
 
-            sequencer.SelectBlocks(pastedBlocks.Select(b => BlockViewModel.FromModel(sequencer, b)), false);
+            sequencer.SelectBlocks(pastedBlocks.Select(b => BlockViewModel.FromModel(sequencer, b)), CompositionMode.None);
         }
 
         private void CommandBinding_ExecuteDelete(object sender, ExecutedRoutedEventArgs e)

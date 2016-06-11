@@ -47,7 +47,7 @@ namespace GlowSequencer.View
 
         private Point? selectionDragStart = null;
         private bool selectionIsDragging = false;
-        private bool selectionIsAdditiveDrag = false;
+        private CompositionMode selectionCompositionMode = CompositionMode.None;
 
         private BlockDragMode dragMode = BlockDragMode.None;
         private Point dragStart = new Point(); // start of the drag, relative to the timeline
@@ -127,6 +127,17 @@ namespace GlowSequencer.View
             }
         }
 
+
+        private CompositionMode CompositionModeFromKeyboard()
+        {
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+                return CompositionMode.Additive;
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                return CompositionMode.Subtractive;
+
+            return CompositionMode.None;
+        }
+
         private void timelineBlock_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
@@ -148,7 +159,6 @@ namespace GlowSequencer.View
             else
                 mode = BlockDragMode.None;
 
-            bool additive = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
 
             if (mode == BlockDragMode.None)
             {
@@ -161,12 +171,12 @@ namespace GlowSequencer.View
                 else
                     toSelect = Enumerable.Repeat(block, 1);
 
-                sequencer.SelectBlocks(toSelect, additive);
+                sequencer.SelectBlocks(toSelect, CompositionModeFromKeyboard());
             }
             else
             {
                 if (!block.IsSelected)
-                    sequencer.SelectBlock(block, additive);
+                    sequencer.SelectBlock(block, CompositionModeFromKeyboard());
 
                 // record initial information
                 dragMode = mode;
@@ -231,7 +241,7 @@ namespace GlowSequencer.View
             BlockViewModel block = (control.DataContext as BlockViewModel);
 
             if (!block.IsSelected)
-                sequencer.SelectBlock(block, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
+                sequencer.SelectBlock(block, CompositionModeFromKeyboard());
 
             var localPos = e.Manipulators.First().GetPosition(controlBlock);
 
@@ -428,9 +438,11 @@ namespace GlowSequencer.View
             sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
 
             var originalDC = ((FrameworkElement)e.OriginalSource).DataContext;
-            if (originalDC == null || !(originalDC is BlockViewModel))
+            // if the click happened on an empty part of the timeline and we are not delta selecting, select nothing
+            if (CompositionModeFromKeyboard() == CompositionMode.None
+                && (originalDC == null || !(originalDC is BlockViewModel)))
             {
-                sequencer.SelectBlock(null, Keyboard.Modifiers.HasFlag(ModifierKeys.Shift));
+                sequencer.SelectBlock(null, CompositionMode.None);
             }
 
             selectionDragStart = e.GetPosition(timeline);
@@ -464,7 +476,7 @@ namespace GlowSequencer.View
                 if (delta.LengthSquared > 10 * 10)
                 {
                     selectionIsDragging = true;
-                    selectionIsAdditiveDrag = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+                    selectionCompositionMode = CompositionModeFromKeyboard();
                     e.Handled = true;
                 }
             }
@@ -484,10 +496,10 @@ namespace GlowSequencer.View
                 selectionIsDragging = false;
                 dragSelectionRect.Visibility = Visibility.Hidden;
 
-                if (selectionIsAdditiveDrag)
+                if (selectionCompositionMode != CompositionMode.None)
                 {
-                    sequencer.ConfirmAdditiveSelection();
-                    selectionIsAdditiveDrag = false;
+                    sequencer.ConfirmSelectionDelta();
+                    selectionCompositionMode = CompositionMode.None;
                 }
             }
         }
@@ -523,11 +535,11 @@ namespace GlowSequencer.View
             int trackRangeStart = (int)Math.Floor(r.Top / TIMELINE_TRACK_HEIGHT); // inclusive
             int trackRangeEnd = (int)Math.Ceiling(r.Bottom / TIMELINE_TRACK_HEIGHT); // exclusive
 
-            sequencer.SelectBlocks(sequencer.AllBlocks
+            sequencer.SelectBlocksDelta(sequencer.AllBlocks
                 .Where(b => timeRangeStart <= b.EndTimeOccupied && timeRangeEnd >= b.StartTime
                             && b.GetModel().Tracks.Select(t => t.GetIndex()).Any(i => trackRangeStart <= i && trackRangeEnd > i)
                 ),
-                selectionIsAdditiveDrag
+                selectionCompositionMode
             );
 
             //Debug.WriteLine("[{0} - {1} | {2:0.00} - {3:0.00}]", trackRangeStart, trackRangeEnd, timeRangeStart, timeRangeEnd);

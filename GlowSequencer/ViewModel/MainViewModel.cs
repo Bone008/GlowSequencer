@@ -47,7 +47,7 @@ namespace GlowSequencer.ViewModel
 
 #if DEBUG
             timeline.SetupTestData();
-            CurrentDocument.SelectBlock(CurrentDocument.AllBlocks[0], false);
+            CurrentDocument.SelectBlock(CurrentDocument.AllBlocks[0], CompositionMode.None);
 #endif
         }
 

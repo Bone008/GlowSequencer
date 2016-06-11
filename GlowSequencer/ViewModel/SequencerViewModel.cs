@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,9 @@ using System.Windows.Media;
 
 namespace GlowSequencer.ViewModel
 {
+    public enum CompositionMode { None, Additive, Subtractive }
+
+
     public class SequencerViewModel : Observable
     {
         private Timeline model;
@@ -32,7 +36,7 @@ namespace GlowSequencer.ViewModel
         private double _currentWinWidth = 1000;
         //private double _horizontalTimelineOffset = 0;
 
-        private ISet<BlockViewModel> temporaryAdditiveSelectedBlocks = new HashSet<BlockViewModel>();
+        private ISet<BlockViewModel> temporaryDeltaSelectedBlocks = new HashSet<BlockViewModel>();
 
         public GuiLabs.Undo.ActionManager ActionManager { get; private set; }
 
@@ -144,7 +148,7 @@ namespace GlowSequencer.ViewModel
             ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", "CursorPositionComplex");
             ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
                                                           "TimelineWidth", "GridInterval");
-            ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex","GridInterval");
+            ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex", "GridInterval");
 
             ForwardPropertyEvents("CurrentWinWidth", this, "TimelineWidth");
 
@@ -178,70 +182,113 @@ namespace GlowSequencer.ViewModel
 
         // ===== Commands =====
 
-        public enum CompositionMode { None, Additive, Subtractive }
 
-        public void SelectBlock(BlockViewModel block, bool additive)
+        public void SelectBlock(BlockViewModel block, CompositionMode compositionMode)
         {
-            if (block == null && !additive)
-                SelectBlocks(Enumerable.Empty<BlockViewModel>(), false);
+            Debug.WriteLine("single select (mode: {0}, block: {1})", compositionMode, block);
 
-            else if (block != null)
+            switch (compositionMode)
             {
-                if (additive)
-                    if (block.IsSelected) SelectedBlocks.Remove(block);
-                    else SelectedBlocks.Add(block);
+                case CompositionMode.None:
+                    SelectedBlocks.Clear();
+                    if (block != null && !SelectedBlocks.Contains(block))
+                        SelectedBlocks.Add(block);
+                    break;
 
-                else
-                    SelectBlocks(Enumerable.Repeat(block, 1), false);
+                case CompositionMode.Additive:
+                    if (block != null && !SelectedBlocks.Contains(block))
+                        SelectedBlocks.Add(block);
+                    break;
+
+                case CompositionMode.Subtractive:
+                    if (block != null)
+                        SelectedBlocks.Remove(block);
+                    break;
             }
         }
 
-        public void SelectBlocks(IEnumerable<BlockViewModel> collection, bool additive)
+        // select multiple blocks, but as an atomic operation (not over time)
+        public void SelectBlocks(IEnumerable<BlockViewModel> collection, CompositionMode compositionMode)
         {
+            SelectBlocksDelta(collection, compositionMode);
+            ConfirmSelectionDelta();
+        }
+
+        public void SelectBlocksDelta(IEnumerable<BlockViewModel> collection, CompositionMode compositionMode)
+        {
+            Debug.WriteLine("multiselect (mode: {0}, blocks: {1})", compositionMode, collection.Count());
+
             var sel = SelectedBlocks;
 
-            if (additive)
+            switch (compositionMode)
             {
-                var toDeselect = temporaryAdditiveSelectedBlocks.Except(collection).ToList();
-                var toSelect = collection.Except(temporaryAdditiveSelectedBlocks).ToList();
+                case CompositionMode.None:
+                    ISet<BlockViewModel> newBlocks = new HashSet<BlockViewModel>(collection);
+                    if (newBlocks.Count == 0)
+                    {
+                        sel.Clear();
+                    }
+                    else
+                    {
+                        foreach (BlockViewModel b in sel.ToArray())
+                        {
+                            if (!newBlocks.Contains(b))
+                                sel.Remove(b);
+                        }
+                        foreach (BlockViewModel b in newBlocks)
+                        {
+                            if (!sel.Contains(b))
+                                sel.Add(b);
+                        }
+                    }
+                    break;
 
-                foreach (BlockViewModel b in toDeselect)
-                {
-                    sel.Remove(b);
-                    temporaryAdditiveSelectedBlocks.Remove(b);
-                }
-                foreach (BlockViewModel b in toSelect)
-                {
-                    sel.Add(b);
-                    temporaryAdditiveSelectedBlocks.Add(b);
-                }
-            }
-            else
-            {
-                ISet<BlockViewModel> newBlocks = new HashSet<BlockViewModel>(collection);
-                if (newBlocks.Count == 0)
-                {
-                    sel.Clear();
-                }
-                else
-                {
-                    foreach (BlockViewModel b in sel.ToArray())
+                case CompositionMode.Additive:
                     {
-                        if (!newBlocks.Contains(b))
+                        // delta set contains all blocks that are part of the additive selection
+                        // calculate necessary changes
+                        var toDeselect = temporaryDeltaSelectedBlocks.Except(collection).ToList();
+                        var toSelect = collection.Except(temporaryDeltaSelectedBlocks).Except(sel).ToList();
+
+                        foreach (BlockViewModel b in toDeselect)
+                        {
                             sel.Remove(b);
-                    }
-                    foreach (BlockViewModel b in newBlocks)
-                    {
-                        if (!sel.Contains(b))
+                            temporaryDeltaSelectedBlocks.Remove(b);
+                        }
+                        foreach (BlockViewModel b in toSelect)
+                        {
                             sel.Add(b);
+                            temporaryDeltaSelectedBlocks.Add(b);
+                        }
                     }
-                }
+                    break;
+
+                case CompositionMode.Subtractive:
+                    {
+                        // delta set contains all blocks that are part of the subtractive selection
+                        // calculate necessary changes
+                        var toDeselect = collection.Except(temporaryDeltaSelectedBlocks).Intersect(sel).ToList();
+                        var toSelect = temporaryDeltaSelectedBlocks.Except(collection).ToList();
+
+                        foreach (BlockViewModel b in toDeselect)
+                        {
+                            sel.Remove(b);
+                            temporaryDeltaSelectedBlocks.Add(b);
+                        }
+                        foreach (BlockViewModel b in toSelect)
+                        {
+                            if (!sel.Contains(b)) sel.Add(b);
+                            temporaryDeltaSelectedBlocks.Remove(b);
+                        }
+                    }
+                    break;
             }
         }
 
-        public void ConfirmAdditiveSelection()
+        public void ConfirmSelectionDelta()
         {
-            temporaryAdditiveSelectedBlocks.Clear();
+            Debug.WriteLine("confirmed delta ({0} blocks)", temporaryDeltaSelectedBlocks.Count);
+            temporaryDeltaSelectedBlocks.Clear();
         }
 
         public void SelectAllBlocks()
@@ -328,7 +375,7 @@ namespace GlowSequencer.ViewModel
                 ActionManager.RecordAdd(model.Blocks, group);
             }
 
-            SelectBlock(BlockViewModel.FromModel(this, group), false);
+            SelectBlock(BlockViewModel.FromModel(this, group), CompositionMode.None);
         }
 
         public void UngroupSelectedBlocks()
@@ -348,7 +395,7 @@ namespace GlowSequencer.ViewModel
                         ActionManager.RecordRemove(group.Children, b);
                         ActionManager.RecordAdd(model.Blocks, b);
 
-                        SelectBlock(BlockViewModel.FromModel(this, b), true);
+                        SelectBlock(BlockViewModel.FromModel(this, b), CompositionMode.Additive);
                     }
                 }
             }
