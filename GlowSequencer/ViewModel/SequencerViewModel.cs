@@ -32,7 +32,7 @@ namespace GlowSequencer.ViewModel
         private double _currentWinWidth = 1000;
         //private double _horizontalTimelineOffset = 0;
 
-        private BlockViewModel[] temporaryAdditiveSelectedBlocks = new BlockViewModel[0];
+        private ISet<BlockViewModel> temporaryAdditiveSelectedBlocks = new HashSet<BlockViewModel>();
 
         public GuiLabs.Undo.ActionManager ActionManager { get; private set; }
 
@@ -178,6 +178,8 @@ namespace GlowSequencer.ViewModel
 
         // ===== Commands =====
 
+        public enum CompositionMode { None, Additive, Subtractive }
+
         public void SelectBlock(BlockViewModel block, bool additive)
         {
             if (block == null && !additive)
@@ -200,13 +202,19 @@ namespace GlowSequencer.ViewModel
 
             if (additive)
             {
-                foreach (BlockViewModel b in temporaryAdditiveSelectedBlocks)
+                var toDeselect = temporaryAdditiveSelectedBlocks.Except(collection).ToList();
+                var toSelect = collection.Except(temporaryAdditiveSelectedBlocks).ToList();
+
+                foreach (BlockViewModel b in toDeselect)
+                {
                     sel.Remove(b);
-
-                temporaryAdditiveSelectedBlocks = collection.Where(b => !sel.Contains(b)).ToArray();
-
-                foreach (BlockViewModel b in temporaryAdditiveSelectedBlocks)
+                    temporaryAdditiveSelectedBlocks.Remove(b);
+                }
+                foreach (BlockViewModel b in toSelect)
+                {
                     sel.Add(b);
+                    temporaryAdditiveSelectedBlocks.Add(b);
+                }
             }
             else
             {
@@ -233,7 +241,7 @@ namespace GlowSequencer.ViewModel
 
         public void ConfirmAdditiveSelection()
         {
-            temporaryAdditiveSelectedBlocks = new BlockViewModel[0];
+            temporaryAdditiveSelectedBlocks.Clear();
         }
 
         public void SelectAllBlocks()
