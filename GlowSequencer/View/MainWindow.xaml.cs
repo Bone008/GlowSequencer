@@ -37,7 +37,7 @@ namespace GlowSequencer.View
 
         private const int DRAG_START_END_PIXEl_WINDOW = 6;
         private const int DRAG_START_END_PIXEl_WINDOW_TOUCH = 12;
-        private const double TIMELINE_TRACK_HEIGHT = 70;
+        private const double TIMELINE_TRACK_HEIGHT = TrackViewModel.DISPLAY_HEIGHT;
         private const double TIMELINE_CURSOR_PADDING_LEFT_PX = 1;
         private const double TIMELINE_CURSOR_PADDING_RIGHT_PX = 3;
 

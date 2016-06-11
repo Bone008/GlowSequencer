@@ -145,7 +145,7 @@
                     </ItemsControl.ContextMenu>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="70" Style="{StaticResource s_TimelineTrackRow}"
+                            <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="50" Style="{StaticResource s_TimelineTrackRow}"
 								PreviewMouseDown="timelineTrack_PreviewMouseDown" MouseDown="timelineTrackLabel_MouseDown">
                                 <Border.ContextMenu>
                                     <ContextMenu>
@@ -183,7 +183,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="70" Style="{StaticResource s_TimelineTrackRow}" />
+                                <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="50" Style="{StaticResource s_TimelineTrackRow}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
