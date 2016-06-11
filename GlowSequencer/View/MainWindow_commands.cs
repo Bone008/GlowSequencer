@@ -187,8 +187,8 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteExportGlo(object sender, ExecutedRoutedEventArgs e)
         {
             string exportName = main.DocumentName;
-            if (exportName.EndsWith(FileSerializer.EXTENSION_EXPORT, StringComparison.InvariantCultureIgnoreCase))
-                exportName = exportName.Substring(0, exportName.Length - FileSerializer.EXTENSION_EXPORT.Length);
+            if (exportName.EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
+                exportName = exportName.Substring(0, exportName.Length - FileSerializer.EXTENSION_PROJECT.Length);
 
             var diag = new Microsoft.Win32.SaveFileDialog();
             diag.FileName = exportName + FileSerializer.EXTENSION_EXPORT;
