@@ -55,6 +55,14 @@ namespace GlowSequencer
                     }
                 }
 
+                // close open instances of the Aerotech program
+                Process[] runningPrograms = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(settings.AerotechAppExePath));
+                if(runningPrograms.Any())
+                {
+                    log.Report("Trying to close running instances of Glo Ultimate App ...");
+                    foreach (var p in runningPrograms)
+                        p.CloseMainWindow();
+                }
 
                 log.Report("Starting Glo Ultimate App ...");
                 aerotechProc = await Task.Run((Func<Process>)LaunchAerotechProgram, cancel);
