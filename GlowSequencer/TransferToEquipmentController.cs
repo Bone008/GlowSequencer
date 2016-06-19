@@ -48,8 +48,8 @@ namespace GlowSequencer
                     {
                         await Task.Run(() =>
                         {
-                            string file = Path.Combine(tmpDir, string.Format("tmp_{0:0000}.glo", i));
-                            FileSerializer.ExportTrack(tracks[i], file);
+                            string file = Path.Combine(tmpDir, string.Format("{0:0000}_" + FileSerializer.SanitizeString(tracks[i].Label) + ".glo", i));
+                            FileSerializer.ExportTrack(tracks[i], file, (float)settings.ExportStartTime.TotalSeconds);
                         }, cancel);
                         ReportProgress(progress, TaskStage.ExportFiles, i + 1, tracks.Count);
                     }

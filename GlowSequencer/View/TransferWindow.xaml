@@ -38,6 +38,12 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
+        <StackPanel Orientation="Horizontal" Margin="0,5">
+            <Label>Start time:</Label>
+            <TextBox Width="150" Text="{Binding ExportStartTime, Converter={StaticResource conv_TimeSpanToString}}" />
+            <Button Width="50" Margin="10,0" Click="CursorButton_Click">Cursor</Button>
+            <Button Width="50" Click="ZeroButton_Click">Zero</Button>
+        </StackPanel>
 
         <Expander Header="Advanced settings" Margin="0,10" BorderBrush="#FFABADB3" BorderThickness="1" Padding="5"
                   IsEnabled="{Binding IsTransferIdle}">

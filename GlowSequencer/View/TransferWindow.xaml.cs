@@ -84,5 +84,15 @@ namespace GlowSequencer.View
             vm.RefreshWindowList();
         }
 
+        private void CursorButton_Click(object sender, RoutedEventArgs e)
+        {
+            vm.SetStartTimeToCursor();
+        }
+
+        private void ZeroButton_Click(object sender, RoutedEventArgs e)
+        {
+            vm.ExportStartTime = TimeSpan.Zero;
+        }
+
     }
 }

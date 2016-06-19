@@ -11,6 +11,7 @@ namespace GlowSequencer
     public class TransferToEquipmentSettings
     {
         public string AerotechAppExePath { get; set; }
+        public TimeSpan ExportStartTime { get; set; }
         public bool StartAutomagicallyAfterTransfer { get; set; }
         public bool CloseProgramAfterTransfer { get; set; }
 
@@ -27,6 +28,7 @@ namespace GlowSequencer
         {
             // default values
             AerotechAppExePath = "";
+            ExportStartTime = TimeSpan.Zero;
             StartAutomagicallyAfterTransfer = true;
             CloseProgramAfterTransfer = true;
             StartMusicAfterTransfer = false;
@@ -67,6 +69,7 @@ namespace GlowSequencer
         {
             elem.Add(
                 new XElement("aerotech-exe-path", AerotechAppExePath),
+                new XElement("export-start-time", ExportStartTime),
                 new XElement("start-post-transfer-automagically", StartAutomagicallyAfterTransfer),
                 new XElement("close-program-after-transfer", CloseProgramAfterTransfer),
                 new XElement("start-music",
@@ -85,6 +88,7 @@ namespace GlowSequencer
         public void PopulateFromXML(XElement elem)
         {
             AerotechAppExePath = (string)elem.Element("aerotech-exe-path") ?? AerotechAppExePath;
+            ExportStartTime = (TimeSpan?)elem.Element("export-start-time") ?? ExportStartTime;
             StartAutomagicallyAfterTransfer = (bool?)elem.Element("start-post-transfer-automagically") ?? StartAutomagicallyAfterTransfer;
             CloseProgramAfterTransfer = (bool?)elem.Element("close-program-after-transfer") ?? CloseProgramAfterTransfer;
 

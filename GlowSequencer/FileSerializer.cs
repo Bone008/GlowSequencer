@@ -35,7 +35,7 @@ namespace GlowSequencer
                 }
                 // fallback for old, uncompressed save files
                 catch (InvalidDataException) { doc = XDocument.Load(filename); }
-                
+
                 Timeline timeline = Timeline.FromXML(doc.Root.Element("timeline"));
                 return timeline;
             }
@@ -44,7 +44,7 @@ namespace GlowSequencer
                 System.Windows.MessageBox.Show("The file \"" + filename + "\" could not be opened!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return null;
             }
-            catch(XmlException e)
+            catch (XmlException e)
             {
                 System.Windows.MessageBox.Show("The file \"" + filename + "\" has been corrupted!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return null;
@@ -99,7 +99,7 @@ namespace GlowSequencer
 
             public static int ToTicks(float time)
             {
-                return (int)Math.Round(time * 100);
+                return (int)Math.Round(time * TICKS_PER_SECOND);
             }
         }
 
@@ -112,11 +112,16 @@ namespace GlowSequencer
             public PrimitiveBlock blockAfter;
         }
 
+        public static string SanitizeString(string str)
+        {
+            return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
+        }
+
         public static bool ExportGloFiles(Timeline timeline, string filenameBase, string filenameSuffix)
         {
             foreach (var track in timeline.Tracks)
             {
-                string sanitizedTrackName = Path.GetInvalidFileNameChars().Aggregate(track.Label, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
+                string sanitizedTrackName = SanitizeString(track.Label);
                 string file = filenameBase + sanitizedTrackName + filenameSuffix;
                 ExportTrack(track, file);
             }
@@ -148,13 +153,13 @@ namespace GlowSequencer
             return true;
         }
 
-        public static void ExportTrack(Track track, string filename)
+        public static void ExportTrack(Track track, string filename, float startTime = 0)
         {
             // Algorithm "back-to-front rendering" := every block paints all affected samples with its data
             // Each sample stores "color up to this point" and "color from this point forward" along with the block that set the respective half.
             // After painting is complete, all samples that just pass through a single block are redundant.
 
-            Sample[] samples = CollectSamples(track.Blocks);
+            Sample[] samples = CollectSamples(track.Blocks, startTime);
             GloCommandContainer commandContainer = SamplesToCommands(samples);
             OptimizeCommands(commandContainer.Commands);
 
@@ -163,8 +168,15 @@ namespace GlowSequencer
         }
 
 
-        private static Sample[] CollectSamples(IEnumerable<Block> blocks)
+        private static Sample[] CollectSamples(IEnumerable<Block> blocks, float exportStartTime)
         {
+            int firstTick = (int)Math.Round(exportStartTime * TICKS_PER_SECOND);
+            if (firstTick > 0)
+                // eliminate blocks that lie fully outside the export range
+                blocks = blocks.Where(b => b.GetEndTime() >= exportStartTime);
+
+            // ticksOffset is ignored in the main painting phase, but time values are shifted at the post-filter stage
+
             List<PrimitiveBlock> allBlocks = blocks.SelectMany(b => b.BakePrimitive()).ToList();
             int length = allBlocks.Max(b => (int?)b.endTime) ?? 0;
 
@@ -189,8 +201,18 @@ namespace GlowSequencer
                 samples[primBlock.endTime].blockBefore = primBlock;
             }
 
-            // samples where the block does not change are redundant
-            samples = samples.Where(s => s.blockBefore != s.blockAfter).ToArray();
+            samples = samples
+                // eliminate samples that lie before the time range
+                .Where(s => s.ticks >= firstTick)
+                // samples where the block does not change are redundant
+                .Where(s => s.blockBefore != s.blockAfter)
+                .ToArray();
+
+            // adjust ticks for the ticksOffset
+            for (int i = 0; i < samples.Length; i++)
+            {
+                samples[i].ticks -= firstTick;
+            }
 
             // make absolutely sure all colors are in [0..255] range
             foreach (var s in samples)

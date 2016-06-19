@@ -27,6 +27,7 @@ namespace GlowSequencer.ViewModel
         private CancellationTokenSource transferCancel = new CancellationTokenSource();
 
         public string AerotechAppExePath { get { return persistedSettings.AerotechAppExePath; } set { persistedSettings.AerotechAppExePath = value; Notify(); } }
+        public TimeSpan ExportStartTime { get { return persistedSettings.ExportStartTime; } set { persistedSettings.ExportStartTime = value; Notify(); } }
         public bool StartAutomagicallyAfterTransfer { get { return persistedSettings.StartAutomagicallyAfterTransfer; } set { persistedSettings.StartAutomagicallyAfterTransfer = value; Notify(); } }
         public bool CloseProgramAfterTransfer { get { return persistedSettings.CloseProgramAfterTransfer; } set { persistedSettings.CloseProgramAfterTransfer = value; Notify(); } }
         public int DelayBeforeStart { get { return persistedSettings.DelayBeforeStart; } set { persistedSettings.DelayBeforeStart = value; Notify(); } }
@@ -119,6 +120,11 @@ namespace GlowSequencer.ViewModel
             DelayBeforeStart = def.DelayBeforeStart;
             DelayBetweenKeys = def.DelayBetweenKeys;
             DelayForUpload = def.DelayForUpload;
+        }
+
+        public void SetStartTimeToCursor()
+        {
+            ExportStartTime = TimeSpan.FromSeconds(main.CurrentDocument.CursorPosition);
         }
 
         public void RefreshWindowList()
