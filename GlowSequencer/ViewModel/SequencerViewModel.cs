@@ -303,7 +303,7 @@ namespace GlowSequencer.ViewModel
         {
             GloColor prevColor = GloColor.White;
 
-            var prevBlocks = ((IEnumerable<BlockViewModel>)_selectedTrack.Blocks).Where(bl => bl is ColorBlockViewModel || bl is RampBlockViewModel);
+            var prevBlocks = ((IEnumerable<BlockViewModel>)_selectedTrack.Blocks).Where(bl => bl.StartTime < CursorPosition && (bl is ColorBlockViewModel || bl is RampBlockViewModel));
             if (prevBlocks.Any())
             {
                 BlockViewModel prevBlock = prevBlocks.MaxBy(bl => bl.EndTimeOccupied);
