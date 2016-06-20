@@ -103,10 +103,11 @@
     <Compile Include="Util\TextFieldBehavior.cs" />
     <Compile Include="Util\TimeSpanToStringConverter.cs" />
     <Compile Include="Util\XExtensions.cs" />
-    <Compile Include="ViewModel\LoopBlockViewModel.cs" />
-    <Compile Include="ViewModel\GroupBlockViewModel.cs" />
+    <Compile Include="ViewModel\Blocks\LoopBlockViewModel.cs" />
+    <Compile Include="ViewModel\Blocks\GroupBlockViewModel.cs" />
     <Compile Include="ViewModel\GlobalViewParameters.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\ReplaceColorViewModel.cs" />
     <Compile Include="ViewModel\SelectionProperties.cs" />
     <Compile Include="ViewModel\TimeUnit.cs" />
     <Compile Include="View\AboutWindow.xaml.cs">
@@ -123,8 +124,8 @@
     <Compile Include="Util\NullToVisiblityConverter.cs" />
     <Compile Include="Util\ColorToBrushValueConverter.cs" />
     <Compile Include="Observable.cs" />
-    <Compile Include="ViewModel\RampBlockViewModel.cs" />
-    <Compile Include="ViewModel\ColorBlockViewModel.cs" />
+    <Compile Include="ViewModel\Blocks\RampBlockViewModel.cs" />
+    <Compile Include="ViewModel\Blocks\ColorBlockViewModel.cs" />
     <Compile Include="ViewModel\GloColorExtensions.cs" />
     <Compile Include="ViewModel\MusicSegmentViewModel.cs" />
     <Compile Include="View\MusicSegmentsWindow.xaml.cs">
@@ -133,11 +134,14 @@
     <Compile Include="View\PreviewWindow.xaml.cs">
       <DependentUpon>PreviewWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModel\BlockViewModel.cs" />
+    <Compile Include="ViewModel\Blocks\BlockViewModel.cs" />
     <Compile Include="ViewModel\TrackViewModel.cs" />
     <Compile Include="ViewModel\SequencerViewModel.cs" />
     <Compile Include="View\PromptWindow.xaml.cs">
       <DependentUpon>PromptWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ReplaceColorWindow.xaml.cs">
+      <DependentUpon>ReplaceColorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\TimelineGrid.cs" />
     <Compile Include="View\TimeUnitEditControl.xaml.cs">
@@ -172,6 +176,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\PromptWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ReplaceColorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

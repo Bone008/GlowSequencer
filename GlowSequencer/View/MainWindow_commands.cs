@@ -16,6 +16,8 @@ namespace GlowSequencer.View
         public static readonly RoutedUICommand ExportGlo = new RoutedUICommand("", "ExportGlo", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
         public static readonly RoutedUICommand ShowTransferWindow = new RoutedUICommand("", "ShowTransferWindow", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
 
+        public static readonly RoutedUICommand ReplaceColor = new RoutedUICommand("", "ReplaceColor", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
+        
         public static readonly RoutedCommand InsertBlock = new RoutedCommand();
         public static readonly RoutedUICommand GroupBlocks = new RoutedUICommand("", "GroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control) });
         public static readonly RoutedUICommand UngroupBlocks = new RoutedUICommand("", "UngroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control | ModifierKeys.Shift) });
@@ -217,6 +219,13 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
         {
             sequencer.ActionManager.Redo();
+        }
+
+        private void CommandBinding_ExecuteReplaceColor(object sender, ExecutedRoutedEventArgs e)
+        {
+            var replaceColorVm = new ReplaceColorViewModel(sequencer);
+            var win = new ReplaceColorWindow(replaceColorVm);
+            win.ShowDialog();
         }
 
         private void CommandBinding_ExecuteSelectAll(object sender, ExecutedRoutedEventArgs e)

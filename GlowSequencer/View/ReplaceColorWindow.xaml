@@ -1,0 +1,27 @@
+﻿<Window x:Class="GlowSequencer.View.ReplaceColorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
+        Title="Replace color" Width="270" SizeToContent="Height"
+        ResizeMode="NoResize"
+        
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance vm:ReplaceColorViewModel}">
+
+    <StackPanel Margin="5">
+        <Label>Select color:</Label>
+        <ComboBox ItemsSource="{Binding ColorChoices}" SelectedItem="{Binding ColorToSearch}" />
+        <Label>Replace with:</Label>
+        <xctk:ColorPicker SelectedColor="{Binding ColorToReplace}" />
+        
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Width="60" Margin="5,0">Cancel</Button>
+            <Button Width="60">OK</Button>
+        </StackPanel>
+    </StackPanel>
+    
+</Window>
