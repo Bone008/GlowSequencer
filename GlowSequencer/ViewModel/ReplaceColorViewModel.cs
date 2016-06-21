@@ -10,31 +10,54 @@ namespace GlowSequencer.ViewModel
 {
     public class ReplaceColorViewModel : Observable
     {
-        private SequencerViewModel main;
+        private SequencerViewModel sequencer;
 
-        public Color ColorToSearch { get; set; } // TODO observable
-        public Color ColorToReplace { get; set; }
+        private Color _colorToSearch;
+        private Color _colorToReplace;
 
-        public IEnumerable<Color> ColorChoices { get; private set; }
+        public Color ColorToSearch { get { return _colorToSearch; } set { SetProperty(ref _colorToSearch, value); } }
+        public Color ColorToReplace { get { return _colorToReplace; } set { SetProperty(ref _colorToReplace, value); } }
 
-        public ReplaceColorViewModel(SequencerViewModel main)
+        public ObservableCollection<Xceed.Wpf.Toolkit.ColorItem> ColorChoices { get; private set; }
+
+        public ReplaceColorViewModel(SequencerViewModel sequencer)
         {
-            this.main = main;
+            this.sequencer = sequencer;
 
-            IEnumerable<BlockViewModel> blocks = (main.SelectedBlocks.Any() ? main.SelectedBlocks : (IEnumerable<BlockViewModel>)main.AllBlocks);
+            var colorItems = from color in _ColorsFromBlocks(GetConsideredBlocks())
+                             group color by color into g
+                             //orderby g.Key.R + g.Key.G + g.Key.B descending
+                             select new Xceed.Wpf.Toolkit.ColorItem(g.Key, "Usages: " + g.Count());
 
-            ColorChoices = _ColorsFromBlocks(blocks)
-                            .Distinct()
-                            .OrderByDescending(c => c.R + c.G + c.B)
-                            .ToList();
-
-            ColorToSearch = ColorChoices.FirstOrDefault();
+            ColorChoices = new ObservableCollection<Xceed.Wpf.Toolkit.ColorItem>(colorItems);
+            ColorToSearch = (ColorChoices.Any() ? ColorChoices.First().Color.Value : Colors.White);
             ColorToReplace = Colors.White;
         }
 
         public void Execute()
         {
-            // TODO implement color replacement
+            using (sequencer.ActionManager.CreateTransaction())
+            {
+                _ExecuteForBlocks(GetConsideredBlocks());
+            }
+        }
+
+        private void _ExecuteForBlocks(IEnumerable<BlockViewModel> blocks)
+        {
+            foreach (BlockViewModel block in blocks)
+            {
+                if (block is ColorBlockViewModel && ((ColorBlockViewModel)block).Color == _colorToSearch)
+                    ((ColorBlockViewModel)block).Color = _colorToReplace;
+                else if (block is RampBlockViewModel)
+                {
+                    if (((RampBlockViewModel)block).StartColor == _colorToSearch)
+                        ((RampBlockViewModel)block).StartColor = _colorToReplace;
+                    if (((RampBlockViewModel)block).EndColor == _colorToSearch)
+                        ((RampBlockViewModel)block).EndColor = _colorToReplace;
+                }
+                else if (block is GroupBlockViewModel)
+                    _ExecuteForBlocks(((GroupBlockViewModel)block).Children);
+            }
         }
 
         private IEnumerable<Color> _ColorsFromBlocks(IEnumerable<BlockViewModel> blocks)
@@ -43,6 +66,11 @@ namespace GlowSequencer.ViewModel
                         .Concat(blocks.OfType<RampBlockViewModel>().Select(b => b.StartColor))
                         .Concat(blocks.OfType<RampBlockViewModel>().Select(b => b.EndColor))
                         .Concat(blocks.OfType<GroupBlockViewModel>().SelectMany(b => _ColorsFromBlocks(b.Children)));
+        }
+
+        private IEnumerable<BlockViewModel> GetConsideredBlocks()
+        {
+            return (sequencer.SelectedBlocks.Any() ? sequencer.SelectedBlocks : (IEnumerable<BlockViewModel>)sequencer.AllBlocks);
         }
     }
 }

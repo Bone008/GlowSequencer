@@ -29,5 +29,16 @@ namespace GlowSequencer.View
             DataContext = this.vm = vm;
         }
 
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Ok_Click(object sender, RoutedEventArgs e)
+        {
+            vm.Execute();
+            this.Close();
+        }
+
     }
 }
