@@ -12,7 +12,11 @@ namespace GlowSequencer.ViewModel
     {
         protected new Model.LoopBlock model;
 
-        public int Repetitions { get { return model.Repetitions; } set { model.Repetitions = value; } }
+        public int Repetitions
+        {
+            get { return model.Repetitions; }
+            set { sequencer.ActionManager.RecordSetProperty(model, m => m.Repetitions, value); }
+        }
 
         public IEnumerable<ReadOnlyContinuousCollection<BlockViewModel>> ChildrenRepetitions { get { return Enumerable.Repeat(Children, Repetitions); } }
 

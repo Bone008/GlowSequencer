@@ -14,9 +14,10 @@ namespace GlowSequencer.ViewModel
         public Color Color
         {
             get { return model.Color.ToViewColor(); }
-            set { model.Color = value.ToGloColor(); }
+            set { sequencer.ActionManager.RecordSetProperty(model, m => m.Color, value.ToGloColor()); }
         }
 
+        // unused as of yet
         public Color RenderedColor1 { get { return model.RenderedColor1.ToViewColor(); } }
         public Color RenderedColor2 { get { return model.RenderedColor2.ToViewColor(); } }
 

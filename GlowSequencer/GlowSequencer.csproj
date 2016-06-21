@@ -98,6 +98,7 @@
     <Compile Include="Model\SubsequenceBlock.cs" />
     <Compile Include="TransferToEquipmentController.cs" />
     <Compile Include="TransferToEquipmentSettings.cs" />
+    <Compile Include="Util\EnumerableExtensions.cs" />
     <Compile Include="Util\InvertedValueConverter.cs" />
     <Compile Include="Util\MathUtil.cs" />
     <Compile Include="Util\TextFieldBehavior.cs" />

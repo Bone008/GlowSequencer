@@ -14,12 +14,12 @@ namespace GlowSequencer.ViewModel
         public Color StartColor
         {
             get { return model.StartColor.ToViewColor(); }
-            set { model.StartColor = value.ToGloColor(); }
+            set { sequencer.ActionManager.RecordSetProperty(model, m => m.StartColor, value.ToGloColor()); }
         }
         public Color EndColor
         {
             get { return model.EndColor.ToViewColor(); }
-            set { model.EndColor = value.ToGloColor(); }
+            set { sequencer.ActionManager.RecordSetProperty(model, m => m.EndColor, value.ToGloColor()); }
         }
 
         public RampBlockViewModel(SequencerViewModel sequencer, Model.RampBlock model)

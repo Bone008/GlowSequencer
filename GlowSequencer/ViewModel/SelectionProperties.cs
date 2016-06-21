@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using ContinuousLinq;
+using GlowSequencer.Util;
 
 namespace GlowSequencer.ViewModel
 {
@@ -143,13 +144,25 @@ namespace GlowSequencer.ViewModel
 
         private void AggregateSet(Action<BlockViewModel> setter)
         {
-            foreach (BlockViewModel b in selectedBlocks)
-                setter(b);
+            if (selectedBlocks.Count > 1)
+            {
+                using (sequencer.ActionManager.CreateTransaction())
+                {
+                    selectedBlocks.ForEach(setter);
+                }
+            }
+            else selectedBlocks.ForEach(setter);
         }
         private void AggregateSet<B>(Action<B> setter) where B : BlockViewModel
         {
-            foreach (B b in selectedBlocks.OfType<B>())
-                setter(b);
+            if (selectedBlocks.Count > 1)
+            {
+                using (sequencer.ActionManager.CreateTransaction())
+                {
+                    selectedBlocks.OfType<B>().ForEach(setter);
+                }
+            }
+            else selectedBlocks.OfType<B>().ForEach(setter);
         }
 
         private TimeUnit AggregateTime(Func<BlockViewModel, float> valueSelector, Action<BlockViewModel, float> valueSetter, Func<float?, Model.MusicSegment, Action<float>, TimeUnit> timeUnitFactory)
