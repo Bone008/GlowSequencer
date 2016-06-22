@@ -27,7 +27,7 @@ namespace GlowSequencer.ViewModel
             var colorItems = from color in _ColorsFromBlocks(GetConsideredBlocks())
                              group color by color into g
                              //orderby g.Key.R + g.Key.G + g.Key.B descending
-                             select new Xceed.Wpf.Toolkit.ColorItem(g.Key, "Usages: " + g.Count());
+                             select new Xceed.Wpf.Toolkit.ColorItem(g.Key, string.Format("R: {0}; G: {1}; B: {2} - Usages: {3}", g.Key.R, g.Key.G, g.Key.B, g.Count()));
 
             ColorChoices = new ObservableCollection<Xceed.Wpf.Toolkit.ColorItem>(colorItems);
             ColorToSearch = (ColorChoices.Any() ? ColorChoices.First().Color.Value : Colors.White);

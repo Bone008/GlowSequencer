@@ -226,6 +226,13 @@
         </DataTemplate>
 
 
+        <ContextMenu x:Key="contextMenu_ReplaceThisColor">
+            <MenuItem Command="ApplicationCommands.Copy" Header="Copy color" />
+            <MenuItem Command="ApplicationCommands.Paste" Header="Paste color" />
+            <Separator />
+            <MenuItem Command="view:SequencerCommands.ReplaceColor" Header="Replace color ..."
+                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedColor}" />
+        </ContextMenu>
 
         <DataTemplate x:Key="GenericProperties" DataType="{x:Type vm:SelectionProperties}">
             <DataTemplate.Resources>
@@ -233,7 +240,7 @@
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Color:" Style="{StaticResource s_FormLabel}"/>
-                            <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" />
+                            <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
                         </StackPanel>
                     </StackPanel>
                 </DataTemplate>
@@ -242,11 +249,11 @@
                     <StackPanel Orientation="Vertical">
                         <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="Start color:" Style="{StaticResource s_FormLabel}"/>
-                            <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" />
+                            <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
                         </StackPanel>
                         <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="End color:" Style="{StaticResource s_FormLabel}"/>
-                            <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" />
+                            <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
                         </StackPanel>
                         <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="" Style="{StaticResource s_FormLabel}"/>

@@ -1,12 +1,14 @@
 ﻿using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Xml.Linq;
 
 namespace GlowSequencer.View
@@ -17,7 +19,7 @@ namespace GlowSequencer.View
         public static readonly RoutedUICommand ShowTransferWindow = new RoutedUICommand("", "ShowTransferWindow", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
 
         public static readonly RoutedUICommand ReplaceColor = new RoutedUICommand("", "ReplaceColor", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
-        
+
         public static readonly RoutedCommand InsertBlock = new RoutedCommand();
         public static readonly RoutedUICommand GroupBlocks = new RoutedUICommand("", "GroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control) });
         public static readonly RoutedUICommand UngroupBlocks = new RoutedUICommand("", "UngroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control | ModifierKeys.Shift) });
@@ -223,7 +225,17 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteReplaceColor(object sender, ExecutedRoutedEventArgs e)
         {
-            var replaceColorVm = new ReplaceColorViewModel(sequencer);
+            ReplaceColorViewModel replaceColorVm;
+
+            if (e.Parameter is Color)
+            {
+                sequencer.SelectBlock(null, CompositionMode.None);
+                replaceColorVm = new ReplaceColorViewModel(sequencer) { ColorToSearch = (Color)e.Parameter };
+            }
+            else
+                replaceColorVm = new ReplaceColorViewModel(sequencer);
+
+
             var win = new ReplaceColorWindow(replaceColorVm);
             win.ShowDialog();
         }
