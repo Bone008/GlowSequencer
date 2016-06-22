@@ -57,6 +57,18 @@ namespace GlowSequencer.ViewModel
         public ICollection<TrackViewModel> SelectedTracks { get { return _selectedTracks; } set { SetProperty(ref _selectedTracks, value); } }
 
         public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && (!StartMusicAfterTransfer || MusicWindowProcessId != 0); } }
+        public string CanStartTransferReason
+        {
+            get
+            {
+                if(CanStartTransfer) return null;
+                if (!File.Exists(persistedSettings.AerotechAppExePath))
+                    return "The path to Aerotech's Glo-Ultimate App is not valid!";
+                else
+                    return "Please select a window for the external music!";
+            }
+        }
+
         public bool IsTransferIdle { get { return activeTransfer == null; } }
         public bool IsTransferInProgress { get { return activeTransfer != null; } }
         public float TransferProgress { get { return _progress; } private set { SetProperty(ref _progress, value); } }
@@ -67,13 +79,12 @@ namespace GlowSequencer.ViewModel
         {
             this.main = main;
             ForwardPropertyEvents("CurrentDocument", main, "AllTracks");
-            ForwardPropertyEvents("AerotechAppExePath", this, "CanStartTransfer");
-            ForwardPropertyEvents("SelectedTracks", this, "CanStartTransfer");
-            ForwardPropertyEvents("StartMusicAfterTransfer", this, "CanStartTransfer");
-            ForwardPropertyEvents("MusicWindowProcessId", this, "CanStartTransfer");
+            ForwardPropertyEvents("AerotechAppExePath", this, "CanStartTransfer", "CanStartTransferReason");
+            ForwardPropertyEvents("StartMusicAfterTransfer", this, "CanStartTransfer", "CanStartTransferReason");
+            ForwardPropertyEvents("MusicWindowProcessId", this, "CanStartTransfer", "CanStartTransferReason");
 
             LoadSettings();
-            RefreshWindowList();
+            var _ = RefreshWindowListAsync();
         }
 
         private void AppendLog(string line)
@@ -127,15 +138,16 @@ namespace GlowSequencer.ViewModel
             ExportStartTime = TimeSpan.FromSeconds(main.CurrentDocument.CursorPosition);
         }
 
-        public void RefreshWindowList()
+        public async Task RefreshWindowListAsync()
         {
             int selectedId = MusicWindowProcessId;
+
+            List<Process> procs =
+                await Task.Run(() => Process.GetProcesses()
+                                              .Where(p => p.MainWindowHandle != IntPtr.Zero && p.MainWindowTitle.Length > 0 && p.Id != Process.GetCurrentProcess().Id)
+                                              .OrderBy(p => p.ProcessName).ToList());
+
             _processesWithWindowsContainer.Clear();
-
-            var procs = Process.GetProcesses()
-                .Where(p => p.MainWindowHandle != IntPtr.Zero && p.MainWindowTitle.Length > 0 && p.Id != Process.GetCurrentProcess().Id)
-                .OrderBy(p => p.ProcessName).ToList();
-
             foreach (var p in procs) _processesWithWindowsContainer.Add(p);
 
             // set the selection again
@@ -162,7 +174,7 @@ namespace GlowSequencer.ViewModel
             }
         }
 
-        private void SaveSettings()
+        public void SaveSettings()
         {
             string settingsFile = Path.Combine(App.GetUserDataDir(), App.FILENAME_TRANSFER_SETTINGS);
 

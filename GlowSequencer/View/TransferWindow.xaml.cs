@@ -60,9 +60,9 @@ namespace GlowSequencer.View
             vm.ResetAdvancedSettings();
         }
 
-        private void RefreshList_Click(object sender, RoutedEventArgs e)
+        private async void RefreshList_Click(object sender, RoutedEventArgs e)
         {
-            vm.RefreshWindowList();
+            await vm.RefreshWindowListAsync();
         }
         private void StartAutomagically_CheckedChanged(object sender, RoutedEventArgs e)
         {
@@ -76,12 +76,35 @@ namespace GlowSequencer.View
         {
             if (vm.IsTransferInProgress)
                 vm.CancelTransfer();
+
+            // also save settings when closing the window
+            vm.SaveSettings();
         }
 
-        private void Window_Activated(object sender, EventArgs e)
+        private async void Window_Activated(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("activated");
-            vm.RefreshWindowList();
+            await vm.RefreshWindowListAsync();
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var diag = new Microsoft.Win32.OpenFileDialog();
+            diag.DefaultExt = ".exe";
+            diag.Filter = "Executable files (*.exe)|*.exe|All files|*.*";
+            diag.FilterIndex = 0;
+            
+            // attempt to navigate to directory already present in the text field
+            string dir = null;
+            try { dir = System.IO.Path.GetDirectoryName(vm.AerotechAppExePath); }
+            catch (ArgumentException) { }
+            if (dir != null)
+                diag.InitialDirectory = dir;
+
+            if (diag.ShowDialog(this) == true)
+            {
+                vm.AerotechAppExePath = diag.FileName;
+            }
         }
 
         private void CursorButton_Click(object sender, RoutedEventArgs e)
