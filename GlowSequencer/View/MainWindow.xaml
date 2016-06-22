@@ -8,7 +8,7 @@
         Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="600" Width="960"
         SizeChanged="Window_SizeChanged" Closing="Window_Closing"
         AllowDrop="True" DragOver="Window_Drag" Drop="Window_Drop"
-        DataContext="{StaticResource vm_Main}">
+        DataContext="{StaticResource vm_Main}" Icon="/GlowSequencer;component/Resources/icon.ico">
 
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close" Executed="CommandBinding_ExecuteClose"  CanExecute="CommandBinding_CanExecuteAlways" />
