@@ -15,7 +15,7 @@ namespace GlowSequencer.ViewModel
         private Color _colorToSearch;
         private Color _colorToReplace;
 
-        public Color ColorToSearch { get { return _colorToSearch; } set { SetProperty(ref _colorToSearch, value); } }
+        public Color ColorToSearch { get { return _colorToSearch; } set { SetProperty(ref _colorToSearch, value); ColorToReplace = value; } }
         public Color ColorToReplace { get { return _colorToReplace; } set { SetProperty(ref _colorToReplace, value); } }
 
         public ObservableCollection<Xceed.Wpf.Toolkit.ColorItem> ColorChoices { get; private set; }

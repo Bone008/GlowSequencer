@@ -227,10 +227,10 @@
 
 
         <ContextMenu x:Key="contextMenu_ReplaceThisColor">
-            <MenuItem Command="ApplicationCommands.Copy" Header="Copy color" />
-            <MenuItem Command="ApplicationCommands.Paste" Header="Paste color" />
-            <Separator />
-            <MenuItem Command="view:SequencerCommands.ReplaceColor" Header="Replace color ..."
+            <!--<MenuItem Command="ApplicationCommands.Copy" Header="_Copy color" />
+            <MenuItem Command="ApplicationCommands.Paste" Header="_Paste color" />
+            <Separator />-->
+            <MenuItem Command="view:SequencerCommands.ReplaceColor" Header="_Replace color in sequence ..."
                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedColor}" />
         </ContextMenu>
 
