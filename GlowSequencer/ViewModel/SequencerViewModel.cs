@@ -366,7 +366,10 @@ namespace GlowSequencer.ViewModel
             group.StartTime = SelectedBlocks.Min(b => b.StartTime);
             foreach (var b in SelectedBlocks)
             {
-                group.AddChild(b.GetModel(), true);
+                // create an independant copy of the block so transforming its time to local reference frame does not screw up undo
+                Block newChild = Block.FromXML(model, b.GetModel().ToXML());
+
+                group.AddChild(newChild, true);
             }
 
             using (ActionManager.CreateTransaction())
@@ -391,11 +394,14 @@ namespace GlowSequencer.ViewModel
 
                     foreach (Block b in group.Children.ToArray())
                     {
-                        b.StartTime += group.StartTime;
-                        ActionManager.RecordRemove(group.Children, b);
-                        ActionManager.RecordAdd(model.Blocks, b);
+                        // create an independant copy of the block so transforming its time back to global reference frame does not screw up undo
+                        Block independantBlock = Block.FromXML(model, b.ToXML());
 
-                        SelectBlock(BlockViewModel.FromModel(this, b), CompositionMode.Additive);
+                        independantBlock.StartTime += group.StartTime;
+                        ActionManager.RecordRemove(group.Children, b);
+                        ActionManager.RecordAdd(model.Blocks, independantBlock);
+
+                        SelectBlock(BlockViewModel.FromModel(this, independantBlock), CompositionMode.Additive);
                     }
                 }
             }
