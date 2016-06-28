@@ -118,6 +118,14 @@ namespace GlowSequencer
                         log.Report("External music program not running, unable to start music!");
                     else
                     {
+                        if (settings.ExportStartTime < TimeSpan.Zero)
+                        {
+                            log.Report("Waiting " + -settings.ExportStartTime + " before starting music ...");
+                            await Task.Delay(-settings.ExportStartTime, cancel);
+
+                            //log.Report(DateTime.Now.ToString("HH:mm:ss.ffff"));
+                        }
+                            
                         log.Report("Starting music ...");
                         SetForegroundWindow(musicProc.MainWindowHandle);
                         inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
