@@ -301,30 +301,45 @@ namespace GlowSequencer.ViewModel
 
         public void InsertBlock(string type)
         {
+            // inherit color and tracks from previous block, if applicable
             GloColor prevColor = GloColor.White;
+            Track[] prevTracks = { _selectedTrack.GetModel() };
 
-            var prevBlocks = ((IEnumerable<BlockViewModel>)_selectedTrack.Blocks).Where(bl => bl.StartTime < CursorPosition && (bl is ColorBlockViewModel || bl is RampBlockViewModel));
+            Func<BlockViewModel, bool> fnIsBlockApplicable =
+                (bl => bl.StartTime < CursorPosition && (bl is ColorBlockViewModel || bl is RampBlockViewModel));
+
+            var prevBlocks = ((IEnumerable<BlockViewModel>)_selectedTrack.Blocks).Where(fnIsBlockApplicable);
             if (prevBlocks.Any())
             {
                 BlockViewModel prevBlock = prevBlocks.MaxBy(bl => bl.EndTimeOccupied);
 
+                // inherit color
                 if (prevBlock is ColorBlockViewModel)
                     prevColor = ((ColorBlockViewModel)prevBlock).GetModel().Color;
                 else
                     prevColor = ((RampBlockViewModel)prevBlock).GetModel().EndColor;
+
+                // inherit tracks, but only if the last block on the selected track is also the last block on all other tracks of the block
+                bool lastOfAllTracks = prevBlock.GetModel().Tracks.All(t => t.Blocks
+                                        .Select(bl => BlockViewModel.FromModel(this, bl))
+                                        .Where(fnIsBlockApplicable)
+                                        .MaxBy(bl => bl.EndTimeOccupied)
+                                    == prevBlock);
+                if (lastOfAllTracks)
+                    prevTracks = prevBlock.GetModel().Tracks.ToArray();
             }
 
             Block b;
             switch (type)
             {
                 case "color":
-                    b = new ColorBlock(model, _selectedTrack.GetModel())
+                    b = new ColorBlock(model, prevTracks)
                     {
                         Color = prevColor
                     };
                     break;
                 case "ramp":
-                    b = new RampBlock(model, _selectedTrack.GetModel())
+                    b = new RampBlock(model, prevTracks)
                     {
                         StartColor = prevColor,
                         EndColor = (prevColor == GloColor.White ? GloColor.Black : GloColor.White)
@@ -339,7 +354,6 @@ namespace GlowSequencer.ViewModel
             b.Duration = GridInterval;
 
             ActionManager.RecordAction(new GuiLabs.Undo.AddItemAction<Block>(model.Blocks.Add, bl => model.Blocks.Remove(bl), b));
-            //model.Blocks.Add(b);
         }
 
         public void DeleteSelectedBlocks()
