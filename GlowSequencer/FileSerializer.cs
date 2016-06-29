@@ -30,7 +30,7 @@ namespace GlowSequencer
                 XDocument doc;
                 try
                 {
-                    using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Open), CompressionMode.Decompress))
+                    using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Open, FileAccess.Read), CompressionMode.Decompress))
                         doc = XDocument.Load(zipStream);
                 }
                 // fallback for old, uncompressed save files
@@ -40,6 +40,11 @@ namespace GlowSequencer
                 return timeline;
             }
             catch (IOException e)
+            {
+                System.Windows.MessageBox.Show("The file \"" + filename + "\" could not be opened!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return null;
+            }
+            catch (UnauthorizedAccessException e)
             {
                 System.Windows.MessageBox.Show("The file \"" + filename + "\" could not be opened!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return null;
@@ -61,13 +66,18 @@ namespace GlowSequencer
 
             try
             {
-                using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Create), CompressionMode.Compress))
+                using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Create, FileAccess.Write), CompressionMode.Compress))
                 {
                     doc.Save(zipStream);
                 }
                 return true;
             }
             catch (IOException e)
+            {
+                System.Windows.MessageBox.Show("Could not save to file \"" + filename + "\"!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return false;
+            }
+            catch (UnauthorizedAccessException e)
             {
                 System.Windows.MessageBox.Show("Could not save to file \"" + filename + "\"!" + Environment.NewLine + e.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return false;
