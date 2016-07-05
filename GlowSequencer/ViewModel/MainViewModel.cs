@@ -74,12 +74,12 @@ namespace GlowSequencer.ViewModel
             if (FilePath == null)
                 throw new InvalidOperationException("quicksave not available");
 
-            return SaveDocumentAs(FilePath);
+            return SaveDocumentAs(FilePath, (FilePath.EndsWith(".xml", StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        public bool SaveDocumentAs(string file)
+        public bool SaveDocumentAs(string file, bool compressed)
         {
-            if (!FileSerializer.SaveToFile(CurrentDocument.GetModel(), file))
+            if (!FileSerializer.SaveToFile(CurrentDocument.GetModel(), file, compressed))
                 return false;
 
             FilePath = file;

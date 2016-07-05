@@ -56,7 +56,7 @@ namespace GlowSequencer
             }
         }
 
-        public static bool SaveToFile(Timeline timeline, string filename)
+        public static bool SaveToFile(Timeline timeline, string filename, bool compressed)
         {
             XDocument doc = new XDocument();
             doc.Add(new XElement("sequence",
@@ -66,9 +66,19 @@ namespace GlowSequencer
 
             try
             {
-                using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Create, FileAccess.Write), CompressionMode.Compress))
+                if (compressed)
                 {
-                    doc.Save(zipStream);
+                    using (GZipStream zipStream = new GZipStream(new FileStream(filename, FileMode.Create, FileAccess.Write), CompressionMode.Compress))
+                    {
+                        doc.Save(zipStream);
+                    }
+                }
+                else
+                {
+                    using (FileStream stream = new FileStream(filename, FileMode.Create, FileAccess.Write))
+                    {
+                        doc.Save(stream);
+                    }
                 }
                 return true;
             }

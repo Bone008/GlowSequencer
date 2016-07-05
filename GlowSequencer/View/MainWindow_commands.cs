@@ -176,12 +176,12 @@ namespace GlowSequencer.View
             diag.FileName = main.DocumentName;
             diag.AddExtension = true;
             diag.DefaultExt = FileSerializer.EXTENSION_PROJECT;
-            diag.Filter = string.Format("Glow Sequence (*{0})|*{0}", FileSerializer.EXTENSION_PROJECT);
-            diag.FilterIndex = 0;
+            diag.Filter = string.Format("Glow Sequence (*{0})|*{0}|Uncompressed Glow Sequence (*.xml)|*.xml", FileSerializer.EXTENSION_PROJECT);
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
-                main.SaveDocumentAs(diag.FileName);
+                bool compressed = (diag.FilterIndex != 2);
+                main.SaveDocumentAs(diag.FileName, compressed);
                 return true;
             }
             return false;
