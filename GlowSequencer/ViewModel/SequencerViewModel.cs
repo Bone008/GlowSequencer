@@ -25,6 +25,7 @@ namespace GlowSequencer.ViewModel
         private bool _synchronizeActiveWithSelection = true;
         private bool _fadeAwayOtherBlocks = true;
         private bool _adjustBlocksWithSegmentChanges = true;
+        private bool _enableSmartInsert = true;
         private TrackViewModel _selectedTrack = null;
 
         private float _cursorPosition = 0;
@@ -114,6 +115,7 @@ namespace GlowSequencer.ViewModel
         public bool SynchronizeActiveWithSelection { get { return _synchronizeActiveWithSelection; } set { SetProperty(ref _synchronizeActiveWithSelection, value); } }
         public bool FadeAwayOtherBlocks { get { return _fadeAwayOtherBlocks; } set { SetProperty(ref _fadeAwayOtherBlocks, value); } }
         public bool AdjustBlocksWithSegmentChanges { get { return _adjustBlocksWithSegmentChanges; } set { SetProperty(ref _adjustBlocksWithSegmentChanges, value); } }
+        public bool EnableSmartInsert { get { return _enableSmartInsert; } set { SetProperty(ref _enableSmartInsert, value); } }
 
 
 
@@ -305,28 +307,31 @@ namespace GlowSequencer.ViewModel
             GloColor prevColor = GloColor.White;
             Track[] prevTracks = { _selectedTrack.GetModel() };
 
-            Func<BlockViewModel, bool> fnIsBlockApplicable =
-                (bl => bl.StartTime < CursorPosition && (bl is ColorBlockViewModel || bl is RampBlockViewModel));
-
-            var prevBlocks = ((IEnumerable<BlockViewModel>)_selectedTrack.Blocks).Where(fnIsBlockApplicable);
-            if (prevBlocks.Any())
+            if (EnableSmartInsert)
             {
-                BlockViewModel prevBlock = prevBlocks.MaxBy(bl => bl.EndTimeOccupied);
+                Func<BlockViewModel, bool> fnIsBlockApplicable =
+                    (bl => bl.StartTime < CursorPosition && (bl is ColorBlockViewModel || bl is RampBlockViewModel));
 
-                // inherit color
-                if (prevBlock is ColorBlockViewModel)
-                    prevColor = ((ColorBlockViewModel)prevBlock).GetModel().Color;
-                else
-                    prevColor = ((RampBlockViewModel)prevBlock).GetModel().EndColor;
+                var prevBlocks = ((IEnumerable<BlockViewModel>)_selectedTrack.Blocks).Where(fnIsBlockApplicable);
+                if (prevBlocks.Any())
+                {
+                    BlockViewModel prevBlock = prevBlocks.MaxBy(bl => bl.EndTimeOccupied);
 
-                // inherit tracks, but only if the last block on the selected track is also the last block on all other tracks of the block
-                bool lastOfAllTracks = prevBlock.GetModel().Tracks.All(t => t.Blocks
-                                        .Select(bl => BlockViewModel.FromModel(this, bl))
-                                        .Where(fnIsBlockApplicable)
-                                        .MaxBy(bl => bl.EndTimeOccupied)
-                                    == prevBlock);
-                if (lastOfAllTracks)
-                    prevTracks = prevBlock.GetModel().Tracks.ToArray();
+                    // inherit color
+                    if (prevBlock is ColorBlockViewModel)
+                        prevColor = ((ColorBlockViewModel)prevBlock).GetModel().Color;
+                    else
+                        prevColor = ((RampBlockViewModel)prevBlock).GetModel().EndColor;
+
+                    // inherit tracks, but only if the last block on the selected track is also the last block on all other tracks of the block
+                    bool lastOfAllTracks = prevBlock.GetModel().Tracks.All(t => t.Blocks
+                                            .Select(bl => BlockViewModel.FromModel(this, bl))
+                                            .Where(fnIsBlockApplicable)
+                                            .MaxBy(bl => bl.EndTimeOccupied)
+                                        == prevBlock);
+                    if (lastOfAllTracks)
+                        prevTracks = prevBlock.GetModel().Tracks.ToArray();
+                }
             }
 
             Block b;

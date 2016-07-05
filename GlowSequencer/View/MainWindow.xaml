@@ -88,6 +88,7 @@
                         <MenuItem Header="TODO" IsEnabled="False" />
                     </MenuItem>
                 </MenuItem>
+                <MenuItem Header="Enable _smart insert" IsCheckable="True" IsChecked="{Binding EnableSmartInsert}" />
                 <Separator/>
                 <MenuItem Header="Cu_t" Command="ApplicationCommands.Cut" />
                 <MenuItem Header="_Copy" Command="ApplicationCommands.Copy" />
