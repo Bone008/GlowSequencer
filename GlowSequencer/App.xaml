@@ -17,6 +17,7 @@
         <BooleanToVisibilityConverter x:Key="conv_BoolToVisibility" />
         <util:TimeSpanToStringConverter x:Key="conv_TimeSpanToString" />
         <util:InvertedValueConverter x:Key="conv_Invert" />
+        <util:MoreVibrantColorConverter x:Key="conv_MoreVibrantColor" />
 
         <Thickness x:Key="thickness_VerticalScrollBarRight" Right="{StaticResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}"/>
 
@@ -127,8 +128,8 @@
                     <Border Style="{StaticResource s_TimelineBorderedBlock}">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5" ColorInterpolationMode="SRgbLinearInterpolation">
-                                <GradientStop Color="{Binding RenderedColor1}" Offset="0"/>
-                                <GradientStop Color="{Binding RenderedColor2}" Offset="1"/>
+                                <GradientStop Color="{Binding RenderedColor1, Converter={StaticResource conv_MoreVibrantColor}}" Offset="0"/>
+                                <GradientStop Color="{Binding RenderedColor2, Converter={StaticResource conv_MoreVibrantColor}}" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
@@ -138,8 +139,8 @@
                     <Border Style="{StaticResource s_TimelineBorderedBlock}">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5" ColorInterpolationMode="SRgbLinearInterpolation">
-                                <GradientStop Color="{Binding StartColor}" Offset="0"/>
-                                <GradientStop Color="{Binding EndColor}" Offset="1"/>
+                                <GradientStop Color="{Binding StartColor, Converter={StaticResource conv_MoreVibrantColor}}" Offset="0"/>
+                                <GradientStop Color="{Binding EndColor, Converter={StaticResource conv_MoreVibrantColor}}" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
