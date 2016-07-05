@@ -20,7 +20,7 @@ namespace GlowSequencer.Model
             : base(timeline, tracks)
         {
         }
-        internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive()
+        internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)
         {
             yield return new FileSerializer.PrimitiveBlock(StartTime, GetEndTime(), _startColor, _endColor);
         }

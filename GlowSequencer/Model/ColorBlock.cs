@@ -26,7 +26,7 @@ namespace GlowSequencer.Model
             ForwardPropertyEvents("Duration", this, () => { if (ColorModifierFn != null) { Notify("RenderedColor2"); } });
         }
 
-        internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive()
+        internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)
         {
             yield return new FileSerializer.PrimitiveBlock(StartTime, GetEndTime(), _color, _color);
         }

@@ -105,7 +105,7 @@ namespace GlowSequencer.Model
             return FromXML(timeline, ToXML());
         }
 
-        internal virtual IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive()
+        internal virtual IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)
         {
             return Enumerable.Empty<FileSerializer.PrimitiveBlock>();
         }

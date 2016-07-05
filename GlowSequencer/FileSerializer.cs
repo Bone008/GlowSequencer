@@ -169,7 +169,7 @@ namespace GlowSequencer
             // Each sample stores "color up to this point" and "color from this point forward" along with the block that set the respective half.
             // After painting is complete, all samples that just pass through a single block are redundant.
 
-            Sample[] samples = CollectSamples(track.Blocks, startTime);
+            Sample[] samples = CollectSamples(track, startTime);
             GloCommandContainer commandContainer = SamplesToCommands(samples);
             OptimizeCommands(commandContainer.Commands);
 
@@ -178,8 +178,10 @@ namespace GlowSequencer
         }
 
 
-        private static Sample[] CollectSamples(IEnumerable<Block> blocks, float exportStartTime)
+        private static Sample[] CollectSamples(Track track, float exportStartTime)
         {
+            IEnumerable<Block> blocks = track.Blocks;
+
             int firstTick = (int)Math.Round(exportStartTime * TICKS_PER_SECOND);
             if (firstTick > 0)
                 // eliminate blocks that lie fully outside the export range
@@ -187,7 +189,7 @@ namespace GlowSequencer
 
             // ticksOffset is ignored in the main painting phase, but time values are shifted at the post-filter stage
 
-            List<PrimitiveBlock> allBlocks = blocks.SelectMany(b => b.BakePrimitive()).ToList();
+            List<PrimitiveBlock> allBlocks = blocks.SelectMany(b => b.BakePrimitive(track)).ToList();
             int length = allBlocks.Max(b => (int?)b.endTime) ?? 0;
 
             var samples = new Sample[length + 1];

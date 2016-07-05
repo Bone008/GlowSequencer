@@ -18,10 +18,14 @@ namespace GlowSequencer.Model
         {
         }
 
-        internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive()
+        internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)
         {
+            // only consider children that actually occupy the track
+            var relevantChildren = Children.Where(child => child.Tracks.Contains(track)).ToList();
+
             for (int i = 0; i < _repetitions; i++)
-                foreach (var primitive in Children.SelectMany(child => child.BakePrimitive()))
+
+                foreach (var primitive in relevantChildren.SelectMany(child => child.BakePrimitive(track)))
                 {
                     primitive.startTime += FileSerializer.PrimitiveBlock.ToTicks(StartTime + i * Duration);
                     primitive.endTime += FileSerializer.PrimitiveBlock.ToTicks(StartTime + i * Duration);
