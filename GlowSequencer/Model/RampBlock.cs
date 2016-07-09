@@ -22,7 +22,8 @@ namespace GlowSequencer.Model
         }
         internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)
         {
-            yield return new FileSerializer.PrimitiveBlock(StartTime, GetEndTime(), _startColor, _endColor);
+            if (Tracks.Contains(track))
+                yield return new FileSerializer.PrimitiveBlock(StartTime, GetEndTime(), _startColor, _endColor);
         }
 
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)

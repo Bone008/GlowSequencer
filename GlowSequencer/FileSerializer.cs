@@ -97,9 +97,11 @@ namespace GlowSequencer
 
         public class PrimitiveBlock
         {
+            private static int idGen = 10000;
+            public int id = ++idGen;
+
             public int startTime, endTime; // endTime is exclusive
             public GloColor startColor, endColor;
-
 
             public PrimitiveBlock(float tStart, float tEnd, GloColor colStart, GloColor colEnd)
             {
@@ -120,6 +122,11 @@ namespace GlowSequencer
             public static int ToTicks(float time)
             {
                 return (int)Math.Round(time * TICKS_PER_SECOND);
+            }
+
+            public override string ToString()
+            {
+                return "" + id;
             }
         }
 
@@ -190,7 +197,10 @@ namespace GlowSequencer
 
         private static Sample[] CollectSamples(Track track, float exportStartTime)
         {
-            IEnumerable<Block> blocks = track.Blocks;
+            // IMPORTANT: this uses the Timeline.Blocks collection, NOT the Track.Blocks collection;
+            // the latter is only a view, which does not preserve ordering, so multi-layer blocks are broken when using Track.Blocks;
+            // Block.BakePrimitive(track) is responsible for filtering blocks based on tracks
+            IEnumerable<Block> blocks = track.GetTimeline().Blocks;
 
             int firstTick = (int)Math.Round(exportStartTime * TICKS_PER_SECOND);
             if (firstTick > 0)
@@ -223,12 +233,18 @@ namespace GlowSequencer
                 samples[primBlock.endTime].blockBefore = primBlock;
             }
 
+            //if (track.Label == "Track 02")
+            //    File.WriteAllLines("D:\\debug_samples_pre.txt", samples.Select(s => s.ticks.ToString("000000") + ": " + s.colBefore.ToHexString() + " -> " + s.colAfter.ToHexString() + " ; " + s.blockBefore + " -> " + s.blockAfter));
+
             samples = samples
                 // eliminate samples that lie before the time range
                 .Where(s => s.ticks >= firstTick)
                 // samples where the block does not change are redundant
                 .Where(s => s.blockBefore != s.blockAfter)
                 .ToArray();
+
+            //if (track.Label == "Track 02")
+            //    File.WriteAllLines("D:\\debug_samples_post.txt", samples.Select(s => s.ticks.ToString("000000") + ": " + s.colBefore.ToHexString() + " -> " + s.colAfter.ToHexString() + " ; " + s.blockBefore + " -> " + s.blockAfter));
 
             // adjust ticks for the ticksOffset
             for (int i = 0; i < samples.Length; i++)
