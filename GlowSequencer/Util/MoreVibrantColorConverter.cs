@@ -11,7 +11,7 @@ namespace GlowSequencer.Util
     public class MoreVibrantColorConverter : IValueConverter
     {
         private const double MIN_BRIGHTNESS = 0.4;
-        private const double DARK_BRIGHTNESS_RANGE = 0.1;
+        private const double DARK_BRIGHTNESS_RANGE = 0.6;
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
