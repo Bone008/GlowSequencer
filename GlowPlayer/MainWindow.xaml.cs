@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,21 +23,12 @@ namespace GlowPlayer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private GloColor _col = GloColor.FromRGB(0, 0, 0);
 
-        private GloColor CurrentColor
-        {
-            get { return _col; }
-            set
-            {
-                _col = value;
-                //colorPanel.Background = new SolidColorBrush(Color.FromRgb((byte)_col.r, (byte)_col.g, (byte)_col.b));
-            }
-        }
+        private List<SequenceAnimator> runningAnimators = new List<SequenceAnimator>();
 
         private DispatcherTimer timer;
-        private IEnumerator<TimeSpan> programQueue = null;
-        private DateTime nextExecutionTime;
+        private TimeSpan progress = TimeSpan.Zero;
+        private DateTime lastTick;
 
         public MainWindow()
         {
@@ -45,117 +37,88 @@ namespace GlowPlayer
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(10);
             timer.Tick += timer_Tick;
-
-            colorPanel.Background = new SolidColorBrush(c2c(_col));
         }
 
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void StartFromBeginning()
         {
-            var fd = new Microsoft.Win32.OpenFileDialog();
-            fd.DefaultExt = ".glo";
-            fd.Filter = "Glo Files (*.glo)|*.glo|All files|*";
-            bool? result = fd.ShowDialog(this);
-
-            if (result.HasValue && result.Value)
-            {
-                try
-                {
-                    GloProgram prog = GloProgram.LoadFromFile(fd.FileName);
-                    programQueue = RunProgram(prog).GetEnumerator();
-                    nextExecutionTime = DateTime.Now;
-                    timer.Start();
-                }
-                catch (System.IO.FileFormatException ex)
-                {
-                    MessageBox.Show("Error loading program: " + ex.Message);
-                }
-            }
+            lastTick = DateTime.Now;
+            progress = TimeSpan.Zero;
+            timer.Start();
         }
-
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            while (nextExecutionTime < DateTime.Now)
-            {
-                if (programQueue.MoveNext())
-                {
-                    nextExecutionTime += programQueue.Current;
-                }
-                else
-                {
-                    timer.Stop();
-                    CurrentColor = GloColor.FromRGB(0, 0, 0);
-                    break;
-                }
-            }
+            DateTime now = DateTime.Now;
+            progress += (now - lastTick);
+            lastTick = now;
+
+            timestampLabel.Content = progress.ToString();
+
+            runningAnimators.ForEach(anim => anim.Tick(progress));
+            runningAnimators.RemoveAll(anim => !anim.Running);
+
+            if (runningAnimators.Count == 0)
+                timer.Stop();
         }
 
-        private IEnumerable<TimeSpan> RunProgram(GloProgram prog)
+        private void Button_Click(object sender, RoutedEventArgs _)
         {
-            foreach (var elem in RunSequence(prog.Root.Commands))
-                yield return elem;
+            var diag = new Microsoft.Win32.OpenFileDialog();
+            diag.DefaultExt = ".glo";
+            diag.Filter = "Glo files (*.glo)|*.glo|All files|*.*";
+            diag.FilterIndex = 1;
+            diag.Multiselect = true;
 
-        }
-        private IEnumerable<TimeSpan> RunSequence(IEnumerable<GloCommand> seq)
-        {
-            foreach (GloCommand cmd in seq)
+            if (diag.ShowDialog(this) == true)
             {
-                if (cmd is GloLoop)
+                timer.Stop();
+                runningAnimators.Clear();
+                trackContainer.Items.Clear();
+
+                foreach (string file in diag.FileNames)
                 {
-                    GloLoop loop = (GloLoop)cmd;
-                    for (int i = 0; i < loop.Repetitions; i++)
+                    GloProgram prog;
+                    try { prog = GloProgram.LoadFromFile(file); }
+                    catch(FileFormatException e)
                     {
-                        foreach (var elem in RunSequence(loop.Commands))
-                            yield return elem;
+                        MessageBox.Show(this, "Could not load file '" + file + "':" + Environment.NewLine + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
+
+                    Canvas c = new Canvas();
+                    c.Width = 50;
+                    c.Height = 50;
+                    c.Margin = new Thickness(10);
+                    c.Background = new SolidColorBrush(Colors.Black);
+
+                    Label l = new Label();
+                    l.Content = new string(System.IO.Path.GetFileNameWithoutExtension(file).Reverse().Take(6).Reverse().ToArray());
+                    l.Foreground = new SolidColorBrush(Colors.White);
+                    c.Children.Add(l);
+
+                    trackContainer.Items.Add(c);
+
+                    runningAnimators.Add(new SequenceAnimator(c, prog));
                 }
 
-                else if (cmd is GloDelayCommand)
-                {
-                    yield return ((GloDelayCommand)cmd).Delay;
-                }
-
-                else if (cmd is GloRampCommand)
-                {
-                    GloRampCommand ramp = (GloRampCommand)cmd;
-                    GloColor startCol = CurrentColor;
-
-
-                    ColorAnimation animation = new ColorAnimation();
-                    animation.To = c2c(ramp.TargetColor);
-                    animation.Duration = new Duration(ramp.Duration);
-                    colorPanel.Background.BeginAnimation(SolidColorBrush.ColorProperty, animation);
-
-                    CurrentColor = ramp.TargetColor;
-
-                    /*double duration = ramp.Duration.TotalMilliseconds;
-                    for (double t = 0; t < duration; t += 10)
-                    {
-                        CurrentColor = GloColor.Blend(startCol, ((GloRampCommand)cmd).TargetColor, t / duration);
-                        yield return TimeSpan.FromMilliseconds(10);
-                    }*/
-                    yield return ramp.Duration;
-                }
-
-                else if (cmd is GloColorCommand)
-                {
-                    colorPanel.Background.SetCurrentValue(SolidColorBrush.ColorProperty, c2c(((GloColorCommand)cmd).Color));
-                    //CurrentColor = ((GloColorCommand)cmd).Color;
-                    yield return TimeSpan.Zero;
-                }
-
-                else
-                {
-                    MessageBox.Show("Unknown command: " + cmd.GetType().Name);
-                }
+                StartFromBeginning();
             }
         }
 
-
-        private Color c2c(GloColor _col)
+        private void Play_Click(object sender, RoutedEventArgs e)
         {
-            return Color.FromRgb((byte)_col.r, (byte)_col.g, (byte)_col.b);
+            timer.Start();
+            lastTick = DateTime.Now;
+        }
+
+        private void Pause_Click(object sender, RoutedEventArgs e)
+        {
+            timer.Stop();
+        }
+
+        private void Reset_Click(object sender, RoutedEventArgs e)
+        {
+            StartFromBeginning();
         }
     }
 }
