@@ -190,6 +190,26 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteExportGlo(object sender, ExecutedRoutedEventArgs e)
         {
+            TimeSpan startTime = TimeSpan.Zero;
+
+            var converter = new Util.TimeSpanToStringConverter();
+            
+            string lastInput = (string)converter.Convert(startTime, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture);
+            object inputResult;
+            do
+            {
+                var prompt = new PromptWindow("Export start time");
+                prompt.PromptText = lastInput;
+
+                if (prompt.ShowDialog() != true)
+                    return;
+
+                inputResult = converter.ConvertBack(prompt.PromptText, typeof(TimeSpan), null, System.Globalization.CultureInfo.InvariantCulture);
+            } while (inputResult == null);
+
+            startTime = (TimeSpan)inputResult;
+
+
             string exportName = main.DocumentName;
             if (exportName.EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
                 exportName = exportName.Substring(0, exportName.Length - FileSerializer.EXTENSION_PROJECT.Length);
@@ -203,7 +223,7 @@ namespace GlowSequencer.View
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
-                if (main.ExportProgram(diag.FileName))
+                if (main.ExportProgram(diag.FileName, (float)startTime.TotalSeconds))
                     MessageBox.Show(this, "Done!");
             }
         }

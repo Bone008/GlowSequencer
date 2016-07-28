@@ -88,12 +88,12 @@ namespace GlowSequencer.ViewModel
         }
 
 
-        public bool ExportProgram(string filename)
+        public bool ExportProgram(string filename, float startTime)
         {
             if (filename.EndsWith(".glo", StringComparison.InvariantCultureIgnoreCase))
                 filename = filename.Substring(0, filename.Length - 4);
 
-            return FileSerializer.ExportGloFiles(CurrentDocument.GetModel(), filename + "_", ".glo");
+            return FileSerializer.ExportGloFiles(CurrentDocument.GetModel(), filename + "_", ".glo", startTime);
         }
 
 

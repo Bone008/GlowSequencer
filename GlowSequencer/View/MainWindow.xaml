@@ -84,9 +84,6 @@
                 <MenuItem Header="_Insert">
                     <MenuItem Header="_Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" InputGestureText="Ctrl+I" />
                     <MenuItem Header="_Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" InputGestureText="Ctrl+Shift+I" />
-                    <MenuItem Header="_Subsequence">
-                        <MenuItem Header="TODO" IsEnabled="False" />
-                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="Enable _smart insert" IsCheckable="True" IsChecked="{Binding EnableSmartInsert}" />
                 <Separator/>

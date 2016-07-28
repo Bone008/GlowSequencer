@@ -144,13 +144,13 @@ namespace GlowSequencer
             return Path.GetInvalidFileNameChars().Aggregate(str, (current, c) => current.Replace(c.ToString(), "")).Replace(' ', '_');
         }
 
-        public static bool ExportGloFiles(Timeline timeline, string filenameBase, string filenameSuffix)
+        public static bool ExportGloFiles(Timeline timeline, string filenameBase, string filenameSuffix, float startTime)
         {
             foreach (var track in timeline.Tracks)
             {
                 string sanitizedTrackName = SanitizeString(track.Label);
                 string file = filenameBase + sanitizedTrackName + filenameSuffix;
-                ExportTrack(track, file);
+                ExportTrack(track, file, startTime);
             }
 
 
