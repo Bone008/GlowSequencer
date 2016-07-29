@@ -32,9 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>AutomationSandbox.ActiveWindowProgram</StartupObject>
+    <StartupObject>AutomationSandbox.LibUsbProgram</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LibUsbDotNet">
+      <HintPath>..\packages\LibUsbDotNet.2.2.8\lib\LibUsbDotNet.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
@@ -50,6 +53,7 @@
   <ItemGroup>
     <Compile Include="ActiveWindowProgram.cs" />
     <Compile Include="ComProgram.cs" />
+    <Compile Include="LibUsbProgram.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
