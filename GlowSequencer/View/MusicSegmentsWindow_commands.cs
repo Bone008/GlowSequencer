@@ -15,6 +15,7 @@ namespace GlowSequencer.View
         public static readonly RoutedUICommand AddSegment = new RoutedUICommand("", "AddSegment", typeof(SequencerCommands));
         public static readonly RoutedUICommand DeleteSegment = new RoutedUICommand("", "DeleteSegment", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Delete) });
         public static readonly RoutedUICommand SetAsDefault = new RoutedUICommand("", "SetAsDefault", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
+        public static readonly RoutedUICommand MoveSegmentByTime = new RoutedUICommand("", "MoveSegmentByTime", typeof(SequencerCommands));
     }
 
     public partial class MusicSegmentsWindow
@@ -71,6 +72,42 @@ namespace GlowSequencer.View
                 return;
 
             sequencer.SetMusicSegmentAsDefault((MusicSegmentViewModel)e.Parameter);
+        }
+
+
+
+        private void CommandBinding_ExecuteMoveSegmentByTime(object sender, ExecutedRoutedEventArgs e)
+        {
+            MusicSegmentViewModel segment = e.Parameter as MusicSegmentViewModel;
+            if (segment == null)
+                throw new ArgumentException("invalid parameter");
+
+            TimeSpan? delta = PromptTimeDelta();
+            if (delta == null)
+                return; // cancelled by user
+
+            segment.TimeOrigin += delta.Value;
+        }
+
+
+        private TimeSpan? PromptTimeDelta()
+        {
+            var converter = new Util.TimeSpanToStringConverter();
+
+            string lastInput = (string)converter.Convert(TimeSpan.Zero, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture);
+            object inputResult;
+            do
+            {
+                var prompt = new PromptWindow("Export start time");
+                prompt.PromptText = lastInput;
+
+                if (prompt.ShowDialog() != true)
+                    return null;
+
+                inputResult = converter.ConvertBack(prompt.PromptText, typeof(TimeSpan), null, System.Globalization.CultureInfo.InvariantCulture);
+            } while (inputResult == null);
+
+            return (TimeSpan)inputResult;
         }
     }
 
