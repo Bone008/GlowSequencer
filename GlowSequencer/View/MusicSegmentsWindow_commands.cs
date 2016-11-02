@@ -98,7 +98,7 @@ namespace GlowSequencer.View
             object inputResult;
             do
             {
-                var prompt = new PromptWindow("Export start time");
+                var prompt = new PromptWindow("Enter time delta");
                 prompt.PromptText = lastInput;
 
                 if (prompt.ShowDialog() != true)
