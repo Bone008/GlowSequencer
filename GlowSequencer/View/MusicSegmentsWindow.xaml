@@ -19,7 +19,7 @@
         <CommandBinding Command="local:MusicSegmentCommands.AddSegment" CanExecute="CommandBinding_CanExecuteAlways" Executed="CommandBinding_ExecuteAddSegment" />
         <CommandBinding Command="local:MusicSegmentCommands.DeleteSegment" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteDeleteSegment" />
         <CommandBinding Command="local:MusicSegmentCommands.SetAsDefault" CanExecute="CommandBinding_CanExecuteIfNotDefault" Executed="CommandBinding_ExecuteSetAsDefault" />
-        <CommandBinding Command="local:MusicSegmentCommands.MoveSegmentByTime" CanExecute="CommandBinding_CanExecuteAlways" Executed="CommandBinding_ExecuteMoveSegmentByTime" />
+        <CommandBinding Command="local:MusicSegmentCommands.MoveSegmentByTime" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteMoveSegmentByTime" />
     </Window.CommandBindings>
 
     <Grid>
