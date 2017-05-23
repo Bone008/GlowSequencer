@@ -116,7 +116,7 @@
             </MenuItem>
         </Menu>
 
-        <Grid x:Name="mainTimeline" Grid.Row="1">
+        <Grid x:Name="mainTimeline" Grid.Row="1" Background="#FFEFEFEF">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="5"/>
@@ -164,7 +164,7 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <GridSplitter Grid.Column="1" Grid.RowSpan="2" ResizeDirection="Columns" HorizontalAlignment="Stretch" />
+            <GridSplitter Grid.Column="1" Grid.RowSpan="2" ResizeDirection="Columns" HorizontalAlignment="Stretch" Background="#FFD0D0D0" />
 
             <local:TimelineGrid x:Name="timelineGrid" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
                                 GridScale="{Binding TimePixelScale, Mode=OneWay}"
@@ -247,7 +247,7 @@
             </ScrollViewer>
         </Grid>
 
-        <GridSplitter HorizontalAlignment="Stretch" Height="5" ResizeDirection="Rows" Grid.Row="2"/>
+        <GridSplitter HorizontalAlignment="Stretch" Height="5" ResizeDirection="Rows" Grid.Row="2" Background="#FFD0D0D0" />
 
         <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Grid.Row="3" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
 
