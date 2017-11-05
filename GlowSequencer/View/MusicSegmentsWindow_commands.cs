@@ -99,6 +99,7 @@ namespace GlowSequencer.View
             do
             {
                 var prompt = new PromptWindow("Enter time delta");
+                prompt.Owner = this;
                 prompt.PromptText = lastInput;
 
                 if (prompt.ShowDialog() != true)

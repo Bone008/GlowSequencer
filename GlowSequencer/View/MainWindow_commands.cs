@@ -199,6 +199,7 @@ namespace GlowSequencer.View
             do
             {
                 var prompt = new PromptWindow("Export start time");
+                prompt.Owner = this;
                 prompt.PromptText = lastInput;
 
                 if (prompt.ShowDialog() != true)
@@ -257,6 +258,7 @@ namespace GlowSequencer.View
 
 
             var win = new ReplaceColorWindow(replaceColorVm);
+            win.Owner = this;
             win.ShowDialog();
         }
 

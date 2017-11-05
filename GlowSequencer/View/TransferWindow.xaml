@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
         Title="Transfer to equipment" Width="600" SizeToContent="Height"
-        Closing="Window_Closing" Activated="Window_Activated" Icon="/GlowSequencer;component/Resources/icon.ico" ShowInTaskbar="False">
+        Closing="Window_Closing" Activated="Window_Activated" Icon="/GlowSequencer;component/Resources/icon.ico" WindowStartupLocation="CenterOwner">
 
     <StackPanel Orientation="Vertical" Margin="10">
         <StackPanel IsEnabled="{Binding IsTransferIdle}">
