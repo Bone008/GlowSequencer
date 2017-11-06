@@ -182,6 +182,20 @@ namespace GlowSequencer.ViewModel
             Notify("CurrentViewRightPositionComplex");
         }
 
+        /// <summary>
+        /// Called after undo/redo to make sure that no deleted blocks are in the selection.
+        /// </summary>
+        public void SanityCheckSelectedBlocks()
+        {
+            // TODO: once we have a better ObservableCollection, use RemoveAll for better performance
+            for (int i = SelectedBlocks.Count - 1; i >= 0; i--)
+            {
+                var block = SelectedBlocks[i].GetModel();
+                if (!model.Blocks.Contains(block))
+                    SelectedBlocks.RemoveAt(i);
+            }
+        }
+
         // ===== Commands =====
 
 
@@ -232,10 +246,11 @@ namespace GlowSequencer.ViewModel
                     }
                     else
                     {
-                        foreach (BlockViewModel b in sel.ToArray())
+                        // make sel equal to newBlocks
+                        for (int i = sel.Count - 1; i >= 0; i--)
                         {
-                            if (!newBlocks.Contains(b))
-                                sel.Remove(b);
+                            if (!newBlocks.Contains(sel[i]))
+                                sel.RemoveAt(i);
                         }
                         foreach (BlockViewModel b in newBlocks)
                         {

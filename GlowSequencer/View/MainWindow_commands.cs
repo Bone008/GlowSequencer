@@ -249,10 +249,12 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteUndo(object sender, ExecutedRoutedEventArgs e)
         {
             sequencer.ActionManager.Undo();
+            sequencer.SanityCheckSelectedBlocks();
         }
         private void CommandBinding_ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
         {
             sequencer.ActionManager.Redo();
+            sequencer.SanityCheckSelectedBlocks();
         }
 
         private void CommandBinding_ExecuteReplaceColor(object sender, ExecutedRoutedEventArgs e)
