@@ -62,6 +62,10 @@
     <Reference Include="GuiLabs.Undo">
       <HintPath>..\packages\GuiLabs.Undo.1.0.0.0\lib\net40\GuiLabs.Undo.dll</HintPath>
     </Reference>
+    <Reference Include="NAudio, Version=1.8.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.8.3\lib\net35\NAudio.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationFramework.Classic" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -90,6 +94,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ActionManagerExtensions.cs" />
+    <Compile Include="Audio\SampleAggregator.cs" />
     <Compile Include="CompatibilityHooks.cs" />
     <Compile Include="FileSerializer.cs" />
     <Compile Include="Mastermind.cs" />
@@ -99,6 +104,7 @@
     <Compile Include="Model\GroupBlock.cs" />
     <Compile Include="Model\LoopBlock.cs" />
     <Compile Include="Model\SubsequenceBlock.cs" />
+    <Compile Include="Audio\AudioPlayback.cs" />
     <Compile Include="TransferToEquipmentController.cs" />
     <Compile Include="TransferToEquipmentSettings.cs" />
     <Compile Include="Util\ColorUtil.cs" />
@@ -113,6 +119,7 @@
     <Compile Include="ViewModel\Blocks\GroupBlockViewModel.cs" />
     <Compile Include="ViewModel\GlobalViewParameters.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\PlaybackViewModel.cs" />
     <Compile Include="ViewModel\ReplaceColorViewModel.cs" />
     <Compile Include="ViewModel\SelectionProperties.cs" />
     <Compile Include="ViewModel\TimeUnit.cs" />

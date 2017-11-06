@@ -40,8 +40,8 @@ namespace GlowSequencer.ViewModel
         private ISet<BlockViewModel> temporaryDeltaSelectedBlocks = new HashSet<BlockViewModel>();
 
         public GuiLabs.Undo.ActionManager ActionManager { get; private set; }
-
         public SelectionProperties SelectionData { get; private set; }
+        public PlaybackViewModel Playback{ get; private set; }
 
         public ReadOnlyContinuousCollection<MusicSegmentViewModel> MusicSegments { get; private set; }
         public ReadOnlyContinuousCollection<TrackViewModel> Tracks { get; private set; }
@@ -135,7 +135,7 @@ namespace GlowSequencer.ViewModel
                 SelectedTrack = Tracks[0];
 
             ActiveMusicSegment = MusicSegments[model.DefaultMusicSegment.GetIndex()];
-
+            Playback = new PlaybackViewModel(this);
 
             Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, "TimelineWidth");
             AllBlocks.ToList().ForEach(fn_SubscribeToBlock);

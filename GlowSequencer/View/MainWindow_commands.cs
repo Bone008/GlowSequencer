@@ -36,6 +36,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand DuplicateTrack = new RoutedCommand();
         public static readonly RoutedCommand DeleteTrack = new RoutedCommand();
 
+        public static readonly RoutedCommand MusicLoadFile = new RoutedCommand();
         public static readonly RoutedUICommand MusicManageSegments = new RoutedUICommand("", "MusicManageSegments", typeof(SequencerCommands));
 
 
@@ -511,6 +512,19 @@ namespace GlowSequencer.View
             sequencer.DeleteTrack(track);
         }
 
+        private void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
+        {
+            string[] extensions = { "*.mp3", "*.m4a", "*.wav", "*.wma", "*.aiff", "*.aac" };
+            var diag = new Microsoft.Win32.OpenFileDialog();
+            diag.Filter = string.Format("Audio file ({0})|{1}|All files|*.*",
+                string.Join(", ", extensions), string.Join(";", extensions));
+            diag.FilterIndex = 0;
+
+            if (diag.ShowDialog(this).GetValueOrDefault(false))
+            {
+                sequencer.Playback.LoadFile(diag.FileName);
+            }
+        }
 
         private void CommandBinding_ExecuteMusicManageSegments(object sender, ExecutedRoutedEventArgs e)
         {
