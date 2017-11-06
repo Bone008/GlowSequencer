@@ -26,6 +26,7 @@ namespace GlowSequencer.Model
                 yield return new FileSerializer.PrimitiveBlock(StartTime, GetEndTime(), _startColor, _endColor);
         }
 
+        [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {
             yield return new GloColorCommand(_startColor);

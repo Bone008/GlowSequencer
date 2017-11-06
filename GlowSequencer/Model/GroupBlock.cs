@@ -127,6 +127,7 @@ namespace GlowSequencer.Model
             return this;
         }
 
+        [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {
             throw new NotImplementedException("implemented by LoopBlock");

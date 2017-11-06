@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace GlowSequencer.Model
 {
     // used by the deprecated export algorithm
+    [Obsolete]
     public class GloSequenceContext
     {
         private const int TICKS_PER_SECOND = 100;

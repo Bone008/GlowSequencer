@@ -33,6 +33,7 @@ namespace GlowSequencer.Model
                 }
         }
 
+        [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {
             // TO_DO handle repetitions of more than 255

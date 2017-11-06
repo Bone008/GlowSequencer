@@ -16,6 +16,7 @@ namespace GlowSequencer.Model
         {
         }
 
+        [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {
             throw new NotImplementedException();

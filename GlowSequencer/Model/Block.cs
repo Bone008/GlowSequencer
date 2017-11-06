@@ -111,6 +111,7 @@ namespace GlowSequencer.Model
         }
 
         /// <summary>Obsolete: "replaced with new algorithm that uses BakePrimitive"</summary>
+        [Obsolete]
         public abstract IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context);
 
         public virtual XElement ToXML()
