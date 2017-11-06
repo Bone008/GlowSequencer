@@ -29,6 +29,7 @@
         <CommandBinding Command="ApplicationCommands.Paste" Executed="CommandBinding_ExecutePaste"  CanExecute="CommandBinding_CanExecuteIfClipboard" />
         <CommandBinding Command="ApplicationCommands.Delete" Executed="CommandBinding_ExecuteDelete"  CanExecute="CommandBinding_CanExecuteIfSelected" />
         <CommandBinding Command="local:SequencerCommands.InsertBlock" Executed="CommandBinding_ExecuteInsertBlock"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.ConvertToType" Executed="CommandBinding_ExecuteConvertToType"  CanExecute="CommandBinding_CanExecuteConvertToType" />
         <CommandBinding Command="local:SequencerCommands.GroupBlocks" Executed="CommandBinding_ExecuteGroupBlocks"  CanExecute="CommandBinding_CanExecuteIfGroupable" />
         <CommandBinding Command="local:SequencerCommands.UngroupBlocks" Executed="CommandBinding_ExecuteUngroupBlocks"  CanExecute="CommandBinding_CanExecuteIfUngroupable" />
         <CommandBinding Command="local:SequencerCommands.MoveToFront" Executed="CommandBinding_ExecuteMoveToFront"  CanExecute="CommandBinding_CanExecuteIfSelected" />
@@ -49,6 +50,7 @@
     <Window.InputBindings>
         <KeyBinding Key="I" Modifiers="Control" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
         <KeyBinding Key="I" Modifiers="Control+Shift" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
+        <KeyBinding Key="B" Modifiers="Control" Command="local:SequencerCommands.ConvertToType" />
     </Window.InputBindings>
 
     <Grid DataContext="{Binding CurrentDocument}">
@@ -91,6 +93,13 @@
                 <MenuItem Header="_Copy" Command="ApplicationCommands.Copy" />
                 <MenuItem Header="_Paste" Command="ApplicationCommands.Paste" />
                 <MenuItem Header="_Delete" Command="ApplicationCommands.Delete" />
+                <Separator/>
+                <MenuItem Header="Convert to Color" InputGestureText="{Binding ConvertAutoDeduceGestureText}"
+                          Visibility="{Binding CanConvertToColor, Converter={StaticResource conv_BoolToVisibility}}"
+                          Command="local:SequencerCommands.ConvertToType" CommandParameter="color"/>
+                <MenuItem Header="Convert to Ramp" InputGestureText="{Binding ConvertAutoDeduceGestureText}"
+                          Visibility="{Binding CanConvertToRamp, Converter={StaticResource conv_BoolToVisibility}}"
+                          Command="local:SequencerCommands.ConvertToType" CommandParameter="ramp"/>
                 <Separator />
                 <MenuItem Header="_Group" Command="local:SequencerCommands.GroupBlocks" />
                 <MenuItem Header="_Ungroup" Command="local:SequencerCommands.UngroupBlocks" />
@@ -197,6 +206,13 @@
                             <ContextMenu>
                                 <MenuItem Header="Insert Color" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" InputGestureText="Ctrl+I" />
                                 <MenuItem Header="Insert Ramp" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" InputGestureText="Ctrl+Shift+I" />
+                                <Separator/>
+                                <MenuItem Header="Convert to Color" Command="local:SequencerCommands.ConvertToType" CommandParameter="color"
+                                          InputGestureText="{Binding ConvertAutoDeduceGestureText}"
+                                          Visibility="{Binding CanConvertToColor, Converter={StaticResource conv_BoolToVisibility}}" />
+                                <MenuItem Header="Convert to Ramp" Command="local:SequencerCommands.ConvertToType" CommandParameter="ramp"
+                                          InputGestureText="{Binding ConvertAutoDeduceGestureText}"
+                                          Visibility="{Binding CanConvertToRamp, Converter={StaticResource conv_BoolToVisibility}}"/>
                                 <Separator/>
                                 <MenuItem Header="Group" Command="local:SequencerCommands.GroupBlocks" />
                                 <MenuItem Header="Ungroup" Command="local:SequencerCommands.UngroupBlocks" />

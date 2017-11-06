@@ -21,6 +21,7 @@ namespace GlowSequencer.View
         public static readonly RoutedUICommand ReplaceColor = new RoutedUICommand("", "ReplaceColor", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
 
         public static readonly RoutedCommand InsertBlock = new RoutedCommand();
+        public static readonly RoutedCommand ConvertToType = new RoutedCommand();
         public static readonly RoutedUICommand GroupBlocks = new RoutedUICommand("", "GroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control) });
         public static readonly RoutedUICommand UngroupBlocks = new RoutedUICommand("", "UngroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control | ModifierKeys.Shift) });
         public static readonly RoutedCommand MoveToFront = new RoutedCommand();
@@ -101,6 +102,16 @@ namespace GlowSequencer.View
             ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
             e.CanExecute = (sequencer.SelectedBlocks.Any()
                             && props.TrackAffiliation.Any(aff => aff.CanModify && !aff.AffiliationState.GetValueOrDefault(false)));
+        }
+
+        private void CommandBinding_CanExecuteConvertToType(object sender, CanExecuteRoutedEventArgs e)
+        {
+            if ((string)e.Parameter == "color")
+                e.CanExecute = sequencer.CanConvertToColor;
+            else if ((string)e.Parameter == "ramp")
+                e.CanExecute = sequencer.CanConvertToRamp;
+            else
+                e.CanExecute = sequencer.CanConvertToAutoDeduced;
         }
 
 
@@ -193,7 +204,7 @@ namespace GlowSequencer.View
             TimeSpan startTime = TimeSpan.Zero;
 
             var converter = new Util.TimeSpanToStringConverter();
-            
+
             string lastInput = (string)converter.Convert(startTime, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture);
             object inputResult;
             do
@@ -281,6 +292,11 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteUngroupBlocks(object sender, ExecutedRoutedEventArgs e)
         {
             sequencer.UngroupSelectedBlocks();
+        }
+
+        private void CommandBinding_ExecuteConvertToType(object sender, ExecutedRoutedEventArgs e)
+        {
+            sequencer.ConvertSelectedBlocksTo((string)e.Parameter);
         }
 
 

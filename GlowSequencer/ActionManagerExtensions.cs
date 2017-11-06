@@ -32,10 +32,32 @@ namespace GlowSequencer
         {
             am.DoRec(new BasicUndoAction(() => collection.Add(item), () => collection.Remove(item)));
         }
+
         public static void RecordInsert<T>(this ActionManager am, IList<T> collection, int index, T item)
         {
             am.DoRec(new BasicUndoAction(() => collection.Insert(index, item), () => collection.Remove(item)));
         }
+
+        /// <summary>Replaces the first occurence of <paramref name="oldItem"/> in a collection.</summary>
+        public static void RecordReplace<T>(this ActionManager am, IList<T> collection, T oldItem, T newItem)
+        {
+            int index = collection.IndexOf(oldItem);
+            if (index == -1)
+                throw new ArgumentException("oldItem has to be contained in collection");
+
+            RecordReplace(am, collection, index, newItem);
+        }
+        /// <summary>Replaces the item at the given index with another item.</summary>
+        public static void RecordReplace<T>(this ActionManager am, IList<T> collection, int index, T newItem)
+        {
+            am.DoRec(new StatefulUndoAction<T>(() =>
+            {
+                T oldItem = collection[index];
+                collection[index] = newItem;
+                return oldItem;
+            }, oldItem => collection[index] = oldItem));
+        }
+
         public static void RecordRemove<T>(this ActionManager am, IList<T> collection, T item)
         {
             am.DoRec(new StatefulUndoAction<int>(() =>
@@ -54,7 +76,7 @@ namespace GlowSequencer
             PropertyInfo prop = (PropertyInfo)((MemberExpression)propertyExpr.Body).Member; // ^= propertyExpr.ExtractProperty()
 
             TValue oldValue = (TValue)prop.GetValue(obj);
-            if(!EqualityComparer<TValue>.Default.Equals(value, oldValue))
+            if (!EqualityComparer<TValue>.Default.Equals(value, oldValue))
                 am.DoRec(new SetPropertyAction(obj, prop.Name, value));
 
             //am.RecordAction(new StatefulUndoAction<TValue>(() =>

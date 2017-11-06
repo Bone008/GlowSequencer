@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
@@ -29,8 +30,7 @@ namespace GlowSequencer
             if (propertyName == null)
                 throw new ArgumentNullException("missing property to notify");
 
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected void ForwardPropertyEvents(string sourcePropertyName, INotifyPropertyChanged source, params string[] notifyPropertyNames)
@@ -58,7 +58,7 @@ namespace GlowSequencer
             }
             else
             {
-                // because we use weak event subscription, above lamda expressions would instantly be garbage collected;
+                // because we use weak event subscription, above lambda expressions would instantly be garbage collected;
                 // to prevent that, we keep a list of strong references in !!this!! class;
                 // the weak reference will still be collected after the listener (this class) has been collected
                 funcReferences.Add(func);
@@ -66,5 +66,16 @@ namespace GlowSequencer
             }
         }
 
+        /// <summary>Listens to CollectionChanged events and notifies a list of other properties.</summary>
+        protected void ForwardCollectionEvents(INotifyCollectionChanged source, params string[] notifyPropertyNames)
+        {
+            EventHandler<NotifyCollectionChangedEventArgs> func = (sender, e) =>
+            {
+                foreach (string p in notifyPropertyNames)
+                    Notify(p);
+            };
+            funcReferences.Add(func);
+            CollectionChangedEventManager.AddHandler(source, func);
+        }
     }
 }

@@ -44,28 +44,25 @@ namespace GlowSequencer.ViewModel
         public SelectionProperties SelectionData { get; private set; }
 
         public ReadOnlyContinuousCollection<MusicSegmentViewModel> MusicSegments { get; private set; }
-
         public ReadOnlyContinuousCollection<TrackViewModel> Tracks { get; private set; }
-
         public ReadOnlyContinuousCollection<BlockViewModel> AllBlocks { get; private set; }
-
-
+        
         public TrackViewModel SelectedTrack { get { return _selectedTrack; } set { SetProperty(ref _selectedTrack, value); } }
-
         public ObservableCollection<BlockViewModel> SelectedBlocks { get; private set; }
-
-
+        
         public float CursorPosition { get { return _cursorPosition; } set { SetProperty(ref _cursorPosition, Math.Max(0, value)); } }
         public TimeUnit CursorPositionComplex { get { return TimeUnit.WrapAbsolute(_cursorPosition, _activeMusicSegment.GetModel(), v => CursorPosition = v); } }
 
         public double CursorPixelPosition { get { return _cursorPosition * TimePixelScale; } set { CursorPosition = (float)(value / TimePixelScale); } }
 
 
+        /// <summary>Horizontal zoom level in pixels per second.</summary>
+        public float TimePixelScale { get { return _timePixelScale; } set { SetProperty(ref _timePixelScale, Math.Max(value, 1 / 60.0f)); } }
+
         public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute((float)_viewportLeftOffsetPx / TimePixelScale, _activeMusicSegment.GetModel()); } }
         public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute((float)(_viewportLeftOffsetPx + _viewportWidthPx) / TimePixelScale, _activeMusicSegment.GetModel()); } }
         public double CurrentWinWidth { get { return _currentWinWidth; } set { SetProperty(ref _currentWinWidth, value); } }
-
-
+        
         public double TimelineWidth
         {
             get
@@ -117,10 +114,11 @@ namespace GlowSequencer.ViewModel
         public bool AdjustBlocksWithSegmentChanges { get { return _adjustBlocksWithSegmentChanges; } set { SetProperty(ref _adjustBlocksWithSegmentChanges, value); } }
         public bool EnableSmartInsert { get { return _enableSmartInsert; } set { SetProperty(ref _enableSmartInsert, value); } }
 
-
-
-        /// <summary>Pixels per second.</summary>
-        public float TimePixelScale { get { return _timePixelScale; } set { SetProperty(ref _timePixelScale, Math.Max(value, 1 / 60.0f)); } }
+        // visibility flags for the ConvertToTrack command
+        public bool CanConvertToColor => SelectedBlocks.Any(b => b is RampBlockViewModel);
+        public bool CanConvertToRamp => SelectedBlocks.Any(b => b is ColorBlockViewModel);
+        public bool CanConvertToAutoDeduced => CanConvertToColor ^ CanConvertToRamp; // if type has been left out, it needs to be deducible which one is intended
+        public string ConvertAutoDeduceGestureText => (CanConvertToAutoDeduced ? "Ctrl+B" : "");
 
         public SequencerViewModel(Timeline model)
         {
@@ -153,6 +151,8 @@ namespace GlowSequencer.ViewModel
             ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex", "GridInterval");
 
             ForwardPropertyEvents("CurrentWinWidth", this, "TimelineWidth");
+
+            ForwardCollectionEvents(SelectedBlocks, nameof(CanConvertToColor), nameof(CanConvertToRamp), nameof(CanConvertToAutoDeduced), nameof(ConvertAutoDeduceGestureText));
 
             Tracks.CollectionChanged += (_, e) =>
             {
@@ -351,14 +351,60 @@ namespace GlowSequencer.ViewModel
                     };
                     break;
                 default:
-                    throw new NotImplementedException("insertion of block type " + type);
+                    throw new ArgumentException("unsupported block type " + type);
             }
 
             b.SegmentContext = ActiveMusicSegment.GetModel();
             b.StartTime = CursorPosition;
             b.Duration = GridInterval;
 
-            ActionManager.RecordAction(new GuiLabs.Undo.AddItemAction<Block>(model.Blocks.Add, bl => model.Blocks.Remove(bl), b));
+            ActionManager.RecordAdd(model.Blocks, b);
+        }
+
+        // type may be null, then the target will be auto-inferred based on currently selected blocks
+        public void ConvertSelectedBlocksTo(string type)
+        {
+            bool rampsToColors = (type == "color");
+            bool colorsToRamps = (type == "ramp");
+            if (!rampsToColors && !colorsToRamps)
+            {
+                colorsToRamps = SelectedBlocks.Any(b => b is ColorBlockViewModel);
+                rampsToColors = SelectedBlocks.Any(b => b is RampBlockViewModel);
+                if (colorsToRamps && rampsToColors) throw new ArgumentException("type needs to be given when both color and ramp blocks are selected");
+            }
+
+            using (ActionManager.CreateTransaction())
+            {
+                for (int i = 0; i < SelectedBlocks.Count; i++)
+                {
+                    var block = SelectedBlocks[i].GetModel();
+                    Block convertedBlock;
+                    if (rampsToColors && block is RampBlock rampBlock)
+                    {
+                        convertedBlock = new ColorBlock(model, rampBlock.Tracks.ToArray())
+                        {
+                            Color = (rampBlock.StartColor == GloColor.Black ? rampBlock.EndColor : rampBlock.StartColor)
+                        };
+                    }
+                    else if (colorsToRamps && block is ColorBlock colorBlock)
+                    {
+                        convertedBlock = new RampBlock(model, colorBlock.Tracks.ToArray())
+                        {
+                            StartColor = colorBlock.Color,
+                            EndColor = (colorBlock.Color == GloColor.White ? GloColor.Black : GloColor.White)
+                        };
+                    }
+                    else { continue; }
+
+                    // copy generic properties
+                    convertedBlock.StartTime = block.StartTime;
+                    convertedBlock.Duration = block.Duration;
+                    convertedBlock.SegmentContext = block.SegmentContext;
+
+                    ActionManager.RecordReplace(model.Blocks, block, convertedBlock);
+                    SelectedBlocks[i] = BlockViewModel.FromModel(this, convertedBlock);
+                }
+            }
         }
 
         public void DeleteSelectedBlocks()
