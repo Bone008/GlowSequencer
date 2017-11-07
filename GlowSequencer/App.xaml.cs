@@ -31,13 +31,27 @@ namespace GlowSequencer
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            if(e.Args.Length > 0)
+            Application.Current.DispatcherUnhandledException += Application_DispatcherUnhandledException;
+
+            if (e.Args.Length > 0)
             {
                 string fileToLoad = e.Args[0];
                 
                 var main = (ViewModel.MainViewModel) Resources["vm_Main"];
                 main.OpenDocument(fileToLoad);
             }
+        }
+
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            // prompt user if they want to recover
+            MessageBoxResult result = MessageBox.Show(
+                "An unhandled exception was encountered in the program. The program may be able to recover but may also be in a corrupt state. Do you want to try recovery?"
+                    + Environment.NewLine + Environment.NewLine + e.Exception.ToString(),
+                "Unhandled Exception", MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+            if (result == MessageBoxResult.Yes)
+                e.Handled = true;
         }
 
 
