@@ -134,8 +134,8 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="45"/>
-                <RowDefinition Height="5"/>
                 <RowDefinition Height="45"/>
+                <RowDefinition Height="5"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
@@ -176,15 +176,26 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <GridSplitter Grid.Column="1" Grid.RowSpan="2" ResizeDirection="Columns" HorizontalAlignment="Stretch" Background="#FFD0D0D0" />
+            <GridSplitter Grid.Column="1" Grid.RowSpan="4" ResizeDirection="Columns" HorizontalAlignment="Stretch" Background="#FFD0D0D0" />
+            <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" ResizeDirection="Rows" HorizontalAlignment="Stretch" Background="#FFD0D0D0" />
 
             <local:TimelineGrid x:Name="timelineGrid" Grid.Column="2" Grid.Row="0" Grid.RowSpan="4"
+                                MouseWheel="timeline_MouseWheel"
+                                GridOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
                                 GridScale="{Binding TimePixelScale, Mode=OneWay}"
                                 GridInterval="{Binding GridInterval, Mode=OneWay}"
-                                MusicSegment="{Binding ActiveMusicSegment, Mode=OneWay}" />
+                                MusicSegment="{Binding ActiveMusicSegment, Mode=OneWay}"/>
 
-            <ScrollViewer x:Name="trackBlocksScroller" Grid.Column="2" Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible"
-                          PanningMode="Both"
+            <!-- Music Waveform, TODO: offset -->
+            <local:WaveFormControl Grid.Column="2" Grid.Row="1"
+                                   Background="Transparent" MouseWheel="timeline_MouseWheel"
+                                   PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
+                                   TimeScale="{Binding TimePixelScale}"
+                                   Waveform="{Binding Playback.CurrentWaveform, Mode=OneWay}"
+                                   IsLoading="{Binding Playback.IsLoading, Mode=OneWay}"/>
+
+            <ScrollViewer x:Name="trackBlocksScroller" Grid.Column="2" Grid.Row="3"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible" PanningMode="Both"
                           ScrollChanged="trackBlocksScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown">
                 <Grid Width="{Binding TimelineWidth}" HorizontalAlignment="Left">
 

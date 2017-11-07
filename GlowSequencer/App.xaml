@@ -14,7 +14,7 @@
 
         <util:ColorToBrushValueConverter x:Key="conv_ColorToBrush" />
         <util:NullToVisiblityConverter x:Key="conv_NullToVisibility" />
-        <BooleanToVisibilityConverter x:Key="conv_BoolToVisibility" />
+        <util:BoolToVisibilityConverter x:Key="conv_BoolToVisibility" />
         <util:TimeSpanToStringConverter x:Key="conv_TimeSpanToString" />
         <util:InvertedValueConverter x:Key="conv_Invert" />
         <util:MoreVibrantColorConverter x:Key="conv_MoreVibrantColor" />

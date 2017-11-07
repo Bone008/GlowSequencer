@@ -35,8 +35,8 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand RenameTrack = new RoutedUICommand("", "RenameTrack", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.F2) });
         public static readonly RoutedCommand DuplicateTrack = new RoutedCommand();
         public static readonly RoutedCommand DeleteTrack = new RoutedCommand();
-
-        public static readonly RoutedCommand MusicLoadFile = new RoutedCommand();
+        
+        public static readonly RoutedCommand MusicLoadFile = new RoutedUICommand("", "MusicLoadFile", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.O, ModifierKeys.Control | ModifierKeys.Shift) });
         public static readonly RoutedUICommand MusicManageSegments = new RoutedUICommand("", "MusicManageSegments", typeof(SequencerCommands));
 
 
@@ -512,7 +512,7 @@ namespace GlowSequencer.View
             sequencer.DeleteTrack(track);
         }
 
-        private void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
+        private async void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
         {
             string[] extensions = { "*.mp3", "*.m4a", "*.wav", "*.wma", "*.aiff", "*.aac" };
             var diag = new Microsoft.Win32.OpenFileDialog();
@@ -522,7 +522,7 @@ namespace GlowSequencer.View
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
-                sequencer.Playback.LoadFile(diag.FileName);
+                await sequencer.Playback.LoadFileAsync(diag.FileName);
             }
         }
 

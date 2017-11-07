@@ -75,7 +75,6 @@ namespace GlowSequencer.View
 
             if (e.HorizontalChange != 0)
             {
-                timelineGrid.GridOffset = e.HorizontalOffset;
                 sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
             }
         }

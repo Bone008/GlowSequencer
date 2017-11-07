@@ -95,6 +95,8 @@
     </ApplicationDefinition>
     <Compile Include="ActionManagerExtensions.cs" />
     <Compile Include="Audio\SampleAggregator.cs" />
+    <Compile Include="Audio\Waveform.cs" />
+    <Compile Include="Audio\WaveformGenerator.cs" />
     <Compile Include="CompatibilityHooks.cs" />
     <Compile Include="FileSerializer.cs" />
     <Compile Include="Mastermind.cs" />
@@ -107,6 +109,8 @@
     <Compile Include="Audio\AudioPlayback.cs" />
     <Compile Include="TransferToEquipmentController.cs" />
     <Compile Include="TransferToEquipmentSettings.cs" />
+    <Compile Include="Util\AsyncUtil.cs" />
+    <Compile Include="Util\BoolToVisibilityConverter.cs" />
     <Compile Include="Util\ColorUtil.cs" />
     <Compile Include="Util\MoreVibrantColorConverter.cs" />
     <Compile Include="Util\EnumerableExtensions.cs" />
@@ -164,6 +168,9 @@
     <Compile Include="View\TransferWindow.xaml.cs">
       <DependentUpon>TransferWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\WaveFormControl.xaml.cs">
+      <DependentUpon>WaveFormControl.xaml</DependentUpon>
+    </Compile>
     <Page Include="View\AboutWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -201,6 +208,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\TransferWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\WaveFormControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

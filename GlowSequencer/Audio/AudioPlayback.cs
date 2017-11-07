@@ -9,11 +9,14 @@ namespace GlowSequencer.Audio
 {
     public class AudioPlayback : IDisposable
     {
-        private IWavePlayer playbackDevice;
-        private WaveStream fileStream;
+        private WaveOut playbackDevice;
+        private AudioFileReader fileStream;
         
         //public event EventHandler<FftEventArgs> FftCalculated;
-        public event EventHandler<MaxSampleEventArgs> MaximumCalculated;
+        //public event EventHandler<MaxSampleEventArgs> MaximumCalculated;
+
+        public ISampleProvider Stream => fileStream;
+        public bool IsPlaying => playbackDevice != null && playbackDevice.PlaybackState == PlaybackState.Playing;
 
         public void Load(string fileName)
         {
@@ -33,14 +36,16 @@ namespace GlowSequencer.Audio
         {
             try
             {
-                var inputStream = new AudioFileReader(fileName);
-                fileStream = inputStream;
-                var aggregator = new SampleAggregator(inputStream);
-                aggregator.NotificationCount = inputStream.WaveFormat.SampleRate / 1;
-                //aggregator.PerformFFT = true;
-                //aggregator.FftCalculated += (s, a) => FftCalculated?.Invoke(this, a);
-                aggregator.MaximumCalculated += (s, a) => MaximumCalculated?.Invoke(this, a);
-                playbackDevice.Init(aggregator);
+                fileStream = new AudioFileReader(fileName);
+
+                playbackDevice.Init(fileStream);
+                
+                //var aggregator = new SampleAggregator(inputStream);
+                //aggregator.NotificationCount = inputStream.WaveFormat.SampleRate / 100;
+                ////aggregator.PerformFFT = true;
+                ////aggregator.FftCalculated += (s, a) => FftCalculated?.Invoke(this, a);
+                //aggregator.MaximumCalculated += (s, a) => MaximumCalculated?.Invoke(this, a);
+                //playbackDevice.Init(aggregator);
             }
             catch (Exception e)
             {
@@ -73,6 +78,11 @@ namespace GlowSequencer.Audio
         public void Pause()
         {
             playbackDevice?.Pause();
+        }
+
+        public void Seek(TimeSpan time)
+        {
+            fileStream.CurrentTime = time;
         }
 
         public void Stop()
