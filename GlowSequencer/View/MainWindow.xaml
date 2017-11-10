@@ -46,6 +46,9 @@
 
         <CommandBinding Command="local:SequencerCommands.MusicLoadFile" Executed="CommandBinding_ExecuteMusicLoadFile"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.MusicManageSegments" Executed="CommandBinding_ExecuteMusicManageSegments"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.PlayPause" Executed="CommandBinding_ExecutePlayPause"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.ZoomIn" Executed="CommandBinding_ExecuteZoomIn"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.ZoomOut" Executed="CommandBinding_ExecuteZoomOut"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.About" Executed="CommandBinding_ExecuteAbout"  CanExecute="CommandBinding_CanExecuteAlways" />
     </Window.CommandBindings>
     <Window.InputBindings>
@@ -131,6 +134,7 @@
                 <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="25"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="45"/>
@@ -275,12 +279,19 @@
 
                 </Grid>
             </ScrollViewer>
+
+            <StackPanel Orientation="Vertical" Grid.Column="3" Grid.Row="1" Grid.RowSpan="3">
+                <Button Margin="2,10,2,0" Command="local:SequencerCommands.PlayPause">Play</Button>
+                <Button Margin="2,10,2,0" Command="local:SequencerCommands.ZoomIn">Z+</Button>
+                <Button Margin="2,10,2,0" Command="local:SequencerCommands.ZoomOut">Z-</Button>
+            </StackPanel>
         </Grid>
 
         <GridSplitter HorizontalAlignment="Stretch" Height="5" ResizeDirection="Rows" Grid.Row="2" Background="#FFD0D0D0" />
 
         <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Grid.Row="3" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
 
+        <!-- Status bar in footer -->
         <Border Grid.Row="4" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
                 BorderThickness="0,1,0,0" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
             <Grid>

@@ -39,6 +39,9 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand MusicLoadFile = new RoutedUICommand("", "MusicLoadFile", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.O, ModifierKeys.Control | ModifierKeys.Shift) });
         public static readonly RoutedUICommand MusicManageSegments = new RoutedUICommand("", "MusicManageSegments", typeof(SequencerCommands));
 
+        public static readonly RoutedUICommand PlayPause = new RoutedUICommand("", "PlayPause", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Space) });
+        public static readonly RoutedUICommand ZoomIn = new RoutedUICommand("", "ZoomIn", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Add, ModifierKeys.Control), new KeyGesture(Key.OemPlus, ModifierKeys.Control) });
+        public static readonly RoutedUICommand ZoomOut = new RoutedUICommand("", "ZoomOut", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Subtract, ModifierKeys.Control), new KeyGesture(Key.OemMinus, ModifierKeys.Control) });
 
         public static readonly RoutedCommand About = new RoutedCommand();
     }
@@ -529,6 +532,21 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteMusicManageSegments(object sender, ExecutedRoutedEventArgs e)
         {
             Mastermind.OpenMusicSegmentsWindow();
+        }
+
+        private void CommandBinding_ExecutePlayPause(object sender, ExecutedRoutedEventArgs e)
+        {
+            sequencer.Playback.TogglePlaying();
+        }
+
+        private void CommandBinding_ExecuteZoomIn(object sender, ExecutedRoutedEventArgs e)
+        {
+            ChangeZoom(10);
+        }
+
+        private void CommandBinding_ExecuteZoomOut(object sender, ExecutedRoutedEventArgs e)
+        {
+            ChangeZoom(-10);
         }
 
         private void CommandBinding_ExecuteAbout(object sender, ExecutedRoutedEventArgs e)

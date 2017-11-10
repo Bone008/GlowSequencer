@@ -507,15 +507,7 @@ namespace GlowSequencer.View
         {
             if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                double mousePosPixels = e.GetPosition(timeline).X;
-                double mousePosSeconds = mousePosPixels / sequencer.TimePixelScale;
-                double offsetFromEdgePixels = e.GetPosition(trackBlocksScroller).X;
-
-                double currLog = Math.Log(sequencer.TimePixelScale, 1.04f);
-                sequencer.TimePixelScale = (float)Math.Pow(1.04f, currLog + e.Delta * 0.1f);
-
-                trackBlocksScroller.ScrollToHorizontalOffset(mousePosSeconds * sequencer.TimePixelScale - offsetFromEdgePixels);
-
+                ChangeZoom(e.Delta * 0.1f, e);
                 e.Handled = true;
             }
             else if (Keyboard.Modifiers == ModifierKeys.Shift)
@@ -523,6 +515,31 @@ namespace GlowSequencer.View
                 trackBlocksScroller.ScrollToHorizontalOffset(trackBlocksScroller.HorizontalOffset - e.Delta);
                 e.Handled = true;
             }
+        }
+
+        /// <summary>Changes the zoom level by the given amount. It zooms centered around the mouseEvent if given, otherwise
+        /// around the cursor position.</summary>
+        private void ChangeZoom(float exponentDelta, MouseEventArgs mouseEvent = null)
+        {
+            double zoomCenterSeconds;
+            double offsetFromEdgePixels; // where on the screen the center was located so scrolling can center onto zoomCenter properly
+            if (mouseEvent != null)
+            {
+                double mousePosPixels = mouseEvent.GetPosition(timeline).X;
+                zoomCenterSeconds = mousePosPixels / sequencer.TimePixelScale;
+                offsetFromEdgePixels = mouseEvent.GetPosition(trackBlocksScroller).X;
+            } else
+            {
+                zoomCenterSeconds = sequencer.CursorPosition;
+                double cursorFromEdgePixels = sequencer.CursorPixelPosition - trackBlocksScroller.HorizontalOffset;
+                offsetFromEdgePixels = MathUtil.Clamp(cursorFromEdgePixels,
+                    TIMELINE_CURSOR_PADDING_LEFT_PX, trackBlocksScroller.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX);
+            }
+
+            double currExponent = Math.Log(sequencer.TimePixelScale, 1.04f);
+            sequencer.TimePixelScale = (float)Math.Pow(1.04f, currExponent + exponentDelta);
+
+            trackBlocksScroller.ScrollToHorizontalOffset(zoomCenterSeconds * sequencer.TimePixelScale - offsetFromEdgePixels);
         }
 
 
@@ -585,7 +602,7 @@ namespace GlowSequencer.View
                     e.Handled = true;
                     break;
                 case Key.Right:
-                    sequencer.CursorPosition = 
+                    sequencer.CursorPosition =
                         (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
                             sequencer.CursorPosition + 2 / sequencer.TimePixelScale
                             : SnapValue(sequencer.CursorPosition + sequencer.GridInterval * 0.51f));
@@ -621,8 +638,8 @@ namespace GlowSequencer.View
             int i = sequencer.SelectedTrack.GetIndex();
             if (i * TIMELINE_TRACK_HEIGHT < trackBlocksScroller.VerticalOffset)
                 trackBlocksScroller.ScrollToVerticalOffset(i * TIMELINE_TRACK_HEIGHT);
-            else if((i+1) * TIMELINE_TRACK_HEIGHT > trackBlocksScroller.VerticalOffset + trackBlocksScroller.ActualHeight)
-                trackBlocksScroller.ScrollToVerticalOffset((i+1) * TIMELINE_TRACK_HEIGHT - trackBlocksScroller.ActualHeight);
+            else if ((i + 1) * TIMELINE_TRACK_HEIGHT > trackBlocksScroller.VerticalOffset + trackBlocksScroller.ActualHeight)
+                trackBlocksScroller.ScrollToVerticalOffset((i + 1) * TIMELINE_TRACK_HEIGHT - trackBlocksScroller.ActualHeight);
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)

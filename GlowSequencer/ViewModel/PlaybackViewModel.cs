@@ -40,6 +40,11 @@ namespace GlowSequencer.ViewModel
                 RenderWaveformAsync(true).Forget();
         }
 
+        public void TogglePlaying()
+        {
+            // TODO
+        }
+
         public async Task LoadFileAsync(string fileName)
         {
             try { audioFile = new BufferedAudioFile(fileName); }
