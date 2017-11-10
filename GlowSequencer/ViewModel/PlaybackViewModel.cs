@@ -25,6 +25,8 @@ namespace GlowSequencer.ViewModel
         public Waveform CurrentWaveform { get { return _currentWaveform; } set { SetProperty(ref _currentWaveform, value); } }
         public bool IsLoading { get { return _isLoading; } private set { SetProperty(ref _isLoading, value); } }
 
+        private float MusicTimeOffset => 0;
+
         public PlaybackViewModel(SequencerViewModel sequencer)
         {
             this.sequencer = sequencer;
@@ -32,6 +34,7 @@ namespace GlowSequencer.ViewModel
             ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewLeftPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewRightPositionTime), sequencer, InvalidateWaveform);
+            ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged);
         }
 
         private void InvalidateWaveform()
@@ -40,9 +43,30 @@ namespace GlowSequencer.ViewModel
                 RenderWaveformAsync(true).Forget();
         }
 
+        private void OnCursorPositionChanged()
+        {
+            if(audioPlayback.IsInitialized && audioPlayback.IsPlaying)
+            {
+                audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
+            }
+        }
+
         public void TogglePlaying()
         {
-            // TODO
+            // TODO how to play when there is no music track?
+
+            if (!audioPlayback.IsInitialized)
+                return;
+            if (audioPlayback.IsPlaying)
+            {
+                audioPlayback.Pause();
+                sequencer.CursorPosition = (float)audioPlayback.CurrentTime + MusicTimeOffset;
+            }
+            else
+            {
+                audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
+                audioPlayback.Play();
+            }
         }
 
         public async Task LoadFileAsync(string fileName)
@@ -55,10 +79,11 @@ namespace GlowSequencer.ViewModel
                 return;
             }
 
+            // TODO progress inidicator for file loading
             audioFile.LoadIntoMemoryAsync(null).Forget();
+            audioPlayback.Init(audioFile.CreateStream());
 
             CurrentWaveform = null;
-            IsLoading = true;
             await RenderWaveformAsync(false);
         }
 
@@ -74,8 +99,8 @@ namespace GlowSequencer.ViewModel
                 if (withDelay)
                     await Task.Delay(300, cts.Token);
 
-                double viewLeft = sequencer.CurrentViewLeftPositionTime;
-                double viewRight = sequencer.CurrentViewRightPositionTime;
+                double viewLeft = sequencer.CurrentViewLeftPositionTime - MusicTimeOffset;
+                double viewRight = sequencer.CurrentViewRightPositionTime - MusicTimeOffset;
                 double padding = (viewRight - viewLeft) / 4; // use the width of one viewport on each side as padding
                 double waveformLeft = Math.Max(0, viewLeft - padding);
                 double waveformRight = viewRight + padding;

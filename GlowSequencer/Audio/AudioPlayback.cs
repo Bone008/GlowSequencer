@@ -9,50 +9,20 @@ namespace GlowSequencer.Audio
 {
     public class AudioPlayback : IDisposable
     {
-        private WaveOut playbackDevice;
-        private AudioFileReader fileStream;
-        // new RawSourceWaveStream(); // <-- maybe
+        private WaveOut playbackDevice = null;
+        private ISeekableSampleProvider sampleProvider = null;
 
-        //public event EventHandler<FftEventArgs> FftCalculated;
-        //public event EventHandler<MaxSampleEventArgs> MaximumCalculated;
-
-        public ISampleProvider Stream => fileStream;
+        public bool IsInitialized => sampleProvider != null;
         public bool IsPlaying => playbackDevice != null && playbackDevice.PlaybackState == PlaybackState.Playing;
+        public double CurrentTime => (double)sampleProvider.Position / sampleProvider.WaveFormat.SampleRate;
 
-        public void Load(string fileName)
+        public void Init(ISeekableSampleProvider sampleProvider)
         {
             Stop();
-            CloseFile();
             EnsureDeviceCreated();
-            OpenFile(fileName);
-        }
 
-        private void CloseFile()
-        {
-            fileStream?.Dispose();
-            fileStream = null;
-        }
-
-        private void OpenFile(string fileName)
-        {
-            try
-            {
-                fileStream = new AudioFileReader(fileName);
-
-                playbackDevice.Init(fileStream);
-                
-                //var aggregator = new SampleAggregator(inputStream);
-                //aggregator.NotificationCount = inputStream.WaveFormat.SampleRate / 100;
-                ////aggregator.PerformFFT = true;
-                ////aggregator.FftCalculated += (s, a) => FftCalculated?.Invoke(this, a);
-                //aggregator.MaximumCalculated += (s, a) => MaximumCalculated?.Invoke(this, a);
-                //playbackDevice.Init(aggregator);
-            }
-            catch (Exception e)
-            {
-                System.Windows.MessageBox.Show(e.Message, "Problem opening file");
-                CloseFile();
-            }
+            this.sampleProvider = sampleProvider;
+            playbackDevice.Init(sampleProvider);
         }
 
         private void EnsureDeviceCreated()
@@ -70,7 +40,10 @@ namespace GlowSequencer.Audio
 
         public void Play()
         {
-            if (playbackDevice != null && fileStream != null && playbackDevice.PlaybackState != PlaybackState.Playing)
+            if (sampleProvider == null)
+                throw new InvalidOperationException("not initialized");
+
+            if (playbackDevice != null && playbackDevice.PlaybackState != PlaybackState.Playing)
             {
                 playbackDevice.Play();
             }
@@ -81,24 +54,26 @@ namespace GlowSequencer.Audio
             playbackDevice?.Pause();
         }
 
-        public void Seek(TimeSpan time)
+        public void Seek(double timeSeconds)
         {
-            fileStream.CurrentTime = time;
+            if (sampleProvider == null)
+                throw new InvalidOperationException("not initialized");
+
+            sampleProvider.Seek((long)(timeSeconds * sampleProvider.WaveFormat.SampleRate));
         }
 
         public void Stop()
         {
             playbackDevice?.Stop();
-            if (fileStream != null)
+            if (sampleProvider != null)
             {
-                fileStream.Position = 0;
+                sampleProvider.Seek(0);
             }
         }
 
         public void Dispose()
         {
             Stop();
-            CloseFile();
             playbackDevice?.Dispose();
             playbackDevice = null;
         }

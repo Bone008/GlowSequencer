@@ -98,6 +98,10 @@ namespace GlowSequencer.View
 
                 for (int i = 1; i < maximums.Length; i++)
                     ctx.LineTo(new Point(offsetPx + i * xScale, SampleToYPosition(maximums[i])), true, false);
+
+                ctx.LineTo(new Point(offsetPx + maximums.Length * xScale, SampleToYPosition(maximums[maximums.Length - 1])), true, false);
+                ctx.LineTo(new Point(offsetPx + minimums.Length * xScale, SampleToYPosition(minimums[minimums.Length - 1])), true, false);
+
                 for (int i = minimums.Length - 1; i >= 0; i--)
                     ctx.LineTo(new Point(offsetPx + i * xScale, SampleToYPosition(minimums[i])), true, false);
             }

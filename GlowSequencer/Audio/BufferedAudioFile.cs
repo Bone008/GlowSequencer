@@ -10,7 +10,12 @@ using System.Diagnostics;
 
 namespace GlowSequencer.Audio
 {
-    public class BufferedAudioFile : IDisposable
+    /// <summary>
+    /// This class reads an audio file into memory and allows multiple readers to access any part of it.
+    /// After calling the constructor, LoadIntoMemoryAsync should be called, which automatically closes
+    /// the file resource once it is finished.
+    /// </summary>
+    public class BufferedAudioFile
     {
         public const int READ_BLOCK_SIZE = 16 * 1024;
 
@@ -22,7 +27,7 @@ namespace GlowSequencer.Audio
         private int currentLength = 0;
         private readonly object lengthLockObject = new object();
 
-        // possibly throws an exception when the file could not be opened
+        /// <summary>Opens an audio file and reads metadata. Throws an exception when the file could not be opened.</summary>
         public BufferedAudioFile(string fileName)
         {
             this.fileName = fileName;
@@ -72,23 +77,18 @@ namespace GlowSequencer.Audio
             return new BufferReader(this);
         }
 
-        public void Dispose()
-        {
-            reader?.Dispose();
-            reader = null;
-        }
-
         private class BufferReader : ISeekableSampleProvider
         {
             private readonly BufferedAudioFile context;
             private long position = 0;
-
+            
             public BufferReader(BufferedAudioFile context)
             {
                 this.context = context;
             }
 
             public WaveFormat WaveFormat => context.waveFormat;
+            public long Position => position;
 
             public int Read(float[] buffer, int offset, int count)
             {
