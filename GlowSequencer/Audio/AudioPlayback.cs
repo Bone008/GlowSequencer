@@ -11,12 +11,25 @@ namespace GlowSequencer.Audio
     {
         private WaveOut playbackDevice = null;
         private ISeekableSampleProvider sampleProvider = null;
+        private int lastKnownSeekSample = 0; // the value that was last sent to sampleProvider.Seek(...)
+
+        /// <summary>Used to wait for a playback device to be actually stopped.</summary>
+        private Action continuationOnStoppedHook = null;
 
         public event EventHandler PlaybackStopped;
 
         public bool IsInitialized => sampleProvider != null;
         public bool IsPlaying => playbackDevice != null && playbackDevice.PlaybackState == PlaybackState.Playing;
-        public double CurrentTime => (double)sampleProvider.Position / sampleProvider.WaveFormat.SampleRate / sampleProvider.WaveFormat.Channels;
+
+        public double CurrentTime
+        {
+            get
+            {
+                if (sampleProvider == null) return 0;
+                int currentSamplePos = (playbackDevice != null ? lastKnownSeekSample + GetSamplePositionFromDevice() : sampleProvider.Position);
+                return (double)currentSamplePos / sampleProvider.WaveFormat.SampleRate / sampleProvider.WaveFormat.Channels;
+            }
+        }
 
         public void Init(ISeekableSampleProvider sampleProvider)
         {
@@ -24,6 +37,7 @@ namespace GlowSequencer.Audio
             EnsureDeviceCreated();
 
             this.sampleProvider = sampleProvider;
+            lastKnownSeekSample = sampleProvider.Position;
             playbackDevice.Init(sampleProvider);
         }
 
@@ -31,14 +45,23 @@ namespace GlowSequencer.Audio
         {
             if (playbackDevice == null)
             {
-                CreateDevice();
+                playbackDevice = new WaveOut { DesiredLatency = 200 };
+                playbackDevice.PlaybackStopped += OnPlaybackStopped; ;
             }
         }
 
-        private void CreateDevice()
+        private void OnPlaybackStopped(object sender, StoppedEventArgs e)
         {
-            playbackDevice = new WaveOut { DesiredLatency = 200 };
-            playbackDevice.PlaybackStopped += (sender, e) => PlaybackStopped?.Invoke(sender, EventArgs.Empty);
+            // If we are internally waiting for a stop to happen,
+            // call the hook instead of forwarding the event (see Seek method).
+            if(continuationOnStoppedHook != null)
+            {
+                continuationOnStoppedHook();
+                continuationOnStoppedHook = null;
+                return;
+            }
+
+            PlaybackStopped?.Invoke(sender, EventArgs.Empty);
         }
 
         public void Play()
@@ -62,13 +85,35 @@ namespace GlowSequencer.Audio
             if (sampleProvider == null)
                 throw new InvalidOperationException("not initialized");
 
-            sampleProvider.Seek((int)(timeSeconds * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels));
+            bool wasPlaying = IsPlaying;
+            Action completeSeek = () =>
+            {
+                sampleProvider.Seek(lastKnownSeekSample = (int)(timeSeconds * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels));
+                if (wasPlaying) Play();
+            };
+
+            if (wasPlaying)
+            {
+                Stop();
+                continuationOnStoppedHook = completeSeek;
+            }
+            else
+            {
+                completeSeek();
+            }
         }
 
         /// <summary>Stops playback (but doesn't actually reset the CurrentTime).</summary>
         public void Stop()
         {
-            playbackDevice?.Stop();
+            if (playbackDevice != null)
+            {
+                // Because the position of the playback device will be reset by calling Stop,
+                // we save how far we have played since the last seek in order to keep correct track
+                // of CurrentTime after stopping.
+                lastKnownSeekSample += GetSamplePositionFromDevice();
+                playbackDevice.Stop();
+            }
         }
 
         public void Dispose()
@@ -76,6 +121,12 @@ namespace GlowSequencer.Audio
             Stop();
             playbackDevice?.Dispose();
             playbackDevice = null;
+        }
+
+        private int GetSamplePositionFromDevice()
+        {
+            if (playbackDevice == null) return 0;
+            return (int)(playbackDevice.GetPosition() / sizeof(float));
         }
     }
 }

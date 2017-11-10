@@ -27,6 +27,11 @@ namespace GlowSequencer.Audio
         private int currentLength = 0;
         private readonly object lengthLockObject = new object();
 
+        /// <summary>Gets the total amount of audio samples in this file.</summary>
+        public int SampleLength => data.Length;
+        /// <summary>Gets the total duration of this file.</summary>
+        public float TimeLength => (float)data.Length / waveFormat.SampleRate / waveFormat.Channels;
+
         /// <summary>Opens an audio file and reads metadata. Throws an exception when the file could not be opened.</summary>
         public BufferedAudioFile(string fileName)
         {

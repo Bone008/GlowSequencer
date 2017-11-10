@@ -69,11 +69,11 @@ namespace GlowSequencer.ViewModel
         {
             get
             {
+                float maxTime = Math.Max(
+                    AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0),
+                    Playback.MusicDuration);
+                double newWidth = Math.Max(CurrentWinWidth, maxTime * TimePixelScale + 200);
                 double stepSize = CurrentWinWidth / 2;
-                double newWidth = Math.Max(CurrentWinWidth, AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0) * TimePixelScale + 200);
-                //if (newWidth > _lastKnownTimelineWidth || newWidth + 100 < _lastKnownTimelineWidth)
-                //    _lastKnownTimelineWidth = Math.Round(newWidth, -2);
-                //return _lastKnownTimelineWidth;
                 return Math.Ceiling(newWidth / stepSize) * stepSize;
             }
         }
@@ -139,22 +139,23 @@ namespace GlowSequencer.ViewModel
             ActiveMusicSegment = MusicSegments[model.DefaultMusicSegment.GetIndex()];
             Playback = new PlaybackViewModel(this);
 
-            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, "TimelineWidth");
+            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, nameof(TimelineWidth));
             AllBlocks.ToList().ForEach(fn_SubscribeToBlock);
             AllBlocks.CollectionChanged += (_, e) =>
             {
                 if (e.NewItems != null) e.NewItems.Cast<BlockViewModel>().ToList().ForEach(fn_SubscribeToBlock);
-                Notify("TimelineWidth");
+                Notify(nameof(TimelineWidth));
             };
 
             ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", "CursorPositionComplex");
             ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition",
                                                           "CurrentViewLeftPositionTime", "CurrentViewRightPositionTime",
                                                           "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
-                                                          "TimelineWidth", "GridInterval");
+                                                          nameof(TimelineWidth), "GridInterval");
             ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex", "GridInterval");
 
-            ForwardPropertyEvents("CurrentWinWidth", this, "TimelineWidth");
+            ForwardPropertyEvents("CurrentWinWidth", this, nameof(TimelineWidth));
+            ForwardPropertyEvents(nameof(Playback.MusicDuration), Playback, nameof(TimelineWidth));
 
             ForwardCollectionEvents(SelectedBlocks, nameof(CanConvertToColor), nameof(CanConvertToRamp), nameof(CanConvertToAutoDeduced), nameof(ConvertAutoDeduceGestureText));
 

@@ -13,7 +13,10 @@ namespace GlowSequencer.ViewModel
 {
     public class PlaybackViewModel : Observable
     {
+        private static readonly TimeSpan CURSOR_UPDATE_INTERVAL = TimeSpan.FromMilliseconds(10);
+
         private readonly SequencerViewModel sequencer;
+        private readonly System.Windows.Threading.DispatcherTimer cursorUpdateTimer;
         private readonly AudioPlayback audioPlayback = new AudioPlayback();
         private BufferedAudioFile audioFile = null;
 
@@ -23,20 +26,26 @@ namespace GlowSequencer.ViewModel
         private Waveform _currentWaveform = null;
         private bool _isLoading = false;
 
+        /// <summary>Total time in seconds of the loaded music file, or 0 if none is loaded.</summary>
+        public float MusicDuration => audioFile != null ? audioFile.TimeLength : 0;
         public Waveform CurrentWaveform { get { return _currentWaveform; } set { SetProperty(ref _currentWaveform, value); } }
         public bool IsLoading { get { return _isLoading; } private set { SetProperty(ref _isLoading, value); } }
 
+        // TODO support this
         private float MusicTimeOffset => 0;
 
         public PlaybackViewModel(SequencerViewModel sequencer)
         {
             this.sequencer = sequencer;
 
+            cursorUpdateTimer = new System.Windows.Threading.DispatcherTimer() { Interval = CURSOR_UPDATE_INTERVAL };
+            cursorUpdateTimer.Tick += (_, __) => UpdateCursorPosition();
+
             ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewLeftPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewRightPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged);
-            audioPlayback.PlaybackStopped += (_, __) => UpdateCursorPosition();
+            audioPlayback.PlaybackStopped += (_, __) => { cursorUpdateTimer.Stop(); UpdateCursorPosition(); };
         }
 
         private void InvalidateWaveform()
@@ -70,11 +79,13 @@ namespace GlowSequencer.ViewModel
             {
                 audioPlayback.Stop();
                 UpdateCursorPosition();
+                cursorUpdateTimer.Stop();
             }
             else
             {
                 audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
                 audioPlayback.Play();
+                cursorUpdateTimer.Start();
             }
         }
 
@@ -94,6 +105,8 @@ namespace GlowSequencer.ViewModel
 
             CurrentWaveform = null;
             await RenderWaveformAsync(false);
+
+            Notify(nameof(MusicDuration));
         }
 
         private async Task RenderWaveformAsync(bool withDelay)
