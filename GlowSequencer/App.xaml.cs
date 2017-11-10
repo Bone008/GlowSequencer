@@ -45,9 +45,14 @@ namespace GlowSequencer
         private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             // prompt user if they want to recover
+            string exceptionDetails = e.Exception.ToString();
+            if (exceptionDetails.Length > 600)
+                exceptionDetails = exceptionDetails.Substring(0, 597) + "...";
+
             MessageBoxResult result = MessageBox.Show(
-                "An unhandled exception was encountered in the program. The program may be able to recover but may also be in a corrupt state. Do you want to try recovery?"
-                    + Environment.NewLine + Environment.NewLine + e.Exception.ToString(),
+                "An unhandled exception was encountered in the program. The program may be able to recover but may also be in a corrupt state."
+                    + Environment.NewLine + Environment.NewLine + exceptionDetails
+                    + Environment.NewLine + Environment.NewLine + "Do you want to try recovery?",
                 "Unhandled Exception", MessageBoxButton.YesNo, MessageBoxImage.Error);
 
             if (result == MessageBoxResult.Yes)
