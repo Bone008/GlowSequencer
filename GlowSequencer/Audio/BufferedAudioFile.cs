@@ -15,10 +15,11 @@ namespace GlowSequencer.Audio
         public const int READ_BLOCK_SIZE = 16 * 1024;
 
         private readonly string fileName;
-        private readonly AudioFileReader reader;
+        private readonly WaveFormat waveFormat;
+        private AudioFileReader reader;
 
         private float[] data;
-        private int currentLength;
+        private int currentLength = 0;
         private readonly object lengthLockObject = new object();
 
         // possibly throws an exception when the file could not be opened
@@ -27,6 +28,7 @@ namespace GlowSequencer.Audio
             this.fileName = fileName;
             reader = new AudioFileReader(fileName);
             data = new float[reader.Length / (reader.WaveFormat.BitsPerSample >> 3)];
+            waveFormat = reader.WaveFormat;
         }
 
         public Task LoadIntoMemoryAsync(IProgress<float> progress)
@@ -36,20 +38,31 @@ namespace GlowSequencer.Audio
                 var sw = new Stopwatch();
                 sw.Start();
 
-                int numRead;
-                do
+                try
                 {
-                    numRead = reader.Read(data, currentLength, READ_BLOCK_SIZE);
-                    lock (lengthLockObject)
+                    int numRead;
+                    do
                     {
-                        currentLength += numRead;
-                        Monitor.PulseAll(lengthLockObject);
-                    }
-                    progress?.Report(currentLength / (float)data.Length);
-                } while (numRead > 0);
+                        if (reader == null) break; // we were disposed
 
-                sw.Stop();
-                Debug.WriteLine($"loaded {currentLength} samples into memory in {sw.ElapsedMilliseconds} ms");
+                        numRead = reader.Read(data, currentLength, READ_BLOCK_SIZE);
+                        lock (lengthLockObject)
+                        {
+                            currentLength += numRead;
+                            Monitor.PulseAll(lengthLockObject);
+                        }
+                        progress?.Report(currentLength / (float)data.Length);
+                    } while (numRead > 0);
+                }
+                finally
+                {
+                    // Close file.
+                    reader?.Dispose();
+                    reader = null;
+
+                    sw.Stop();
+                    Debug.WriteLine($"loaded {currentLength} samples into memory in {sw.ElapsedMilliseconds} ms");
+                }
             });
         }
 
@@ -61,7 +74,8 @@ namespace GlowSequencer.Audio
 
         public void Dispose()
         {
-            reader.Dispose();
+            reader?.Dispose();
+            reader = null;
         }
 
         private class BufferReader : ISeekableSampleProvider
@@ -74,7 +88,7 @@ namespace GlowSequencer.Audio
                 this.context = context;
             }
 
-            public WaveFormat WaveFormat => context.reader.WaveFormat;
+            public WaveFormat WaveFormat => context.waveFormat;
 
             public int Read(float[] buffer, int offset, int count)
             {
