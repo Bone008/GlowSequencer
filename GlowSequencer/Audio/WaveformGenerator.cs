@@ -51,7 +51,7 @@ namespace GlowSequencer.Audio
             long firstSample = (long)(fromTime * sampleRate) / alignIntervalFactor * alignIntervalFactor;
             long lastSample = (long)Math.Ceiling(toTime * sampleRate);
             
-            sampleProvider.Seek(firstSample * channels);
+            sampleProvider.Seek((int)firstSample * channels);
 
             long c = firstSample; // global sample counter (for all channels)
             int lastX = 0; // current render position

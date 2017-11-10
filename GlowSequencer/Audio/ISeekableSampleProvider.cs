@@ -10,9 +10,9 @@ namespace GlowSequencer.Audio
     public interface ISeekableSampleProvider : ISampleProvider
     {
         /// <summary>Gets the current sample position.</summary>
-        long Position { get; }
+        int Position { get; }
 
         /// <summary>Sets the read position to the given sample.</summary>
-        void Seek(long position);
+        void Seek(int position);
     }
 }

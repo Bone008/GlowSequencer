@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace GlowSequencer.Audio
 {
+    [Obsolete]
     public class SampleAggregator : ISampleProvider
     {
         // volume

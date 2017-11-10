@@ -80,7 +80,9 @@ namespace GlowSequencer.Audio
         private class BufferReader : ISeekableSampleProvider
         {
             private readonly BufferedAudioFile context;
-            private long position = 0;
+            // Note: cannot reasonably use long here because for some reason Buffer.BlockCopy uses ints.
+            // So the maximum supported sample count across all channels is in theory 2^29.
+            private int position = 0;
             
             public BufferReader(BufferedAudioFile context)
             {
@@ -88,7 +90,7 @@ namespace GlowSequencer.Audio
             }
 
             public WaveFormat WaveFormat => context.waveFormat;
-            public long Position => position;
+            public int Position => position;
 
             public int Read(float[] buffer, int offset, int count)
             {
@@ -111,12 +113,14 @@ namespace GlowSequencer.Audio
                 }
 
                 count = (int)Math.Min(unreadSamples, count);
-                Array.Copy(context.data, position, buffer, offset, count);
+                // copy count samples from context.data[position] to buffer[offset]
+                Buffer.BlockCopy(context.data, position * sizeof(float), buffer, offset * sizeof(float), count * sizeof(float));
+                //Array.Copy(context.data, position, buffer, offset, count);
                 position += count;
                 return count;
             }
 
-            public void Seek(long position)
+            public void Seek(int position)
             {
                 if (position < 0) throw new ArgumentOutOfRangeException(nameof(position));
                 this.position = position;

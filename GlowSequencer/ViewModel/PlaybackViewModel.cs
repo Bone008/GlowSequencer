@@ -17,8 +17,9 @@ namespace GlowSequencer.ViewModel
         private readonly AudioPlayback audioPlayback = new AudioPlayback();
         private BufferedAudioFile audioFile = null;
 
-        private CancellationTokenSource cts = null;
+        private bool inUpdateCursorPosition = false;
 
+        private CancellationTokenSource renderWaveformCts = null;
         private Waveform _currentWaveform = null;
         private bool _isLoading = false;
 
@@ -35,6 +36,7 @@ namespace GlowSequencer.ViewModel
             ForwardPropertyEvents(nameof(sequencer.CurrentViewLeftPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewRightPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged);
+            audioPlayback.PlaybackStopped += (_, __) => UpdateCursorPosition();
         }
 
         private void InvalidateWaveform()
@@ -45,10 +47,17 @@ namespace GlowSequencer.ViewModel
 
         private void OnCursorPositionChanged()
         {
-            if(audioPlayback.IsInitialized && audioPlayback.IsPlaying)
+            if(!inUpdateCursorPosition && audioPlayback.IsInitialized && audioPlayback.IsPlaying)
             {
                 audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
             }
+        }
+
+        private void UpdateCursorPosition()
+        {
+            inUpdateCursorPosition = true;
+            sequencer.CursorPosition = (float)audioPlayback.CurrentTime + MusicTimeOffset;
+            inUpdateCursorPosition = false;
         }
 
         public void TogglePlaying()
@@ -59,8 +68,8 @@ namespace GlowSequencer.ViewModel
                 return;
             if (audioPlayback.IsPlaying)
             {
-                audioPlayback.Pause();
-                sequencer.CursorPosition = (float)audioPlayback.CurrentTime + MusicTimeOffset;
+                audioPlayback.Stop();
+                UpdateCursorPosition();
             }
             else
             {
@@ -89,15 +98,20 @@ namespace GlowSequencer.ViewModel
 
         private async Task RenderWaveformAsync(bool withDelay)
         {
-            cts?.Cancel();
-            cts?.Dispose();
-            cts = new CancellationTokenSource();
+            renderWaveformCts?.Cancel();
+            renderWaveformCts?.Dispose();
+            renderWaveformCts = new CancellationTokenSource();
 
             try
             {
                 IsLoading = true;
                 if (withDelay)
-                    await Task.Delay(300, cts.Token);
+                    await Task.Delay(300, renderWaveformCts.Token);
+                if(audioFile == null) // no longer available
+                {
+                    IsLoading = false;
+                    return;
+                }
 
                 double viewLeft = sequencer.CurrentViewLeftPositionTime - MusicTimeOffset;
                 double viewRight = sequencer.CurrentViewRightPositionTime - MusicTimeOffset;
@@ -109,7 +123,7 @@ namespace GlowSequencer.ViewModel
                                                                               sequencer.TimePixelScale,
                                                                               waveformLeft,
                                                                               waveformRight,
-                                                                              cts.Token);
+                                                                              renderWaveformCts.Token);
                 Debug.WriteLine($"Time per sample: {result.TimePerSample}, Sample count: {result.Minimums.Length}");
 
                 CurrentWaveform = result;

@@ -12,9 +12,11 @@ namespace GlowSequencer.Audio
         private WaveOut playbackDevice = null;
         private ISeekableSampleProvider sampleProvider = null;
 
+        public event EventHandler PlaybackStopped;
+
         public bool IsInitialized => sampleProvider != null;
         public bool IsPlaying => playbackDevice != null && playbackDevice.PlaybackState == PlaybackState.Playing;
-        public double CurrentTime => (double)sampleProvider.Position / sampleProvider.WaveFormat.SampleRate;
+        public double CurrentTime => (double)sampleProvider.Position / sampleProvider.WaveFormat.SampleRate / sampleProvider.WaveFormat.Channels;
 
         public void Init(ISeekableSampleProvider sampleProvider)
         {
@@ -36,6 +38,7 @@ namespace GlowSequencer.Audio
         private void CreateDevice()
         {
             playbackDevice = new WaveOut { DesiredLatency = 200 };
+            playbackDevice.PlaybackStopped += (sender, e) => PlaybackStopped?.Invoke(sender, EventArgs.Empty);
         }
 
         public void Play()
@@ -59,16 +62,13 @@ namespace GlowSequencer.Audio
             if (sampleProvider == null)
                 throw new InvalidOperationException("not initialized");
 
-            sampleProvider.Seek((long)(timeSeconds * sampleProvider.WaveFormat.SampleRate));
+            sampleProvider.Seek((int)(timeSeconds * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels));
         }
 
+        /// <summary>Stops playback (but doesn't actually reset the CurrentTime).</summary>
         public void Stop()
         {
             playbackDevice?.Stop();
-            if (sampleProvider != null)
-            {
-                sampleProvider.Seek(0);
-            }
         }
 
         public void Dispose()
