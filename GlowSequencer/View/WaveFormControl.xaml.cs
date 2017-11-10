@@ -22,8 +22,6 @@ namespace GlowSequencer.View
     /// </summary>
     public partial class WaveFormControl : UserControl
     {
-        public static WaveFormControl instance;
-
         public static readonly DependencyProperty IsLoadingProperty =
             DependencyProperty.Register("IsLoading", typeof(bool), typeof(WaveFormControl), new PropertyMetadata(false));
         public static readonly DependencyProperty WaveformProperty =
@@ -60,7 +58,7 @@ namespace GlowSequencer.View
             get { return (double)GetValue(PixelOffsetProperty); }
             set { SetValue(PixelOffsetProperty, value); }
         }
-        
+
         private double yTranslate = 40;
         private double yScale = 40;
 
@@ -68,22 +66,30 @@ namespace GlowSequencer.View
         {
             this.SizeChanged += OnSizeChanged;
             InitializeComponent();
-            instance = this;
         }
 
         private void UpdateWaveform()
         {
+            var sw = new Stopwatch();
+            sw.Start();
+            waveformVisual.SetWaveform(Waveform);
+            sw.Stop();
+            Debug.WriteLine("calculating points took ms " + sw.ElapsedMilliseconds);
+            if (waveformVisual != null) return;
+
             var wf = Waveform;
-            if(wf == null)
+            if (wf == null)
             {
                 waveformPolygon.Points.Clear();
                 return;
             }
             Debug.Assert(wf.Minimums.Length == wf.Maximums.Length);
             Debug.WriteLine("redrawing waveform with samples: " + wf.Maximums.Length);
-            
+            sw = new Stopwatch();
+            sw.Start();
+
             //  px/sample = px/sec    *  sec/sample
-            double xScale = TimeScale * wf.TimePerSample.TotalSeconds;
+            double xScale = TimeScale * wf.TimePerSample;
 
             float[] mins = wf.Minimums;
             float[] maxs = wf.Maximums;
@@ -94,12 +100,16 @@ namespace GlowSequencer.View
             for (int x = mins.Length - 1; x >= 0; x--)
                 points.Add(new Point(x * xScale, SampleToYPosition(mins[x])));
 
+            sw.Stop();
+            Debug.WriteLine("calculating points took ms " + sw.ElapsedMilliseconds);
             waveformPolygon.Points = points;
         }
 
         private double SampleToYPosition(float value)
         {
-            return yTranslate + value * yScale;
+            const double clipAt = 0.95;
+            double scaled = Math.Sign(value) / (Math.Log(Math.Min(Math.Abs(value), clipAt)) / Math.Log(clipAt));
+            return yTranslate + scaled * yScale;
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)

@@ -12,7 +12,17 @@
             <Polygon Name="waveformPolygon" Stroke="{Binding ElementName=root, Path=Foreground}" StrokeThickness="1"
                      Fill="Bisque"
                      Canvas.Left="{Binding ElementName=root, Path=PixelOffset, Converter={StaticResource conv_Invert}}"/>
+            <local:WaveformVisual x:Name="waveformVisual"
+                                  Width="{Binding ElementName=root, Path=ActualWidth}" Height="{Binding ElementName=root, Path=ActualHeight}"
+                                  Waveform="{Binding ElementName=root, Path=Waveform}"
+                                  TimeScale="{Binding ElementName=root, Path=TimeScale}"
+                                  Canvas.Left="{Binding ElementName=root, Path=PixelOffset, Converter={StaticResource conv_Invert}}">
+                <local:WaveformVisual.CacheMode>
+                    <BitmapCache />
+                </local:WaveformVisual.CacheMode>
+            </local:WaveformVisual>
         </Canvas>
+
         <Label Visibility="{Binding ElementName=root, Path=IsLoading, Converter={StaticResource conv_BoolToVisibility}}"
                VerticalContentAlignment="Center">
             Loading ...

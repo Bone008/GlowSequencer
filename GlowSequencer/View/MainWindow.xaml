@@ -177,7 +177,7 @@
             </ScrollViewer>
 
             <GridSplitter Grid.Column="1" Grid.RowSpan="4" ResizeDirection="Columns" HorizontalAlignment="Stretch" Background="#FFD0D0D0" />
-            <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" ResizeDirection="Rows" HorizontalAlignment="Stretch" Background="#FFD0D0D0" />
+            <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" ResizeDirection="Rows" HorizontalAlignment="Stretch" Background="#FFD0D0D0" ShowsPreview="True" />
 
             <local:TimelineGrid x:Name="timelineGrid" Grid.Column="2" Grid.Row="0" Grid.RowSpan="4"
                                 MouseWheel="timeline_MouseWheel"
@@ -186,7 +186,7 @@
                                 GridInterval="{Binding GridInterval, Mode=OneWay}"
                                 MusicSegment="{Binding ActiveMusicSegment, Mode=OneWay}"/>
 
-            <!-- Music Waveform, TODO: offset -->
+            <!-- Music Waveform -->
             <local:WaveFormControl Grid.Column="2" Grid.Row="1"
                                    Background="Transparent" MouseWheel="timeline_MouseWheel"
                                    PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"

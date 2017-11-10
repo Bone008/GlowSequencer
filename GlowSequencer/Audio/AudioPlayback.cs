@@ -11,7 +11,8 @@ namespace GlowSequencer.Audio
     {
         private WaveOut playbackDevice;
         private AudioFileReader fileStream;
-        
+        // new RawSourceWaveStream(); // <-- maybe
+
         //public event EventHandler<FftEventArgs> FftCalculated;
         //public event EventHandler<MaxSampleEventArgs> MaximumCalculated;
 

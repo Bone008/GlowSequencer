@@ -59,8 +59,10 @@ namespace GlowSequencer.ViewModel
         /// <summary>Horizontal zoom level in pixels per second.</summary>
         public float TimePixelScale { get { return _timePixelScale; } set { SetProperty(ref _timePixelScale, Math.Max(value, 1 / 60.0f)); } }
 
-        public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute((float)_viewportLeftOffsetPx / TimePixelScale, _activeMusicSegment.GetModel()); } }
-        public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute((float)(_viewportLeftOffsetPx + _viewportWidthPx) / TimePixelScale, _activeMusicSegment.GetModel()); } }
+        public float CurrentViewLeftPositionTime => (float)_viewportLeftOffsetPx / TimePixelScale;
+        public float CurrentViewRightPositionTime => (float)(_viewportLeftOffsetPx + _viewportWidthPx) / TimePixelScale;
+        public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewLeftPositionTime, _activeMusicSegment.GetModel()); } }
+        public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewRightPositionTime, _activeMusicSegment.GetModel()); } }
         public double CurrentWinWidth { get { return _currentWinWidth; } set { SetProperty(ref _currentWinWidth, value); } }
         
         public double TimelineWidth
@@ -146,7 +148,9 @@ namespace GlowSequencer.ViewModel
             };
 
             ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", "CursorPositionComplex");
-            ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
+            ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition",
+                                                          "CurrentViewLeftPositionTime", "CurrentViewRightPositionTime",
+                                                          "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
                                                           "TimelineWidth", "GridInterval");
             ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex", "GridInterval");
 
@@ -178,6 +182,8 @@ namespace GlowSequencer.ViewModel
         {
             _viewportLeftOffsetPx = viewportOffsetPx;
             _viewportWidthPx = viewportWidth;
+            Notify("CurrentViewLeftPositionTime");
+            Notify("CurrentViewRightPositionTime");
             Notify("CurrentViewLeftPositionComplex");
             Notify("CurrentViewRightPositionComplex");
         }

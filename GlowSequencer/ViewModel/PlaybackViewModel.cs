@@ -13,10 +13,9 @@ namespace GlowSequencer.ViewModel
 {
     public class PlaybackViewModel : Observable
     {
-        private const int WAVEFORM_PIXEL_INTERVAL = 3;
-
         private readonly SequencerViewModel sequencer;
         private readonly AudioPlayback audioPlayback = new AudioPlayback();
+        private BufferedAudioFile audioFile = null;
 
         private CancellationTokenSource cts = null;
 
@@ -30,46 +29,63 @@ namespace GlowSequencer.ViewModel
         {
             this.sequencer = sequencer;
 
-            ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, () =>
-            {
-                if(CurrentWaveform != null)
-                    RenderWaveformAsync(true).Forget();
-            });
+            ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, InvalidateWaveform);
+            ForwardPropertyEvents(nameof(sequencer.CurrentViewLeftPositionTime), sequencer, InvalidateWaveform);
+            ForwardPropertyEvents(nameof(sequencer.CurrentViewRightPositionTime), sequencer, InvalidateWaveform);
+        }
+
+        private void InvalidateWaveform()
+        {
+            if (CurrentWaveform != null)
+                RenderWaveformAsync(true).Forget();
         }
 
         public async Task LoadFileAsync(string fileName)
         {
+            try { audioFile = new BufferedAudioFile(fileName); }
+            catch (Exception e)
+            {
+                System.Windows.MessageBox.Show(e.Message, "Problem opening file",
+                                               System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
+            audioFile.LoadIntoMemoryAsync(null).Forget();
+
             CurrentWaveform = null;
             IsLoading = true;
-
-            if (audioPlayback.IsPlaying)
-            {
-                audioPlayback.Stop();
-                await Task.Delay(100); // without this, the audio playing thread apparently still tries to read from the disposed stream
-            }
-            audioPlayback.Load(fileName);
-
-            if (audioPlayback.Stream != null)
-            {
-                await RenderWaveformAsync(false);
-            }
+            await RenderWaveformAsync(false);
         }
 
         private async Task RenderWaveformAsync(bool withDelay)
         {
             cts?.Cancel();
+            cts?.Dispose();
             cts = new CancellationTokenSource();
 
-            if (withDelay)
-                await Task.Delay(300, cts.Token);
+            try
+            {
+                IsLoading = true;
+                if (withDelay)
+                    await Task.Delay(300, cts.Token);
 
-            IsLoading = true;
-            audioPlayback.Stop(); // reset, note that this needs to be separate from playback
-            Waveform result = await WaveformGenerator.CreateWaveformAsync(audioPlayback.Stream, sequencer.TimePixelScale / WAVEFORM_PIXEL_INTERVAL, cts.Token);
-            Debug.WriteLine($"Time per sample: {result.TimePerSample}, Sample count: {result.Minimums.Length}");
+                double viewLeft = sequencer.CurrentViewLeftPositionTime;
+                double viewRight = sequencer.CurrentViewRightPositionTime;
+                double padding = (viewRight - viewLeft) / 4; // use the width of one viewport on each side as padding
+                double waveformLeft = Math.Max(0, viewLeft - padding);
+                double waveformRight = viewRight + padding;
 
-            CurrentWaveform = result;
-            IsLoading = false;
+                Waveform result = await WaveformGenerator.CreateWaveformAsync(audioFile.CreateStream(),
+                                                                              sequencer.TimePixelScale,
+                                                                              waveformLeft,
+                                                                              waveformRight,
+                                                                              cts.Token);
+                Debug.WriteLine($"Time per sample: {result.TimePerSample}, Sample count: {result.Minimums.Length}");
+
+                CurrentWaveform = result;
+                IsLoading = false;
+            }
+            catch (OperationCanceledException) { }
         }
     }
 }
