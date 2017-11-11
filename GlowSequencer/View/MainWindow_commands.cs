@@ -31,7 +31,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand TrackAffiliationAll = new RoutedCommand();
         public static readonly RoutedCommand TrackAffiliationInvert = new RoutedCommand();
 
-        public static readonly RoutedCommand AddTrack = new RoutedCommand();
+        public static readonly RoutedCommand AddTrack = new RoutedUICommand("", "RenameTrack", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.A, ModifierKeys.Control | ModifierKeys.Shift) });
         public static readonly RoutedCommand RenameTrack = new RoutedUICommand("", "RenameTrack", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.F2) });
         public static readonly RoutedCommand DuplicateTrack = new RoutedCommand();
         public static readonly RoutedCommand DeleteTrack = new RoutedCommand();
@@ -475,7 +475,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteAddTrack(object sender, ExecutedRoutedEventArgs e)
         {
-            TrackViewModel afterTrack = (e.Parameter == null ? null : (TrackViewModel)e.Parameter);
+            TrackViewModel afterTrack = (e.Parameter == null ? sequencer.SelectedTrack : (TrackViewModel)e.Parameter);
             sequencer.AddTrack(afterTrack);
         }
 

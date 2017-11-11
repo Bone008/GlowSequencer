@@ -19,7 +19,7 @@ namespace GlowSequencer.Audio
         public event EventHandler PlaybackStopped;
 
         public bool IsInitialized => sampleProvider != null;
-        public bool IsPlaying => playbackDevice != null && playbackDevice.PlaybackState == PlaybackState.Playing;
+        public bool IsPlaying => playbackDevice?.PlaybackState == PlaybackState.Playing;
 
         public double CurrentTime
         {
@@ -30,6 +30,8 @@ namespace GlowSequencer.Audio
                 return (double)currentSamplePos / sampleProvider.WaveFormat.SampleRate / sampleProvider.WaveFormat.Channels;
             }
         }
+
+        public float Volume { get { return playbackDevice?.Volume ?? 1.0f; } set { if (playbackDevice != null) playbackDevice.Volume = value; } }
 
         public void Init(ISeekableSampleProvider sampleProvider)
         {
@@ -47,6 +49,9 @@ namespace GlowSequencer.Audio
             {
                 playbackDevice = new WaveOut { DesiredLatency = 200 };
                 playbackDevice.PlaybackStopped += OnPlaybackStopped; ;
+
+                // Hacky hack to read the volume from the system (should have been implemented by NAudio IMHO).
+                playbackDevice.Volume = WaveOutHelper.GetWaveOutVolume(playbackDevice);
             }
         }
 
@@ -54,7 +59,7 @@ namespace GlowSequencer.Audio
         {
             // If we are internally waiting for a stop to happen,
             // call the hook instead of forwarding the event (see Seek method).
-            if(continuationOnStoppedHook != null)
+            if (continuationOnStoppedHook != null)
             {
                 continuationOnStoppedHook();
                 continuationOnStoppedHook = null;

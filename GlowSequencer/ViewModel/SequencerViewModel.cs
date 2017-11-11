@@ -54,6 +54,7 @@ namespace GlowSequencer.ViewModel
         public TimeUnit CursorPositionComplex { get { return TimeUnit.WrapAbsolute(_cursorPosition, _activeMusicSegment.GetModel(), v => CursorPosition = v); } }
 
         public double CursorPixelPosition { get { return _cursorPosition * TimePixelScale; } set { CursorPosition = (float)(value / TimePixelScale); } }
+        public double CursorPixelPositionOnViewport => CursorPixelPosition - _viewportLeftOffsetPx;
 
 
         /// <summary>Horizontal zoom level in pixels per second.</summary>
@@ -120,7 +121,7 @@ namespace GlowSequencer.ViewModel
         public bool CanConvertToColor => SelectedBlocks.Any(b => b is RampBlockViewModel);
         public bool CanConvertToRamp => SelectedBlocks.Any(b => b is ColorBlockViewModel);
         public bool CanConvertToAutoDeduced => CanConvertToColor ^ CanConvertToRamp; // if type has been left out, it needs to be deducible which one is intended
-        public string ConvertAutoDeduceGestureText => (CanConvertToAutoDeduced ? "Ctrl+B" : "");
+        public string ConvertAutoDeduceGestureText => (CanConvertToAutoDeduced ? "Ctrl+Shift+C" : "");
 
         public SequencerViewModel(Timeline model)
         {
@@ -147,8 +148,8 @@ namespace GlowSequencer.ViewModel
                 Notify(nameof(TimelineWidth));
             };
 
-            ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", "CursorPositionComplex");
-            ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition",
+            ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", nameof(CursorPixelPositionOnViewport), "CursorPositionComplex");
+            ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition", nameof(CursorPixelPositionOnViewport),
                                                           "CurrentViewLeftPositionTime", "CurrentViewRightPositionTime",
                                                           "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
                                                           nameof(TimelineWidth), "GridInterval");
@@ -187,6 +188,7 @@ namespace GlowSequencer.ViewModel
             Notify("CurrentViewRightPositionTime");
             Notify("CurrentViewLeftPositionComplex");
             Notify("CurrentViewRightPositionComplex");
+            Notify(nameof(CursorPixelPositionOnViewport));
         }
 
         /// <summary>

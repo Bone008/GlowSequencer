@@ -99,6 +99,7 @@
     <Compile Include="Audio\SampleAggregator.cs" />
     <Compile Include="Audio\Waveform.cs" />
     <Compile Include="Audio\WaveformGenerator.cs" />
+    <Compile Include="Audio\WaveOutHelper.cs" />
     <Compile Include="View\WaveformVisual.cs" />
     <Compile Include="CompatibilityHooks.cs" />
     <Compile Include="FileSerializer.cs" />
