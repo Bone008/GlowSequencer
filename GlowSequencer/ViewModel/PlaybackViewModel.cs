@@ -2,7 +2,6 @@
 using GlowSequencer.Util;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -11,6 +10,12 @@ using System.Threading.Tasks;
 
 namespace GlowSequencer.ViewModel
 {
+    public enum WaveformDisplayMode
+    {
+        Linear,
+        Logarithmic
+    }
+
     public class PlaybackViewModel : Observable
     {
         private static readonly TimeSpan CURSOR_UPDATE_INTERVAL = TimeSpan.FromMilliseconds(10);
@@ -21,11 +26,16 @@ namespace GlowSequencer.ViewModel
         private BufferedAudioFile audioFile = null;
 
         private bool inUpdateCursorPosition = false;
-
         private CancellationTokenSource renderWaveformCts = null;
+
+        private WaveformDisplayMode _currentWaveformDisplayMode = WaveformDisplayMode.Linear;
         private Waveform _currentWaveform = null;
         private bool _isLoading = false;
         private float _musicVolume = 1.0f;
+
+        public WaveformDisplayMode WaveformDisplayMode { get { return _currentWaveformDisplayMode; } set { SetProperty(ref _currentWaveformDisplayMode, value); } }
+        public bool WaveformDisplayModeIsLinear { get { return WaveformDisplayMode == WaveformDisplayMode.Linear; } set { WaveformDisplayMode = WaveformDisplayMode.Linear; } }
+        public bool WaveformDisplayModeIsLogarithmic { get { return WaveformDisplayMode == WaveformDisplayMode.Logarithmic; } set { WaveformDisplayMode = WaveformDisplayMode.Logarithmic; } }
 
         public Waveform CurrentWaveform { get { return _currentWaveform; } set { SetProperty(ref _currentWaveform, value); } }
         public bool IsLoading { get { return _isLoading; } private set { SetProperty(ref _isLoading, value); } }
@@ -34,7 +44,7 @@ namespace GlowSequencer.ViewModel
         public float MusicDuration => audioFile != null ? audioFile.TimeLength : 0;
         public float MusicVolume { get { return _musicVolume; } set { SetProperty(ref _musicVolume, value); } }
 
-        // TODO support this
+        // LOW support this
         private float MusicTimeOffset => 0;
 
         public PlaybackViewModel(SequencerViewModel sequencer)
@@ -44,7 +54,9 @@ namespace GlowSequencer.ViewModel
             cursorUpdateTimer = new System.Windows.Threading.DispatcherTimer() { Interval = CURSOR_UPDATE_INTERVAL };
             cursorUpdateTimer.Tick += (_, __) => UpdateCursorPosition();
 
-            ForwardPropertyEvents(nameof(MusicVolume), this, () => audioPlayback.Volume = ScaleFactorFromUserVolume(MusicVolume));
+            ForwardPropertyEvents(nameof(WaveformDisplayMode), this, nameof(WaveformDisplayModeIsLinear), nameof(WaveformDisplayModeIsLogarithmic));
+
+            ForwardPropertyEvents(nameof(MusicVolume), this, () => audioPlayback.Volume = LoudnessHelper.LoudnessFromVolume(MusicVolume));
             ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewLeftPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CurrentViewRightPositionTime), sequencer, InvalidateWaveform);
@@ -71,25 +83,37 @@ namespace GlowSequencer.ViewModel
             inUpdateCursorPosition = true;
             sequencer.CursorPosition = (float)audioPlayback.CurrentTime + MusicTimeOffset;
             inUpdateCursorPosition = false;
+
+            // Stop when at end of timeline.
+            if(audioPlayback.IsPlaying && sequencer.CursorPosition >= sequencer.TimelineWidth / sequencer.TimePixelScale)
+            {
+                this.TogglePlaying();
+            }
         }
 
-        public void TogglePlaying()
+        public bool TogglePlaying()
         {
             // TODO how to play when there is no music track?
 
             if (!audioPlayback.IsInitialized)
-                return;
+                return false;
             if (audioPlayback.IsPlaying)
             {
                 audioPlayback.Stop();
                 UpdateCursorPosition();
                 cursorUpdateTimer.Stop();
+                return true;
             }
             else
             {
+                // Already at end of timeline.
+                if (sequencer.CursorPosition >= sequencer.TimelineWidth / sequencer.TimePixelScale)
+                    return false;
+
                 audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
                 audioPlayback.Play();
                 cursorUpdateTimer.Start();
+                return true;
             }
         }
 
@@ -105,10 +129,10 @@ namespace GlowSequencer.ViewModel
 
             // TODO progress inidicator for file loading
             audioFile.LoadIntoMemoryAsync(null).Forget();
-            audioPlayback.Init(audioFile.CreateStream());
+            audioPlayback.Init(audioFile.CreateStream(infinite: true));
 
             // Initialize our user-facing value from the playback device (which apparently gets its value from Windows).
-            MusicVolume = UserVolumeFromScaleFactor(audioPlayback.Volume);
+            MusicVolume = LoudnessHelper.VolumeFromLoudness(audioPlayback.Volume);
 
             CurrentWaveform = null;
             await RenderWaveformAsync(false);
@@ -150,33 +174,6 @@ namespace GlowSequencer.ViewModel
                 IsLoading = false;
             }
             catch (OperationCanceledException) { }
-        }
-
-
-        // See https://www.dr-lex.be/info-stuff/volumecontrols.html for an explanation of the nature of these formulas.
-        // We assume 40 dB of dynamic range and cut-off at 0.
-        private const float sc_a = 0.01f;
-        private const float sc_b = 4.60517f; // b = ln(1/a)
-
-        /// <summary>Properly scales a volume user input in the range [0, 1] to account for logarithmic loudness.</summary>
-        private static float ScaleFactorFromUserVolume(float volume)
-        {
-            if (volume == 0) return 0;
-
-            float scaleFactor = (float)(sc_a * Math.Pow(Math.E, sc_b * volume));
-            if (scaleFactor > 1.0f)
-                scaleFactor = 1.0f; // prevent rounding errors at the top
-
-            return scaleFactor;
-        }
-
-        /// <summary>Inverse of ScaleFactorFromUserVolume.</summary>
-        private static float UserVolumeFromScaleFactor(float scaleFactor)
-        {
-            if (scaleFactor == 0) return 0;
-
-            float volume = (float)(Math.Log(scaleFactor / sc_a) / sc_b);
-            return MathUtil.Clamp(volume, 0f, 1f);
         }
     }
 }

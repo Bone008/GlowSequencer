@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="GlowSequencer.View.WaveFormControl"
+﻿<UserControl x:Class="GlowSequencer.View.WaveformControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -9,22 +9,25 @@
              Name="root">
     <Grid>
         <Canvas ClipToBounds="True">
-            <Polygon Name="waveformPolygon" Stroke="{Binding ElementName=root, Path=Foreground}" StrokeThickness="1"
-                     Fill="Bisque"
-                     Canvas.Left="{Binding ElementName=root, Path=PixelOffset, Converter={StaticResource conv_Invert}}"/>
             <local:WaveformVisual x:Name="waveformVisual"
                                   Width="{Binding ElementName=root, Path=ActualWidth}" Height="{Binding ElementName=root, Path=ActualHeight}"
                                   Waveform="{Binding ElementName=root, Path=Waveform}"
+                                  WaveformDisplayMode="{Binding ElementName=root, Path=WaveformDisplayMode}"
                                   TimeScale="{Binding ElementName=root, Path=TimeScale}"
                                   Canvas.Left="{Binding ElementName=root, Path=PixelOffset, Converter={StaticResource conv_Invert}}">
                 <local:WaveformVisual.CacheMode>
                     <BitmapCache />
                 </local:WaveformVisual.CacheMode>
             </local:WaveformVisual>
+
+            <!-- Note: Y position is set by code-behind, because dividing by 2 is hard ... -->
+            <Line Name="centerLine" SnapsToDevicePixels="True"
+                  Stroke="#FF69D400" StrokeThickness="1"
+                  X1="0" X2="{Binding ElementName=root, Path=ActualWidth}"/>
         </Canvas>
 
         <Label Visibility="{Binding ElementName=root, Path=IsLoading, Converter={StaticResource conv_BoolToVisibility}}"
-               VerticalContentAlignment="Center">
+               HorizontalAlignment="Center" VerticalAlignment="Center">
             Loading ...
         </Label>
     </Grid>

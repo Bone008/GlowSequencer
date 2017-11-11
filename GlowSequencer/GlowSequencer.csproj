@@ -96,6 +96,7 @@
     <Compile Include="ActionManagerExtensions.cs" />
     <Compile Include="Audio\BufferedAudioFile.cs" />
     <Compile Include="Audio\ISeekableSampleProvider.cs" />
+    <Compile Include="Audio\LoudnessHelper.cs" />
     <Compile Include="Audio\SampleAggregator.cs" />
     <Compile Include="Audio\Waveform.cs" />
     <Compile Include="Audio\WaveformGenerator.cs" />
@@ -172,8 +173,8 @@
     <Compile Include="View\TransferWindow.xaml.cs">
       <DependentUpon>TransferWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\WaveFormControl.xaml.cs">
-      <DependentUpon>WaveFormControl.xaml</DependentUpon>
+    <Compile Include="View\WaveformControl.xaml.cs">
+      <DependentUpon>WaveformControl.xaml</DependentUpon>
     </Compile>
     <Page Include="View\AboutWindow.xaml">
       <SubType>Designer</SubType>
@@ -215,7 +216,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\WaveFormControl.xaml">
+    <Page Include="View\WaveformControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

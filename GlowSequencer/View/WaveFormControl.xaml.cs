@@ -1,4 +1,5 @@
 ﻿using GlowSequencer.Audio;
+using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,17 +21,19 @@ namespace GlowSequencer.View
     /// <summary>
     /// Interaction logic for WaveFormControl.xaml
     /// </summary>
-    public partial class WaveFormControl : UserControl
+    public partial class WaveformControl : UserControl
     {
         public static readonly DependencyProperty IsLoadingProperty =
-            DependencyProperty.Register("IsLoading", typeof(bool), typeof(WaveFormControl), new PropertyMetadata(false));
+            DependencyProperty.Register("IsLoading", typeof(bool), typeof(WaveformControl), new PropertyMetadata(false));
         public static readonly DependencyProperty WaveformProperty =
-            DependencyProperty.Register("Waveform", typeof(Waveform), typeof(WaveFormControl), new PropertyMetadata());
+            DependencyProperty.Register("Waveform", typeof(Waveform), typeof(WaveformControl), new PropertyMetadata());
+        public static readonly DependencyProperty WaveformDisplayModeProperty =
+            DependencyProperty.Register("WaveformDisplayMode", typeof(WaveformDisplayMode), typeof(WaveformControl), new PropertyMetadata());
         public static readonly DependencyProperty TimeScaleProperty =
-            DependencyProperty.Register("TimeScale", typeof(float), typeof(WaveFormControl), new PropertyMetadata(1.0f));
+            DependencyProperty.Register("TimeScale", typeof(float), typeof(WaveformControl), new PropertyMetadata(1.0f));
         public static readonly DependencyProperty PixelOffsetProperty =
-            DependencyProperty.Register("PixelOffset", typeof(double), typeof(WaveFormControl), new PropertyMetadata(0.0));
-
+            DependencyProperty.Register("PixelOffset", typeof(double), typeof(WaveformControl), new PropertyMetadata(0.0));
+        
         public bool IsLoading
         {
             get { return (bool)GetValue(IsLoadingProperty); }
@@ -41,6 +44,12 @@ namespace GlowSequencer.View
         {
             get { return (Waveform)GetValue(WaveformProperty); }
             set { SetValue(WaveformProperty, value); }
+        }
+
+        public WaveformDisplayMode WaveformDisplayMode
+        {
+            get { return (WaveformDisplayMode)GetValue(WaveformDisplayModeProperty); }
+            set { SetValue(WaveformDisplayModeProperty, value); }
         }
 
         public float TimeScale
@@ -54,9 +63,15 @@ namespace GlowSequencer.View
             set { SetValue(PixelOffsetProperty, value); }
         }
 
-        public WaveFormControl()
+        public WaveformControl()
         {
             InitializeComponent();
+            this.SizeChanged += WaveformControl_SizeChanged;
+        }
+
+        private void WaveformControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            centerLine.Y1 = centerLine.Y2 = e.NewSize.Height / 2;
         }
     }
 }

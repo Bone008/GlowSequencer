@@ -685,6 +685,11 @@ namespace GlowSequencer.View
         }
 
 
+        private void WaveFormControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            CommandBinding_ExecuteMusicLoadFile(sender, null);
+        }
+
         // support for dropping in files
 
         private void Window_Drag(object sender, DragEventArgs e)
@@ -715,6 +720,5 @@ namespace GlowSequencer.View
                 return;
             main.OpenDocument(files[0]);
         }
-
     }
 }

@@ -519,6 +519,7 @@ namespace GlowSequencer.View
         {
             string[] extensions = { "*.mp3", "*.m4a", "*.wav", "*.wma", "*.aiff", "*.aac" };
             var diag = new Microsoft.Win32.OpenFileDialog();
+            diag.Title = "Open music file";
             diag.Filter = string.Format("Audio file ({0})|{1}|All files|*.*",
                 string.Join(", ", extensions), string.Join(";", extensions));
             diag.FilterIndex = 0;

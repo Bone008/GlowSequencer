@@ -77,29 +77,46 @@ namespace GlowSequencer.Audio
         }
 
         /// <summary>Creates a sample provider that starts reading from the beginning of the buffer data.</summary>
-        public ISeekableSampleProvider CreateStream()
+        /// <param name="infinite">if true, the sample provider will never stop reading and return 0 samples instead</param>
+        public ISeekableSampleProvider CreateStream(bool infinite = false)
         {
-            return new BufferReader(this);
+            return new BufferReader(this, infinite);
         }
 
         private class BufferReader : ISeekableSampleProvider
         {
             private readonly BufferedAudioFile context;
+            private readonly bool infinite;
             // Note: cannot reasonably use long here because for some reason Buffer.BlockCopy uses ints.
             // So the maximum supported sample count across all channels is in theory 2^29.
             private int position = 0;
-            
-            public BufferReader(BufferedAudioFile context)
+
+            public BufferReader(BufferedAudioFile context, bool infinite)
             {
                 this.context = context;
+                this.infinite = infinite;
             }
 
             public WaveFormat WaveFormat => context.waveFormat;
             public int Position => position;
 
+            private int ReadEOF(float[] buffer, int offset, int count)
+            {
+                if (infinite)
+                {
+                    // Note that we cannot use Array.Clear, because buffer may actually be
+                    // a unioned byte array instead, and Array.Clear would be confused.
+                    for (int i = offset; i < offset + count; i++)
+                        buffer[i] = 0;
+                    return count;
+                }
+                else return 0;
+            }
+
             public int Read(float[] buffer, int offset, int count)
             {
-                if (position >= context.data.Length) return 0; // already at EOF
+                // already at EOF?
+                if (position >= context.data.Length) return ReadEOF(buffer, offset, count);
 
                 long unreadSamples;
                 lock (context.lengthLockObject)
@@ -111,7 +128,7 @@ namespace GlowSequencer.Audio
                         if (unreadSamples > 0)
                             break; // data available
                         else if (availableSamples >= context.data.Length)
-                            return 0; // EOF
+                            return ReadEOF(buffer, offset, count);
                         else
                             Monitor.Wait(context.lengthLockObject);
                     }

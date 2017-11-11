@@ -117,6 +117,12 @@
             </MenuItem>
             <MenuItem Header="_Music">
                 <MenuItem Header="_Load file ..." Command="local:SequencerCommands.MusicLoadFile" />
+                <MenuItem Header="Waveform _rendering">
+                    <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLinear}"
+                              Header="Linear" ToolTip="Peaks are more visible, but the amplitude does not reflect loudness accurately."/>
+                    <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLogarithmic}"
+                              Header="Logarithmic" ToolTip="The amplitude of the wave is closer to the loudness of the track."/>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="_Active segment">
                     <MenuItem Header="_Synchronize with block selection" IsCheckable="True" IsChecked="{Binding SynchronizeActiveWithSelection}"/>
@@ -191,13 +197,26 @@
                                 MusicSegment="{Binding ActiveMusicSegment, Mode=OneWay}"/>
 
             <!-- Music Waveform -->
-            <local:WaveFormControl Grid.Column="2" Grid.Row="1"
+            <local:WaveformControl Grid.Column="2" Grid.Row="1"
                                    Background="Transparent" MouseWheel="timeline_MouseWheel" MouseDown="timeline_MouseDown"
+                                   MouseDoubleClick="WaveFormControl_MouseDoubleClick"
                                    PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
                                    TimeScale="{Binding TimePixelScale}"
                                    Waveform="{Binding Playback.CurrentWaveform, Mode=OneWay}"
-                                   IsLoading="{Binding Playback.IsLoading, Mode=OneWay}"/>
-            
+                                   WaveformDisplayMode="{Binding Playback.WaveformDisplayMode}"
+                                   IsLoading="{Binding Playback.IsLoading, Mode=OneWay}">
+                <local:WaveformControl.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="_Load music file ..." FontWeight="Bold" Command="local:SequencerCommands.MusicLoadFile" />
+                        <Separator/>
+                        <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLinear}"
+                                  Header="Linear" ToolTip="Peaks are more visible, but the amplitude does not reflect loudness accurately."/>
+                        <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLogarithmic}"
+                                  Header="Logarithmic" ToolTip="The amplitude of the wave is closer to the loudness of the track."/>
+                    </ContextMenu>
+                </local:WaveformControl.ContextMenu>
+            </local:WaveformControl>
+
             <ScrollViewer x:Name="trackBlocksScroller" Grid.Column="2" Grid.Row="3"
                           VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible" PanningMode="Both"
                           ScrollChanged="trackBlocksScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown">
@@ -280,10 +299,12 @@
                     Grid.Row="1" Grid.RowSpan="3" Grid.Column="2"
                     ClipToBounds="True" IsHitTestVisible="False">
                 <Line x:Name="selectionCursor"
+                            Canvas.Top="{Binding Source={x:Static SystemParameters.HorizontalScrollBarHeight}, Converter={StaticResource conv_Invert}}"
 							Canvas.Left="{Binding CursorPixelPositionOnViewport}" Y2="1" Stretch="Fill"
 							Height="{Binding ActualHeight, ElementName=selectionCursorCanvas}"
 							Stroke="Black" StrokeDashArray="1 2" StrokeThickness="2" SnapsToDevicePixels="True"
-							IsHitTestVisible="False"/>
+							IsHitTestVisible="False">
+                </Line>
             </Canvas>
 
             <StackPanel Orientation="Vertical" Grid.Column="3" Grid.Row="1" Grid.RowSpan="3">
