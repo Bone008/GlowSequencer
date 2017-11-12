@@ -1,4 +1,5 @@
-﻿using GlowSequencer.ViewModel;
+﻿using GlowSequencer.Util;
+using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,35 +16,43 @@ namespace GlowSequencer.View
 {
     public static class SequencerCommands
     {
-        public static readonly RoutedUICommand ExportGlo = new RoutedUICommand("", "ExportGlo", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
-        public static readonly RoutedUICommand ShowTransferWindow = new RoutedUICommand("", "ShowTransferWindow", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
+        // Note: RoutedUICommand is equal to RoutedCommand + a Text property (which is currently not used, though).
+        private static RoutedCommand Make(InputGestureCollection gestures = null, [System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            if (gestures == null) gestures = new InputGestureCollection();
+            return new RoutedCommand(name, typeof(SequencerCommands), gestures);
+        }
 
-        public static readonly RoutedUICommand ReplaceColor = new RoutedUICommand("", "ReplaceColor", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
+        public static readonly RoutedCommand ExportGlo = Make(new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
+        public static readonly RoutedCommand ShowTransferWindow = Make(new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
 
-        public static readonly RoutedCommand InsertBlock = new RoutedCommand();
-        public static readonly RoutedCommand ConvertToType = new RoutedCommand();
-        public static readonly RoutedUICommand GroupBlocks = new RoutedUICommand("", "GroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control) });
-        public static readonly RoutedUICommand UngroupBlocks = new RoutedUICommand("", "UngroupBlocks", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control | ModifierKeys.Shift) });
-        public static readonly RoutedCommand MoveToFront = new RoutedCommand();
-        public static readonly RoutedCommand MoveToBack = new RoutedCommand();
+        public static readonly RoutedCommand ReplaceColor = Make(new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
 
-        public static readonly RoutedCommand SwapRampColors = new RoutedCommand();
-        public static readonly RoutedCommand TrackAffiliationAll = new RoutedCommand();
-        public static readonly RoutedCommand TrackAffiliationInvert = new RoutedCommand();
+        public static readonly RoutedCommand InsertBlock = Make();
+        public static readonly RoutedCommand ConvertToType = Make();
+        public static readonly RoutedCommand GroupBlocks = Make(new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control) });
+        public static readonly RoutedCommand UngroupBlocks = Make(new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control | ModifierKeys.Shift) });
+        public static readonly RoutedCommand MoveToFront = Make();
+        public static readonly RoutedCommand MoveToBack = Make();
 
-        public static readonly RoutedCommand AddTrack = new RoutedUICommand("", "RenameTrack", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.A, ModifierKeys.Control | ModifierKeys.Shift) });
-        public static readonly RoutedCommand RenameTrack = new RoutedUICommand("", "RenameTrack", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.F2) });
-        public static readonly RoutedCommand DuplicateTrack = new RoutedCommand();
-        public static readonly RoutedCommand DeleteTrack = new RoutedCommand();
-        
-        public static readonly RoutedCommand MusicLoadFile = new RoutedUICommand("", "MusicLoadFile", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.O, ModifierKeys.Control | ModifierKeys.Shift) });
-        public static readonly RoutedUICommand MusicManageSegments = new RoutedUICommand("", "MusicManageSegments", typeof(SequencerCommands));
+        public static readonly RoutedCommand SwapRampColors = Make();
+        public static readonly RoutedCommand TrackAffiliationAll = Make();
+        public static readonly RoutedCommand TrackAffiliationInvert = Make();
 
-        public static readonly RoutedUICommand PlayPause = new RoutedUICommand("", "PlayPause", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Space) });
-        public static readonly RoutedUICommand ZoomIn = new RoutedUICommand("", "ZoomIn", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Add, ModifierKeys.Control), new KeyGesture(Key.OemPlus, ModifierKeys.Control) });
-        public static readonly RoutedUICommand ZoomOut = new RoutedUICommand("", "ZoomOut", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Subtract, ModifierKeys.Control), new KeyGesture(Key.OemMinus, ModifierKeys.Control) });
+        public static readonly RoutedCommand AddTrack = Make(new InputGestureCollection { new KeyGesture(Key.A, ModifierKeys.Control | ModifierKeys.Shift) });
+        public static readonly RoutedCommand RenameTrack = Make(new InputGestureCollection { new KeyGesture(Key.F2) });
+        public static readonly RoutedCommand DuplicateTrack = Make();
+        public static readonly RoutedCommand DeleteTrack = Make();
 
-        public static readonly RoutedCommand About = new RoutedCommand();
+        public static readonly RoutedCommand MusicLoadFile = Make(new InputGestureCollection { new KeyGesture(Key.O, ModifierKeys.Control | ModifierKeys.Shift) });
+        public static readonly RoutedCommand MusicClearFile = Make();
+        public static readonly RoutedCommand MusicManageSegments = Make();
+
+        public static readonly RoutedCommand PlayPause = Make(new InputGestureCollection { new KeyGesture(Key.Space) });
+        public static readonly RoutedCommand ZoomIn = Make(new InputGestureCollection { new KeyGesture(Key.Add, ModifierKeys.Control), new KeyGesture(Key.OemPlus, ModifierKeys.Control) });
+        public static readonly RoutedCommand ZoomOut = Make(new InputGestureCollection { new KeyGesture(Key.Subtract, ModifierKeys.Control), new KeyGesture(Key.OemMinus, ModifierKeys.Control) });
+
+        public static readonly RoutedCommand About = Make();
     }
 
     public partial class MainWindow
@@ -116,6 +125,11 @@ namespace GlowSequencer.View
                 e.CanExecute = sequencer.CanConvertToRamp;
             else
                 e.CanExecute = sequencer.CanConvertToAutoDeduced;
+        }
+
+        private void CommandBinding_CanExecuteIfMusicFile(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = sequencer.Playback.MusicFileName != null;
         }
 
 
@@ -515,7 +529,7 @@ namespace GlowSequencer.View
             sequencer.DeleteTrack(track);
         }
 
-        private async void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
+        private void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
         {
             string[] extensions = { "*.mp3", "*.m4a", "*.wav", "*.wma", "*.aiff", "*.aac" };
             var diag = new Microsoft.Win32.OpenFileDialog();
@@ -526,9 +540,29 @@ namespace GlowSequencer.View
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
-                await sequencer.Playback.LoadFileAsync(diag.FileName);
+                sequencer.ActionManager.RecordAction(
+                    MakeMusicFileAction(diag.FileName),
+                    MakeMusicFileAction(sequencer.Playback.MusicFileName) // old loaded file
+                );
             }
         }
+
+        private void CommandBinding_ExecuteMusicClearFile(object sender, ExecutedRoutedEventArgs e)
+        {
+            sequencer.ActionManager.RecordAction(
+                () => sequencer.Playback.ClearFile(),
+                MakeMusicFileAction(sequencer.Playback.MusicFileName)
+            );
+        }
+
+        // Note that this needs to be blocking to ensure quick undo/redo does not mess anything up.
+        // The better solution would be to have the ActionManager support async.
+        private Action MakeMusicFileAction(string fileName)
+        {
+            if (fileName == null) return () => sequencer.Playback.ClearFile();
+            else return () => sequencer.Playback.LoadFileAsync(fileName).Forget();
+        }
+
 
         private void CommandBinding_ExecuteMusicManageSegments(object sender, ExecutedRoutedEventArgs e)
         {
@@ -537,7 +571,10 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecutePlayPause(object sender, ExecutedRoutedEventArgs e)
         {
-            sequencer.Playback.TogglePlaying();
+            if (sequencer.Playback.IsPlaying)
+                sequencer.Playback.Stop();
+            else
+                sequencer.Playback.Play();
         }
 
         private void CommandBinding_ExecuteZoomIn(object sender, ExecutedRoutedEventArgs e)

@@ -43,6 +43,14 @@ namespace GlowSequencer.Audio
             playbackDevice.Init(sampleProvider);
         }
 
+        public void Clear()
+        {
+            Stop();
+            this.sampleProvider = null;
+            lastKnownSeekSample = 0;
+            continuationOnStoppedHook = null;
+        }
+
         private void EnsureDeviceCreated()
         {
             if (playbackDevice == null)
@@ -93,6 +101,7 @@ namespace GlowSequencer.Audio
             bool wasPlaying = IsPlaying;
             Action completeSeek = () =>
             {
+            if (sampleProvider == null) return; // if Clear() was called in the meantime
                 sampleProvider.Seek(lastKnownSeekSample = (int)(timeSeconds * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels));
                 if (wasPlaying) Play();
             };

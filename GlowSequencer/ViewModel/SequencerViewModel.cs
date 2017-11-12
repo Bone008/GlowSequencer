@@ -34,22 +34,21 @@ namespace GlowSequencer.ViewModel
         // data from the view
         private double _viewportLeftOffsetPx = 0;
         private double _viewportWidthPx = 0;
-        private double _currentWinWidth = 1000;
         //private double _horizontalTimelineOffset = 0;
 
         private ISet<BlockViewModel> temporaryDeltaSelectedBlocks = new HashSet<BlockViewModel>();
 
         public GuiLabs.Undo.ActionManager ActionManager { get; private set; }
         public SelectionProperties SelectionData { get; private set; }
-        public PlaybackViewModel Playback{ get; private set; }
+        public PlaybackViewModel Playback { get; private set; }
 
         public ReadOnlyContinuousCollection<MusicSegmentViewModel> MusicSegments { get; private set; }
         public ReadOnlyContinuousCollection<TrackViewModel> Tracks { get; private set; }
         public ReadOnlyContinuousCollection<BlockViewModel> AllBlocks { get; private set; }
-        
+
         public TrackViewModel SelectedTrack { get { return _selectedTrack; } set { SetProperty(ref _selectedTrack, value); } }
         public ObservableCollection<BlockViewModel> SelectedBlocks { get; private set; }
-        
+
         public float CursorPosition { get { return _cursorPosition; } set { SetProperty(ref _cursorPosition, Math.Max(0, value)); } }
         public TimeUnit CursorPositionComplex { get { return TimeUnit.WrapAbsolute(_cursorPosition, _activeMusicSegment.GetModel(), v => CursorPosition = v); } }
 
@@ -64,8 +63,7 @@ namespace GlowSequencer.ViewModel
         public float CurrentViewRightPositionTime => (float)(_viewportLeftOffsetPx + _viewportWidthPx) / TimePixelScale;
         public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewLeftPositionTime, _activeMusicSegment.GetModel()); } }
         public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewRightPositionTime, _activeMusicSegment.GetModel()); } }
-        public double CurrentWinWidth { get { return _currentWinWidth; } set { SetProperty(ref _currentWinWidth, value); } }
-        
+
         public double TimelineWidth
         {
             get
@@ -73,9 +71,13 @@ namespace GlowSequencer.ViewModel
                 float maxTime = Math.Max(
                     AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0),
                     Playback.MusicDuration);
-                double newWidth = Math.Max(CurrentWinWidth, maxTime * TimePixelScale + 200);
-                double stepSize = CurrentWinWidth / 2;
-                return Math.Ceiling(newWidth / stepSize) * stepSize;
+                double newWidth = Math.Max(_viewportWidthPx, maxTime * TimePixelScale + 200);
+                return newWidth;
+
+                // At some point I thought the "stepSize" was a good idea, but I don't remember why.
+                // The UX seems to be a lot better without it (always 200 px offset to the right of the last block).
+                //double stepSize = _viewportWidthPx / 2;
+                //return Math.Ceiling(newWidth / stepSize) * stepSize;
             }
         }
 
@@ -140,6 +142,9 @@ namespace GlowSequencer.ViewModel
             ActiveMusicSegment = MusicSegments[model.DefaultMusicSegment.GetIndex()];
             Playback = new PlaybackViewModel(this);
 
+            if (model.MusicFileName != null)
+                Playback.LoadFileAsync(model.MusicFileName).Forget();
+
             Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, nameof(TimelineWidth));
             AllBlocks.ToList().ForEach(fn_SubscribeToBlock);
             AllBlocks.CollectionChanged += (_, e) =>
@@ -167,6 +172,8 @@ namespace GlowSequencer.ViewModel
             };
         }
 
+        // Called by MusicSegmentViewModel when the BPM of a segment is changed.
+        // (easier than subscribing to ActiveMusicSegment.Bpm-changed every time it changes)
         public void NotifyGridInterval()
         {
             Notify("GridInterval");
@@ -184,11 +191,24 @@ namespace GlowSequencer.ViewModel
         {
             _viewportLeftOffsetPx = viewportOffsetPx;
             _viewportWidthPx = viewportWidth;
-            Notify("CurrentViewLeftPositionTime");
-            Notify("CurrentViewRightPositionTime");
-            Notify("CurrentViewLeftPositionComplex");
-            Notify("CurrentViewRightPositionComplex");
+            Notify(nameof(TimelineWidth));
+            Notify(nameof(CurrentViewLeftPositionTime));
+            Notify(nameof(CurrentViewRightPositionTime));
+            Notify(nameof(CurrentViewLeftPositionComplex));
+            Notify(nameof(CurrentViewRightPositionComplex));
             Notify(nameof(CursorPixelPositionOnViewport));
+        }
+
+        // Called by MainViewModel when opening a new document to make the view state
+        // available to the new SequencerViewModel before the view is updated.
+        internal double GetViewportLeftOffsetPx()
+        {
+            return _viewportLeftOffsetPx;
+        }
+
+        internal double GetViewportWidth()
+        {
+            return _viewportWidthPx;
         }
 
         /// <summary>

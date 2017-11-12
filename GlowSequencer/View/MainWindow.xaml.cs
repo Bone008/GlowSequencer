@@ -73,11 +73,18 @@ namespace GlowSequencer.View
         {
             trackLabelsScroller.ScrollToVerticalOffset(e.VerticalOffset);
 
+            // Update viewport state in VM.
             if (e.HorizontalChange != 0)
-            {
                 sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
-            }
         }
+
+        private void trackBlocksScroller_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // Update viewport state in VM.
+            if (e.WidthChanged)
+                sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
+        }
+
 
         private void timelineTrack_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -642,14 +649,6 @@ namespace GlowSequencer.View
                 trackBlocksScroller.ScrollToVerticalOffset((i + 1) * TIMELINE_TRACK_HEIGHT - trackBlocksScroller.ActualHeight);
         }
 
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (e.WidthChanged)
-            {
-                sequencer.CurrentWinWidth = ActualWidth;
-                sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
-            }
-        }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

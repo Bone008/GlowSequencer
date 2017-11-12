@@ -12,11 +12,15 @@ namespace GlowSequencer.Model
 {
     public class Timeline : Observable
     {
+        private string _musicFileName = null;
         private MusicSegment _defaultMusicSegment;
 
         public ObservableCollection<Block> Blocks { get; private set; }
         public ObservableCollection<Track> Tracks { get; private set; }
 
+        /// <summary>Name of an audio file containing music. Should be a relative path if possible.
+        /// Can be null if no in-app music is desired.</summary>
+        public string MusicFileName { get { return _musicFileName; } set { SetProperty(ref _musicFileName, value); } }
         public ObservableCollection<MusicSegment> MusicSegments { get; private set; }
 
         public MusicSegment DefaultMusicSegment
@@ -117,6 +121,7 @@ namespace GlowSequencer.Model
 
 
             return new XElement("timeline",
+                new XElement("music-file", MusicFileName),
                 new XElement("segments", MusicSegments.Skip(1).Select(s => s.ToXML()).ToArray()),
                 new XElement("default-segment", DefaultMusicSegment.GetIndex()),
                 new XElement("tracks", Tracks.Select(g => g.ToXML()).ToArray()),
@@ -128,7 +133,10 @@ namespace GlowSequencer.Model
         {
             Timeline t = new Timeline();
 
-            foreach (var segment in element.ElementOrEmpty("segments").Elements("segment").Select(s => MusicSegment.FromXML(t, s)))
+            t.MusicFileName = (string)element.Element("music-file");
+            if (string.IsNullOrWhiteSpace(t.MusicFileName)) t.MusicFileName = null; // normalize null
+
+                foreach (var segment in element.ElementOrEmpty("segments").Elements("segment").Select(s => MusicSegment.FromXML(t, s)))
                 t.MusicSegments.Add(segment);
 
             t.DefaultMusicSegment = t.MusicSegments[((int?)element.Element("default-segment")).GetValueOrDefault(0)];

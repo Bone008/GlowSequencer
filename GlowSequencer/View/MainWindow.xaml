@@ -6,7 +6,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="GlowSequencer.View.MainWindow"
         Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="600" Width="960"
-        SizeChanged="Window_SizeChanged" Closing="Window_Closing"
+        Closing="Window_Closing"
         AllowDrop="True" DragOver="Window_Drag" Drop="Window_Drop"
         DataContext="{StaticResource vm_Main}" Icon="/GlowSequencer;component/Resources/icon.ico">
 
@@ -45,6 +45,7 @@
         <CommandBinding Command="local:SequencerCommands.DeleteTrack" Executed="CommandBinding_ExecuteDeleteTrack"  CanExecute="CommandBinding_CanExecuteIfMoreThanOneTrack" />
 
         <CommandBinding Command="local:SequencerCommands.MusicLoadFile" Executed="CommandBinding_ExecuteMusicLoadFile"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.MusicClearFile" Executed="CommandBinding_ExecuteMusicClearFile"  CanExecute="CommandBinding_CanExecuteIfMusicFile" />
         <CommandBinding Command="local:SequencerCommands.MusicManageSegments" Executed="CommandBinding_ExecuteMusicManageSegments"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.PlayPause" Executed="CommandBinding_ExecutePlayPause"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomIn" Executed="CommandBinding_ExecuteZoomIn"  CanExecute="CommandBinding_CanExecuteAlways" />
@@ -117,6 +118,7 @@
             </MenuItem>
             <MenuItem Header="_Music">
                 <MenuItem Header="_Load file ..." Command="local:SequencerCommands.MusicLoadFile" />
+                <MenuItem Header="Clear music file" Command="local:SequencerCommands.MusicClearFile" />
                 <MenuItem Header="Waveform _rendering">
                     <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLinear}"
                               Header="Linear" ToolTip="Peaks are more visible, but the amplitude does not reflect loudness accurately."/>
@@ -208,6 +210,7 @@
                 <local:WaveformControl.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="_Load music file ..." FontWeight="Bold" Command="local:SequencerCommands.MusicLoadFile" />
+                        <MenuItem Header="Clear music file" Command="local:SequencerCommands.MusicClearFile" />
                         <Separator/>
                         <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLinear}"
                                   Header="Linear" ToolTip="Peaks are more visible, but the amplitude does not reflect loudness accurately."/>
@@ -219,7 +222,8 @@
 
             <ScrollViewer x:Name="trackBlocksScroller" Grid.Column="2" Grid.Row="3"
                           VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible" PanningMode="Both"
-                          ScrollChanged="trackBlocksScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown">
+                          ScrollChanged="trackBlocksScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown"
+                          SizeChanged="trackBlocksScroller_SizeChanged">
                 <Grid Width="{Binding TimelineWidth}" HorizontalAlignment="Left">
 
                     <ItemsControl ItemsSource="{Binding Tracks}">

@@ -40,7 +40,7 @@ namespace GlowSequencer.ViewModel
 
             Timeline timeline = new Timeline();
             timeline.SetupNew();
-            CurrentDocument = new SequencerViewModel(timeline) { CurrentWinWidth = TransferWinWidth() };
+            CurrentDocument = MakeSequencerViewModel(timeline);
 
             IsDirty = false;
             CurrentDocument.ActionManager.CollectionChanged += (_, __) => IsDirty = true;
@@ -61,7 +61,7 @@ namespace GlowSequencer.ViewModel
             }
 
             FilePath = file;
-            CurrentDocument = new SequencerViewModel(timeline) { CurrentWinWidth = TransferWinWidth() };
+            CurrentDocument = MakeSequencerViewModel(timeline);
 
             IsDirty = false;
             CurrentDocument.ActionManager.CollectionChanged += (_, __) => IsDirty = true;
@@ -95,11 +95,18 @@ namespace GlowSequencer.ViewModel
 
             return FileSerializer.ExportGloFiles(CurrentDocument.GetModel(), filename + "_", ".glo", startTime);
         }
+        
 
-
-        private double TransferWinWidth()
+        private SequencerViewModel MakeSequencerViewModel(Timeline timeline)
         {
-            return CurrentDocument != null ? CurrentDocument.CurrentWinWidth : 1000;
+            // Hack: Extract view state from old view model and inject into new one,
+            // so it can work with it without before the view is updated.
+            double viewportLeftOffsetPx = CurrentDocument?.GetViewportLeftOffsetPx() ?? 0.0;
+            double viewportWidthPx = CurrentDocument?.GetViewportWidth() ?? 1000.0;
+
+            var newDocument = new SequencerViewModel(timeline);
+            newDocument.SetViewportState(viewportLeftOffsetPx, viewportWidthPx);
+            return newDocument;
         }
     }
 }
