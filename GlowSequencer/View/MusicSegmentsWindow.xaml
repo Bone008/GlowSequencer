@@ -20,6 +20,7 @@
         <CommandBinding Command="local:MusicSegmentCommands.DeleteSegment" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteDeleteSegment" />
         <CommandBinding Command="local:MusicSegmentCommands.SetAsDefault" CanExecute="CommandBinding_CanExecuteIfNotDefault" Executed="CommandBinding_ExecuteSetAsDefault" />
         <CommandBinding Command="local:MusicSegmentCommands.MoveSegmentByTime" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteMoveSegmentByTime" />
+        <CommandBinding Command="local:MusicSegmentCommands.SetOriginToCursor" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteSetOriginToCursor" />
     </Window.CommandBindings>
 
     <Grid>
@@ -88,7 +89,8 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2">
                     <Label Style="{StaticResource s_FormLabel}" />
-                    <Button Content="Move by ..." Width="75" Command="local:MusicSegmentCommands.MoveSegmentByTime" CommandParameter="{Binding}" />
+                    <Button Content="Move by ..." Width="80" Command="local:MusicSegmentCommands.MoveSegmentByTime" CommandParameter="{Binding}" />
+                    <Button Content="Set to cursor" Width="80" Command="local:MusicSegmentCommands.SetOriginToCursor" CommandParameter="{Binding}" Margin="5,0,0,0" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2">
                     <Label Style="{StaticResource s_FormLabel}" Content="Referring blocks:"/>

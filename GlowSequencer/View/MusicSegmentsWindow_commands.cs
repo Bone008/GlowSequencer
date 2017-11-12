@@ -16,6 +16,7 @@ namespace GlowSequencer.View
         public static readonly RoutedUICommand DeleteSegment = new RoutedUICommand("", "DeleteSegment", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Delete) });
         public static readonly RoutedUICommand SetAsDefault = new RoutedUICommand("", "SetAsDefault", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
         public static readonly RoutedUICommand MoveSegmentByTime = new RoutedUICommand("", "MoveSegmentByTime", typeof(SequencerCommands));
+        public static readonly RoutedUICommand SetOriginToCursor = new RoutedUICommand("", "SetOriginToCursor", typeof(SequencerCommands));
     }
 
     public partial class MusicSegmentsWindow
@@ -88,5 +89,15 @@ namespace GlowSequencer.View
 
             segment.TimeOrigin += result.Value;
         }
+
+        private void CommandBinding_ExecuteSetOriginToCursor(object sender, ExecutedRoutedEventArgs e)
+        {
+            MusicSegmentViewModel segment = e.Parameter as MusicSegmentViewModel;
+            if (segment == null)
+                throw new ArgumentException("invalid parameter");
+
+            segment.TimeOrigin = TimeSpan.FromSeconds(sequencer.CursorPosition);
+        }
+
     }
 }
