@@ -14,6 +14,7 @@
 
         <util:ColorToBrushValueConverter x:Key="conv_ColorToBrush" />
         <util:NullToVisiblityConverter x:Key="conv_NullToVisibility" />
+        <util:NullToBoolConverter x:Key="conv_NullToBool" />
         <util:BoolToVisibilityConverter x:Key="conv_BoolToVisibility" />
         <util:TimeSpanToStringConverter x:Key="conv_TimeSpanToString" />
         <util:InvertedValueConverter x:Key="conv_Invert" />
@@ -353,91 +354,57 @@
         </DataTemplate>
 
 
-        <!--
-        <DataTemplate x:Key="BlockProperties" DataType="{x:Type vm:BlockViewModel}">
-            <DataTemplate.Resources>
-                <DataTemplate DataType="{x:Type vm:ColorBlockViewModel}">
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Color:" Style="{StaticResource s_FormLabel}"/>
-                            <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </StackPanel>
-                </DataTemplate>
-
-                <DataTemplate DataType="{x:Type vm:RampBlockViewModel}">
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Start color:" Style="{StaticResource s_FormLabel}"/>
-                            <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="End color:" Style="{StaticResource s_FormLabel}"/>
-                            <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </StackPanel>
-                </DataTemplate>
-            </DataTemplate.Resources>
-
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="35"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-
-                <Label FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5">
-                    <TextBlock Text="{Binding TypeLabel, StringFormat='\{0} block properties'}" />
-                </Label>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
-                    <Label Content="Music segment:" Style="{StaticResource s_FormLabel}"/>
-                    <ComboBox Width="250"
-                              ItemsSource="{Binding CurrentDocument.MusicSegments, Source={StaticResource vm_Main}}" ItemTemplate="{StaticResource MusicSegmentLabel}"
-                              SelectedItem="{Binding SegmentContext}"/>
-                    <Button Content="Manage" Command="view:SequencerCommands.MusicManageSegments" Width="50"/>
-                </StackPanel>
-
-                <WrapPanel Orientation="Vertical" Grid.Row="1">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Label Content="Tracks:" Style="{StaticResource s_FormLabel}"/>
-                        <ItemsControl ItemsSource="{Binding AllTracks}" Padding="0,5">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <CheckBox IsChecked="{Binding Item2, Mode=OneWay}" Content="{Binding Item1.Label}" Checked="TrackCheckBox_CheckedChanged" Unchecked="TrackCheckBox_CheckedChanged" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Vertical" Margin="0,0,0,5">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Start time:" Style="{StaticResource s_FormLabel}"/>
-                            <view:TimeUnitEditControl x:Name="editStartTime" Value="{Binding StartTimeComplex}" ActiveUnit="0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="End time:" Style="{StaticResource s_FormLabel}"/>
-                            <view:TimeUnitEditControl Value="{Binding EndTimeComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="Duration:" Style="{StaticResource s_FormLabel}"/>
-                            <view:TimeUnitEditControl Value="{Binding DurationComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="" Style="{StaticResource s_FormLabel}"/>
-                            <CheckBox Content="Synchronize units" Margin="80,0,0,0" VerticalAlignment="Center" IsChecked="True" IsEnabled="False"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <ContentPresenter Content="{Binding}" />
-                </WrapPanel>
-            </Grid>
-        </DataTemplate>
-        -->
-
-
         <ControlTemplate x:Key="ContentOnlyTemplate" TargetType="Button">
             <ContentPresenter/>
         </ControlTemplate>
+
+        
+        <!-- Style for buttons with an icon as their primary content. -->
+        <Style TargetType="ButtonBase" x:Key="s_IconButton">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="1" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Styles for specific icon buttons. -->
+        <Image x:Key="image_icon_lock" x:Shared="False" Source="Resources/icon_lock.png" />
+        <Image x:Key="image_icon_lock_open" x:Shared="False" Source="Resources/icon_lock_open.png" />
+        <Image x:Key="image_icon_pause" x:Shared="False" Source="Resources/icon_pause.png" />
+        <Image x:Key="image_icon_play" x:Shared="False" Source="Resources/icon_play.png" />
+        <Image x:Key="image_icon_zoom_in" x:Shared="False" Source="Resources/icon_zoom_in.png" />
+        <Image x:Key="image_icon_zoom_out" x:Shared="False" Source="Resources/icon_zoom_out.png" />
+
+        <Style TargetType="Button" x:Key="s_IconButtonLock" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Lock" />
+            <!-- defining the image inline here does not work for multiple buttons, so we use an unshared reference, see: http://stackoverflow.com/a/6356936 -->
+            <Setter Property="Content" Value="{StaticResource image_icon_lock}" />
+        </Style>
+        <Style TargetType="Button" x:Key="s_IconButtonLockOpen" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Unlock" />
+            <Setter Property="Content" Value="{StaticResource image_icon_lock_open}" />
+        </Style>
+        <Style TargetType="Button" x:Key="s_IconButtonPause" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Pause (Space)" />
+            <Setter Property="Content" Value="{StaticResource image_icon_pause}" />
+        </Style>
+        <Style TargetType="Button" x:Key="s_IconButtonPlay" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Play (Space)" />
+            <Setter Property="Content" Value="{StaticResource image_icon_play}" />
+        </Style>
+        <Style TargetType="Button" x:Key="s_IconButtonZoomIn" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Zoom in (Ctrl +)" />
+            <Setter Property="Content" Value="{StaticResource image_icon_zoom_in}" />
+        </Style>
+        <Style TargetType="Button" x:Key="s_IconButtonZoomOut" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Zoom out (Ctrl -)" />
+            <Setter Property="Content" Value="{StaticResource image_icon_zoom_out}" />
+        </Style>
 
     </Application.Resources>
 </Application>

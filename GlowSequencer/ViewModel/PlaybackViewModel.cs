@@ -88,9 +88,7 @@ namespace GlowSequencer.ViewModel
 
             // Stop when at end of timeline.
             if (audioPlayback.IsPlaying && sequencer.CursorPosition >= sequencer.TimelineLength)
-            {
                 Stop();
-            }
         }
 
         private void OnPlaybackStopped(object sender, EventArgs e)

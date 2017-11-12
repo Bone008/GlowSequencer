@@ -101,6 +101,7 @@
     <Compile Include="Audio\Waveform.cs" />
     <Compile Include="Audio\WaveformGenerator.cs" />
     <Compile Include="Audio\WaveOutHelper.cs" />
+    <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="View\WaveformVisual.cs" />
     <Compile Include="CompatibilityHooks.cs" />
     <Compile Include="FileSerializer.cs" />
@@ -272,6 +273,18 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\program_icon_64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icon_lock.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icon_lock_open.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icon_pause.png" />
+    <Resource Include="Resources\icon_play.png" />
+    <Resource Include="Resources\icon_zoom_in.png" />
+    <Resource Include="Resources\icon_zoom_out.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

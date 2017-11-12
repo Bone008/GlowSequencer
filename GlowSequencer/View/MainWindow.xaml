@@ -200,7 +200,7 @@
 
             <!-- Music Waveform -->
             <local:WaveformControl Grid.Column="2" Grid.Row="1"
-                                   Background="Transparent" MouseWheel="timeline_MouseWheel" MouseDown="timeline_MouseDown"
+                                   Background="Transparent" MouseWheel="timeline_MouseWheel" PreviewMouseDown="timeline_MouseDown"
                                    MouseDoubleClick="WaveFormControl_MouseDoubleClick"
                                    PreviewKeyDown="TimelineScrollers_PreviewKeyDown"
                                    PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
@@ -316,17 +316,37 @@
                         Background="Transparent" MouseWheel="timeline_MouseWheel">
                 <Slider Orientation="Vertical" HorizontalAlignment="Center"
                         Height="100" ToolTip="Playback volume"
+                        IsEnabled="{Binding Playback.MusicFileName, Converter={StaticResource conv_NullToBool}}"
                         Value="{Binding Playback.MusicVolume}" Maximum="1" Minimum="0" SmallChange="0.02" LargeChange="0.1" />
                 <Label HorizontalAlignment="Center">Vol</Label>
-                <Button Margin="2,5,2,0" Height="30" ToolTip="Play (Space)"
-                        Command="local:SequencerCommands.PlayPause">Play</Button>
-                <Button Margin="2,5,2,0" Height="30" ToolTip="Zoom in (Ctrl +)"
-                        Command="local:SequencerCommands.ZoomIn">Z+</Button>
-                <Button Margin="2,5,2,0" Height="30" ToolTip="Zoom out (Ctrl -)"
-                        Command="local:SequencerCommands.ZoomOut">Z-</Button>
+                <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonPlay}"
+                        IsEnabled="{Binding Playback.MusicFileName, Converter={StaticResource conv_NullToBool}}"
+                        Visibility="{Binding Playback.IsPlaying, Converter={StaticResource conv_BoolToVisibility}, ConverterParameter=inverted}"
+                        Command="local:SequencerCommands.PlayPause"/>
+                <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonPause}"
+                        IsEnabled="{Binding Playback.MusicFileName, Converter={StaticResource conv_NullToBool}}"
+                        Visibility="{Binding Playback.IsPlaying, Converter={StaticResource conv_BoolToVisibility}}"
+                        Command="local:SequencerCommands.PlayPause"/>
+                <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonZoomIn}"
+                        Command="local:SequencerCommands.ZoomIn"/>
+                <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonZoomOut}"
+                        Command="local:SequencerCommands.ZoomOut"/>
 
                 <ToggleButton Margin="2,5,2,0" Height="30" ToolTip="Snap to grid (hold Ctrl to toggle)"
-                        IsChecked="{Binding Source={StaticResource vm_Global}, Path=EnableSnapping}">Snap</ToggleButton>
+                        IsChecked="{Binding Source={StaticResource vm_Global}, Path=EnableSnapping}">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton" BasedOn="{StaticResource s_IconButton}">
+                            <Style.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="ToggleButton.Content" Value="{StaticResource image_icon_lock}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="False">
+                                    <Setter Property="ToggleButton.Content" Value="{StaticResource image_icon_lock_open}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
             </StackPanel>
         </Grid>
 
