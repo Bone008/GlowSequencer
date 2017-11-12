@@ -36,8 +36,18 @@ namespace GlowSequencer
                 // fallback for old, uncompressed save files
                 catch (InvalidDataException) { doc = XDocument.Load(filename); }
 
-                Timeline timeline = Timeline.FromXML(doc.Root.Element("timeline"));
-                return timeline;
+                try
+                {
+                    Timeline timeline = Timeline.FromXML(doc.Root.Element("timeline"), Path.GetDirectoryName(filename));
+                    return timeline;
+                }
+                catch(Exception e)
+                {
+                    // Probably some old file format that we no longer support.
+                    System.Windows.MessageBox.Show("An error occured while parsing \"" + filename + "\"!" + Environment.NewLine + Environment.NewLine + e.GetType().FullName + ": " + e.Message,
+                        "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                    return null;
+                }
             }
             catch (IOException e)
             {
@@ -61,7 +71,7 @@ namespace GlowSequencer
             XDocument doc = new XDocument();
             doc.Add(new XElement("sequence",
                 new XElement("version", GetProgramVersion()),
-                timeline.ToXML()
+                timeline.ToXML(Path.GetDirectoryName(filename))
             ));
 
             try

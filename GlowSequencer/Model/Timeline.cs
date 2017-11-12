@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -114,14 +115,13 @@ namespace GlowSequencer.Model
 #endif
 
 
-        public XElement ToXML()
+        public XElement ToXML(string relativePathBase = null)
         {
             if (MusicSegments.Count < 1 || !MusicSegments[0].IsReadOnly)
                 throw new Exception("the default segment somehow managed to disappear from slot 0");
 
-
             return new XElement("timeline",
-                new XElement("music-file", MusicFileName),
+                MusicFileToXML(relativePathBase),
                 new XElement("segments", MusicSegments.Skip(1).Select(s => s.ToXML()).ToArray()),
                 new XElement("default-segment", DefaultMusicSegment.GetIndex()),
                 new XElement("tracks", Tracks.Select(g => g.ToXML()).ToArray()),
@@ -129,14 +129,21 @@ namespace GlowSequencer.Model
             );
         }
 
-        public static Timeline FromXML(XElement element)
+        private XElement MusicFileToXML(string relativePathBase)
+        {
+            return new XElement("music-file",
+                new XElement("absolute", MusicFileName),
+                new XElement("relative", ConvertToRelative(MusicFileName, relativePathBase))
+            );
+        }
+
+        public static Timeline FromXML(XElement element, string relativePathBase)
         {
             Timeline t = new Timeline();
 
-            t.MusicFileName = (string)element.Element("music-file");
-            if (string.IsNullOrWhiteSpace(t.MusicFileName)) t.MusicFileName = null; // normalize null
+            t.MusicFileName = MusicFileFromXML(element.Element("music-file"), relativePathBase);
 
-                foreach (var segment in element.ElementOrEmpty("segments").Elements("segment").Select(s => MusicSegment.FromXML(t, s)))
+            foreach (var segment in element.ElementOrEmpty("segments").Elements("segment").Select(s => MusicSegment.FromXML(t, s)))
                 t.MusicSegments.Add(segment);
 
             t.DefaultMusicSegment = t.MusicSegments[((int?)element.Element("default-segment")).GetValueOrDefault(0)];
@@ -149,6 +156,60 @@ namespace GlowSequencer.Model
             // TODO XML load validation
 
             return t;
+        }
+
+        private static string MusicFileFromXML(XElement element, string relativePathBase)
+        {
+            if (element == null) return null;
+            string absolute = (string)element.Element("absolute");
+            string relative = (string)element.Element("relative");
+
+            // normalize null
+            if (string.IsNullOrWhiteSpace(absolute)) absolute = null;
+            if (string.IsNullOrWhiteSpace(absolute)) relative = null;
+
+            // If the absolute version is found, great, take it.
+            if (absolute != null && File.Exists(absolute))
+                return absolute;
+            // Otherwise, try to resolve the relative version and use that.
+            else if (relative != null)
+                return ConvertToAbsolute(relative, relativePathBase);
+            // If we don't have a relative version, return the absolute one,
+            // which will return in an error dialog when the file is loaded.
+            else
+                return absolute;
+        }
+
+        private static string ConvertToRelative(string path, string basePath)
+        {
+            if (basePath == null) return path;
+            if (path == null) return null;
+
+            // Normalize paths.
+            path = Path.GetFullPath(path);
+            basePath = Path.GetFullPath(basePath);
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar.ToString())) basePath += Path.DirectorySeparatorChar;
+
+            // Calculate relative path. See https://stackoverflow.com/a/703292.
+            Uri pathUri = new Uri(path);
+            Uri basePathUri = new Uri(basePath);
+            return Uri.UnescapeDataString(
+                basePathUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
+        }
+
+        private static string ConvertToAbsolute(string path, string basePath)
+        {
+            if (basePath == null) return path;
+            if (path == null) return null;
+
+            // Don't change if path is already absolute.
+            if (Path.IsPathRooted(path)) return path;
+
+            // Normalize basePath.
+            basePath = Path.GetFullPath(basePath);
+            if (!basePath.EndsWith(Path.DirectorySeparatorChar.ToString())) basePath += Path.DirectorySeparatorChar;
+
+            return Path.GetFullPath(basePath + path);
         }
     }
 }

@@ -4,6 +4,7 @@ using GlowSequencer.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -139,11 +140,11 @@ namespace GlowSequencer.ViewModel
             try { audioFile = new BufferedAudioFile(fileName); }
             catch (Exception e)
             {
-                System.Windows.MessageBox.Show("Could not load file: " + fileName + Environment.NewLine + Environment.NewLine + e.Message, "Problem opening file",
+                System.Windows.MessageBox.Show("Could not load music file: " + Path.GetFileName(fileName) + Environment.NewLine + Environment.NewLine + e.Message, "Problem opening file",
                                                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
-            
+
             MusicFileName = fileName;
 
             // TODO progress inidicator for file loading
