@@ -41,7 +41,7 @@ namespace GlowSequencer.View
         private const double TIMELINE_CURSOR_PADDING_LEFT_PX = 1;
         private const double TIMELINE_CURSOR_PADDING_RIGHT_PX = 3;
 
-
+        private readonly GlobalViewParameters globalParams = (GlobalViewParameters)Application.Current.FindResource("vm_Global");
         private MainViewModel main;
         private SequencerViewModel sequencer { get { return main.CurrentDocument; } }
 
@@ -408,9 +408,14 @@ namespace GlowSequencer.View
             }
         }
 
+        private bool GetIsSnapping()
+        {
+            return globalParams.EnableSnapping != Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+        }
+
         private float SnapValue(float v)
         {
-            if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (GetIsSnapping())
             {
                 float interval = sequencer.GridInterval;
                 float offset = sequencer.GetGridOffset();
@@ -601,19 +606,19 @@ namespace GlowSequencer.View
                     break;
                 case Key.Left:
                     sequencer.CursorPosition =
-                        (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
-                            sequencer.CursorPosition - 2 / sequencer.TimePixelScale
-                            : SnapValue(sequencer.CursorPosition - sequencer.GridInterval * 0.51f));
+                        GetIsSnapping()
+                            ? SnapValue(sequencer.CursorPosition - sequencer.GridInterval * 0.51f)
+                            : sequencer.CursorPosition - 2 / sequencer.TimePixelScale;
 
                     ScrollCursorIntoView();
                     e.Handled = true;
                     break;
                 case Key.Right:
                     sequencer.CursorPosition =
-                        (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) ?
-                            sequencer.CursorPosition + 2 / sequencer.TimePixelScale
-                            : SnapValue(sequencer.CursorPosition + sequencer.GridInterval * 0.51f));
-
+                        GetIsSnapping()
+                            ? SnapValue(sequencer.CursorPosition + sequencer.GridInterval * 0.51f)
+                            : sequencer.CursorPosition + 2 / sequencer.TimePixelScale;
+                    
                     if (sequencer.CursorPixelPosition > timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
                         sequencer.CursorPixelPosition = timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX;
                     ScrollCursorIntoView();

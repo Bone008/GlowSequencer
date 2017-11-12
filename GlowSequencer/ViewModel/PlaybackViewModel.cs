@@ -30,15 +30,9 @@ namespace GlowSequencer.ViewModel
         private bool inUpdateCursorPosition = false;
         private CancellationTokenSource renderWaveformCts = null;
 
-        private WaveformDisplayMode _currentWaveformDisplayMode = WaveformDisplayMode.Linear;
         private Waveform _currentWaveform = null;
         private bool _isLoading = false;
         private float _musicVolume = 1.0f;
-
-        // TODO move this into a "global settings" VM that is independent from the sequence
-        public WaveformDisplayMode WaveformDisplayMode { get { return _currentWaveformDisplayMode; } set { SetProperty(ref _currentWaveformDisplayMode, value); } }
-        public bool WaveformDisplayModeIsLinear { get { return WaveformDisplayMode == WaveformDisplayMode.Linear; } set { WaveformDisplayMode = WaveformDisplayMode.Linear; } }
-        public bool WaveformDisplayModeIsLogarithmic { get { return WaveformDisplayMode == WaveformDisplayMode.Logarithmic; } set { WaveformDisplayMode = WaveformDisplayMode.Logarithmic; } }
 
         public Waveform CurrentWaveform { get { return _currentWaveform; } set { SetProperty(ref _currentWaveform, value); } }
         public bool IsLoading { get { return _isLoading; } private set { SetProperty(ref _isLoading, value); } }
@@ -59,8 +53,6 @@ namespace GlowSequencer.ViewModel
 
             cursorUpdateTimer = new System.Windows.Threading.DispatcherTimer() { Interval = CURSOR_UPDATE_INTERVAL };
             cursorUpdateTimer.Tick += (_, __) => UpdateCursorPosition();
-
-            ForwardPropertyEvents(nameof(WaveformDisplayMode), this, nameof(WaveformDisplayModeIsLinear), nameof(WaveformDisplayModeIsLogarithmic));
 
             ForwardPropertyEvents(nameof(MusicVolume), this, () => audioPlayback.Volume = LoudnessHelper.LoudnessFromVolume(MusicVolume));
             ForwardPropertyEvents(nameof(sequencer.CurrentViewLeftPositionTime), sequencer, InvalidateWaveform);

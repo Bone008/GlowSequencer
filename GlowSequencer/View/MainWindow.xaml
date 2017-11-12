@@ -120,9 +120,9 @@
                 <MenuItem Header="_Load file ..." Command="local:SequencerCommands.MusicLoadFile" />
                 <MenuItem Header="Clear music file" Command="local:SequencerCommands.MusicClearFile" />
                 <MenuItem Header="Waveform _rendering">
-                    <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLinear}"
+                    <MenuItem IsCheckable="True" IsChecked="{Binding Source={StaticResource vm_Global}, Path=WaveformDisplayModeIsLinear}"
                               Header="Linear" ToolTip="Peaks are more visible, but the amplitude does not reflect loudness accurately."/>
-                    <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLogarithmic}"
+                    <MenuItem IsCheckable="True" IsChecked="{Binding Source={StaticResource vm_Global}, Path=WaveformDisplayModeIsLogarithmic}"
                               Header="Logarithmic" ToolTip="The amplitude of the wave is closer to the loudness of the track."/>
                 </MenuItem>
                 <Separator/>
@@ -205,16 +205,16 @@
                                    PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
                                    TimeScale="{Binding TimePixelScale}"
                                    Waveform="{Binding Playback.CurrentWaveform, Mode=OneWay}"
-                                   WaveformDisplayMode="{Binding Playback.WaveformDisplayMode}"
+                                   WaveformDisplayMode="{Binding Source={StaticResource vm_Global}, Path=WaveformDisplayMode}"
                                    IsLoading="{Binding Playback.IsLoading, Mode=OneWay}">
                 <local:WaveformControl.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="_Load music file ..." FontWeight="Bold" Command="local:SequencerCommands.MusicLoadFile" />
                         <MenuItem Header="Clear music file" Command="local:SequencerCommands.MusicClearFile" />
                         <Separator/>
-                        <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLinear}"
+                        <MenuItem IsCheckable="True" IsChecked="{Binding Source={StaticResource vm_Global}, Path=WaveformDisplayModeIsLinear}"
                                   Header="Linear" ToolTip="Peaks are more visible, but the amplitude does not reflect loudness accurately."/>
-                        <MenuItem IsCheckable="True" IsChecked="{Binding Playback.WaveformDisplayModeIsLogarithmic}"
+                        <MenuItem IsCheckable="True" IsChecked="{Binding Source={StaticResource vm_Global}, Path=WaveformDisplayModeIsLogarithmic}"
                                   Header="Logarithmic" ToolTip="The amplitude of the wave is closer to the loudness of the track."/>
                     </ContextMenu>
                 </local:WaveformControl.ContextMenu>
@@ -323,8 +323,8 @@
                 <Button Margin="2,5,2,0" Height="30" ToolTip="Zoom out (Ctrl -)"
                         Command="local:SequencerCommands.ZoomOut">Z-</Button>
 
-                <ToggleButton Margin="2,5,2,0" Height="30" ToolTip="Enable cursor snapping"
-                        IsChecked="True">Snap</ToggleButton>
+                <ToggleButton Margin="2,5,2,0" Height="30" ToolTip="Snap to grid (hold Ctrl to toggle)"
+                        IsChecked="{Binding Source={StaticResource vm_Global}, Path=EnableSnapping}">Snap</ToggleButton>
             </StackPanel>
         </Grid>
 
