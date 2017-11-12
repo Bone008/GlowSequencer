@@ -1,0 +1,76 @@
+====== Glow Sequencer =======
+=== made by Lukas Bonauer ===
+=============================
+
+Changelog
+
+v1.4.0 (2017-11-13):
+- Added loading of audio files
+ * Rendering of waveform (linear and logarithmic)
+ * Play back music directly in Glow Sequencer
+- Added ability to change track display heights
+- Added "Convert to color/ramp block" functionality
+- Added "Set origin to cursor" button to music segments
+- Many user experience and stability improvements
+
+v1.3.6 (2017-05-22):
+- Added "Move by" functionality to move music segments around relatively
+- Tweaked display colors
+
+v1.3.5 (2016-07-10):
+- Fixed overlapping blocks sometimes being exported in the wrong order (finally!)
+- Other minor changes
+
+v1.3.4 (2016-07-05):
+- Display dark colors more visibly
+- Wait before starting music when transfering with negative delay
+- Fixed glo export of multi-track loops not working
+- Fixed opening of read-only files
+
+v1.3.2 (2016-06-22):
+- Added "Replace color" functionality (under Edit menu)
+- Added program icon
+- Other minor fixes
+
+v1.3.1 (2016-06-19):
+- Allow transfering the sequence starting at a time offset
+- Hold "Ctrl" while selecting blocks to subtract from selection
+- Group blocks can now have a music segment like any other block
+- Automatic adjustment of blocks when changing music segment settings is now optional
+- Other minor fixes
+
+v1.3.0 (2016-01-09):
+- Added automatic "Transfer to equipment" feature
+- Added support for vertical dragging of blocks
+- Added "All" and "Invert" buttons for track affiliation in block properties
+- Added support for Windows "Open with ..." and drag & drop to open sequence files
+- Added automatic adjustment of blocks when changing BPM or offset of a music segment
+- Fixed multi block selection handling blocks with gaps in their track affiliation incorrectly
+- Improved keyboard navigation for cursor & track selection
+- Pad track numbers with zeros by default for better sorting
+- Sequence files are now compressed to save space
+- Fixed crash when exporting empty tracks
+
+v1.2.1 (2015-12-01):
+- Improved pasting behavior of multitrack selections
+- Fixed old export algorithm still being executed
+- Fixed rounding error sometimes producing out of range colors when exporting
+
+v1.2.0 (2015-12-01):
+- Added support for exporting overlapping blocks
+- Added undo/redo functionality
+- Added confirmation dialog when leaving a document with unsaved changes
+- Added display for cursor position and view boundaries
+- Added keyboard shortcuts for inserting blocks
+- Improved looping export without inaccuracies
+- Other minor changes
+
+v1.1.0 (2015-10-21):
+- Added proper display of seconds/beats on the timeline
+- Added grouping and looping support
+ * Exporting loops still yields rounding errors
+- Improved performance of grid rendering
+- Fixed and improved tons of stuff that I cannot remember
+
+v1.0.0 (2015-09-20):
+- Initial release
