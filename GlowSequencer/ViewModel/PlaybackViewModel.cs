@@ -87,7 +87,7 @@ namespace GlowSequencer.ViewModel
             inUpdateCursorPosition = false;
 
             // Stop when at end of timeline.
-            if (audioPlayback.IsPlaying && sequencer.CursorPosition >= sequencer.TimelineWidth / sequencer.TimePixelScale)
+            if (audioPlayback.IsPlaying && sequencer.CursorPosition >= sequencer.TimelineLength)
             {
                 Stop();
             }
@@ -105,7 +105,7 @@ namespace GlowSequencer.ViewModel
             if (!audioPlayback.IsInitialized) return false;
             if (audioPlayback.IsPlaying) return false;
             // Already at end of timeline?
-            if (sequencer.CursorPosition >= sequencer.TimelineWidth / sequencer.TimePixelScale)
+            if (sequencer.CursorPosition >= sequencer.TimelineLength)
                 return false;
 
             audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);

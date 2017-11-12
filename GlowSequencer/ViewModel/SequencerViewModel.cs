@@ -64,22 +64,10 @@ namespace GlowSequencer.ViewModel
         public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewLeftPositionTime, _activeMusicSegment.GetModel()); } }
         public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewRightPositionTime, _activeMusicSegment.GetModel()); } }
 
-        public double TimelineWidth
-        {
-            get
-            {
-                float maxTime = Math.Max(
-                    AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0),
-                    Playback.MusicDuration);
-                double newWidth = Math.Max(_viewportWidthPx, maxTime * TimePixelScale + 200);
-                return newWidth;
-
-                // At some point I thought the "stepSize" was a good idea, but I don't remember why.
-                // The UX seems to be a lot better without it (always 200 px offset to the right of the last block).
-                //double stepSize = _viewportWidthPx / 2;
-                //return Math.Ceiling(newWidth / stepSize) * stepSize;
-            }
-        }
+        /// <summary>Duration of the entire timeline in seconds.</summary>
+        public float TimelineLength => Math.Max(Playback.MusicDuration, AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0));
+        /// <summary>Render width of the entire timeline in pixels. Includes some padding on the right.</summary>
+        public double TimelineWidth => Math.Max(_viewportWidthPx, TimelineLength * TimePixelScale + 200);
 
         /// <summary>
         /// Gets the current interval of the grid lines in seconds.
@@ -145,12 +133,12 @@ namespace GlowSequencer.ViewModel
             if (model.MusicFileName != null)
                 Playback.LoadFileAsync(model.MusicFileName).Forget();
 
-            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, nameof(TimelineWidth));
+            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, nameof(TimelineLength));
             AllBlocks.ToList().ForEach(fn_SubscribeToBlock);
             AllBlocks.CollectionChanged += (_, e) =>
             {
                 if (e.NewItems != null) e.NewItems.Cast<BlockViewModel>().ToList().ForEach(fn_SubscribeToBlock);
-                Notify(nameof(TimelineWidth));
+                Notify(nameof(TimelineLength));
             };
 
             ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", nameof(CursorPixelPositionOnViewport), "CursorPositionComplex");
@@ -160,8 +148,8 @@ namespace GlowSequencer.ViewModel
                                                           nameof(TimelineWidth), "GridInterval");
             ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex", "GridInterval");
 
-            ForwardPropertyEvents("CurrentWinWidth", this, nameof(TimelineWidth));
-            ForwardPropertyEvents(nameof(Playback.MusicDuration), Playback, nameof(TimelineWidth));
+            ForwardPropertyEvents(nameof(Playback.MusicDuration), Playback, nameof(TimelineLength));
+            ForwardPropertyEvents(nameof(TimelineLength), this, nameof(TimelineWidth));
 
             ForwardCollectionEvents(SelectedBlocks, nameof(CanConvertToColor), nameof(CanConvertToRamp), nameof(CanConvertToAutoDeduced), nameof(ConvertAutoDeduceGestureText));
 
