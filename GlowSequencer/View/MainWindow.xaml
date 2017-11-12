@@ -219,7 +219,7 @@
                                    IsLoading="{Binding Playback.IsLoading, Mode=OneWay}">
                 <local:WaveformControl.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="_Load music file ..." FontWeight="Bold" Command="local:SequencerCommands.MusicLoadFile" />
+                        <MenuItem Header="_Load music file ..." Command="local:SequencerCommands.MusicLoadFile" />
                         <MenuItem Header="Clear music file" Command="local:SequencerCommands.MusicClearFile" />
                         <Separator/>
                         <MenuItem IsCheckable="True" IsChecked="{Binding Source={StaticResource vm_Global}, Path=WaveformDisplayModeIsLinear}"
