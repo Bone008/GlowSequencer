@@ -160,6 +160,12 @@ namespace GlowSequencer.ViewModel
             };
         }
 
+        // Called when another document is opened.
+        public void OnClose()
+        {
+            Playback?.Stop();
+        }
+
         // Called by MusicSegmentViewModel when the BPM of a segment is changed.
         // (easier than subscribing to ActiveMusicSegment.Bpm-changed every time it changes)
         public void NotifyGridInterval()

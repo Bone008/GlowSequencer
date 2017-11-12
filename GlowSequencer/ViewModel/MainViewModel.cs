@@ -40,6 +40,7 @@ namespace GlowSequencer.ViewModel
 
             Timeline timeline = new Timeline();
             timeline.SetupNew();
+            CurrentDocument?.OnClose();
             CurrentDocument = MakeSequencerViewModel(timeline);
 
             IsDirty = false;
