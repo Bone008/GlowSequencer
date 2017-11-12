@@ -194,7 +194,7 @@ namespace GlowSequencer.ViewModel
 
         public void RemoveFromTrack(TrackViewModel track)
         {
-            if (model.Tracks.Count > 1)
+            if (model.Tracks.Count > 1 && model.Tracks.Contains(track.GetModel()))
             {
                 sequencer.ActionManager.RecordRemove(model.Tracks, track.GetModel());
                 //model.Tracks.Remove(track.GetModel());
