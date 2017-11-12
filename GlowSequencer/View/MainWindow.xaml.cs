@@ -37,7 +37,6 @@ namespace GlowSequencer.View
 
         private const int DRAG_START_END_PIXEl_WINDOW = 6;
         private const int DRAG_START_END_PIXEl_WINDOW_TOUCH = 12;
-        private const double TIMELINE_TRACK_HEIGHT = TrackViewModel.DISPLAY_HEIGHT;
         private const double TIMELINE_CURSOR_PADDING_LEFT_PX = 1;
         private const double TIMELINE_CURSOR_PADDING_RIGHT_PX = 3;
 
@@ -430,13 +429,13 @@ namespace GlowSequencer.View
         /// <returns></returns>
         private int GetTrackIndexFromOffset(double offset)
         {
-            return MathUtil.Clamp(MathUtil.FloorToInt(offset / TIMELINE_TRACK_HEIGHT), 0, sequencer.Tracks.Count - 1);
+            return MathUtil.Clamp(MathUtil.FloorToInt(offset / globalParams.TrackDisplayHeight), 0, sequencer.Tracks.Count - 1);
         }
 
 
         private void timeline_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            int trackIndex = (int)Math.Floor(e.GetPosition(timeline).Y / TrackViewModel.DISPLAY_HEIGHT);
+            int trackIndex = MathUtil.FloorToInt(e.GetPosition(timeline).Y / globalParams.TrackDisplayHeight);
             if (trackIndex >= 0 && trackIndex < sequencer.Tracks.Count)
                 sequencer.SelectedTrack = sequencer.Tracks[trackIndex];
         }
@@ -560,8 +559,8 @@ namespace GlowSequencer.View
             double timeRangeStart = r.Left / sequencer.TimePixelScale;
             double timeRangeEnd = r.Right / sequencer.TimePixelScale;
 
-            int trackRangeStart = (int)Math.Floor(r.Top / TIMELINE_TRACK_HEIGHT); // inclusive
-            int trackRangeEnd = (int)Math.Ceiling(r.Bottom / TIMELINE_TRACK_HEIGHT); // exclusive
+            int trackRangeStart = (int)Math.Floor(r.Top / globalParams.TrackDisplayHeight); // inclusive
+            int trackRangeEnd = (int)Math.Ceiling(r.Bottom / globalParams.TrackDisplayHeight); // exclusive
 
             sequencer.SelectBlocksDelta(sequencer.AllBlocks
                 .Where(b => timeRangeStart <= b.EndTimeOccupied && timeRangeEnd >= b.StartTime
@@ -648,10 +647,10 @@ namespace GlowSequencer.View
         private void ScrollSelectedTrackIntoView()
         {
             int i = sequencer.SelectedTrack.GetIndex();
-            if (i * TIMELINE_TRACK_HEIGHT < trackBlocksScroller.VerticalOffset)
-                trackBlocksScroller.ScrollToVerticalOffset(i * TIMELINE_TRACK_HEIGHT);
-            else if ((i + 1) * TIMELINE_TRACK_HEIGHT > trackBlocksScroller.VerticalOffset + trackBlocksScroller.ActualHeight)
-                trackBlocksScroller.ScrollToVerticalOffset((i + 1) * TIMELINE_TRACK_HEIGHT - trackBlocksScroller.ActualHeight);
+            if (i * globalParams.TrackDisplayHeight < trackBlocksScroller.VerticalOffset)
+                trackBlocksScroller.ScrollToVerticalOffset(i * globalParams.TrackDisplayHeight);
+            else if ((i + 1) * globalParams.TrackDisplayHeight > trackBlocksScroller.VerticalOffset + trackBlocksScroller.ActualHeight)
+                trackBlocksScroller.ScrollToVerticalOffset((i + 1) * globalParams.TrackDisplayHeight - trackBlocksScroller.ActualHeight);
         }
 
 

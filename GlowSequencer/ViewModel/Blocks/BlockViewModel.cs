@@ -15,7 +15,9 @@ namespace GlowSequencer.ViewModel
 
     public abstract class BlockViewModel : Observable
     {
-        
+        // Bad: this causes a hard dependency on WPF view. Not sure how to elegantly inject a reference into this otherwise, though :(
+        private static readonly GlobalViewParameters globalParams = (GlobalViewParameters)Application.Current.FindResource("vm_Global");
+
         // TODO replace this with ConditionalWeakTable or other weak dictionary
         private static Dictionary<Model.Block, BlockViewModel> s_viewModelCache = new Dictionary<Model.Block, BlockViewModel>();
 
@@ -49,8 +51,8 @@ namespace GlowSequencer.ViewModel
 
 
 
-        protected SequencerViewModel sequencer;
-        protected Model.Block model;
+        protected readonly SequencerViewModel sequencer;
+        protected readonly Model.Block model;
 
         protected readonly string _typeLabel;
 
@@ -60,24 +62,12 @@ namespace GlowSequencer.ViewModel
             this.model = model;
             this._typeLabel = typeLabel;
 
-            //Tracks = model.Tracks.Select(g => new TrackViewModel(sequencer, g));
-
             ForwardPropertyEvents(nameof(model.StartTime), model, nameof(StartTime), nameof(EndTime), nameof(DisplayOffset));
-            //ForwardPropertyEvents(nameof(model.StartTime), model, () => { foreach (var g in sequencer.Tracks) g.OnMaxBlockExtentChanged(); });
-
             ForwardPropertyEvents(nameof(model.Duration), model, nameof(Duration), nameof(EndTime), nameof(DisplayWidth));
-            //ForwardPropertyEvents(nameof(model.Duration), model, () => { foreach (var g in sequencer.Tracks) g.OnMaxBlockExtentChanged(); });
 
             ForwardPropertyEvents(nameof(model.SegmentContext), model, nameof(SegmentContext), nameof(IsSegmentActive));
-            //ForwardPropertyEvents(nameof(model.SegmentContext), model, () =>
-            //{
-            //    ForwardPropertyEvents("Bpm", model.SegmentContext, nameof(StartTimeComplex), nameof(EndTimeComplex), nameof(DurationComplex));
-            //    ForwardPropertyEvents("BeatsPerBar", model.SegmentContext, nameof(StartTimeComplex), nameof(EndTimeComplex), nameof(DurationComplex));
-            //    ForwardPropertyEvents("TimeOrigin", model.SegmentContext, nameof(StartTimeComplex), nameof(EndTimeComplex));
-            //}, true);
-
             // track affiliation
-            CollectionChangedEventManager.AddHandler(model.Tracks, (sender, e) => { Notify(nameof(DisplayTopOffset)); Notify(nameof(DisplayHeight)); Notify(nameof(DisplayClip)); });
+            ForwardCollectionEvents(model.Tracks, nameof(DisplayTopOffset), nameof(DisplayHeight), nameof(DisplayClip));
             // tracks in general
             // moved to OnTracksCollectionChanged(), called by the sequencer, because when this view model is constructed, the "Tracks" collection may still be under construction
             //CollectionChangedEventManager.AddHandler(sequencer.Tracks, (sender, e) => { Notify(nameof(DisplayTopOffset)); Notify(nameof(DisplayHeight)); Notify(nameof(DisplayClip)); });
@@ -85,8 +75,7 @@ namespace GlowSequencer.ViewModel
             // subscribe to sequencer
             ForwardPropertyEvents(nameof(sequencer.ActiveMusicSegment), sequencer, nameof(IsSegmentActive));
             ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, nameof(DisplayOffset), nameof(DisplayWidth));
-            
-            sequencer.SelectedBlocks.CollectionChanged += (sender, e) =>
+            ForwardCollectionEvents(sequencer.SelectedBlocks, (sender, e) =>
             {
                 if ((e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Contains(this))
                     || (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems.Contains(this))
@@ -95,12 +84,15 @@ namespace GlowSequencer.ViewModel
                 {
                     Notify(nameof(IsSelected));
                 }
-            };
+            });
+
+            // subscribe to track height changes
+            if(globalParams != null)
+            ForwardPropertyEvents(nameof(globalParams.TrackDisplayHeight), globalParams, NotifyTrackRelatedProperties);
         }
 
-        public string TypeLabel { get { return _typeLabel; } }
-
-
+        public string TypeLabel => _typeLabel;
+        
         public float StartTime { get { return model.StartTime; } set { sequencer.ActionManager.RecordSetProperty(model, m => m.StartTime, value); } }
         public float Duration { get { return model.Duration; } set { sequencer.ActionManager.RecordSetProperty(model, m => m.Duration, value); } }
 
@@ -125,25 +117,10 @@ namespace GlowSequencer.ViewModel
         }
 
 
-        public double DisplayOffset
-        {
-            get { return StartTime * sequencer.TimePixelScale; }
-        }
-
-        public double DisplayTopOffset
-        {
-            get { return model.Tracks.Min(t => t.GetIndex()) * TrackViewModel.DISPLAY_HEIGHT; }
-        }
-
-        public double DisplayWidth
-        {
-            get { return Duration * sequencer.TimePixelScale; }
-        }
-
-        public double DisplayHeight
-        {
-            get { return (model.Tracks.Max(t => t.GetIndex()) + 1) * TrackViewModel.DISPLAY_HEIGHT - DisplayTopOffset; }
-        }
+        public double DisplayOffset => StartTime * sequencer.TimePixelScale;
+        public double DisplayTopOffset => model.Tracks.Min(t => t.GetIndex()) * globalParams.TrackDisplayHeight;
+        public double DisplayWidth => Duration * sequencer.TimePixelScale;
+        public double DisplayHeight => (model.Tracks.Max(t => t.GetIndex()) + 1) * globalParams.TrackDisplayHeight - DisplayTopOffset;
 
         public Geometry DisplayClip
         {
@@ -155,7 +132,7 @@ namespace GlowSequencer.ViewModel
                 Geometry geom = null;
                 Action<int, int> makeRect = (from, to) =>
                     {
-                        Rect r = new Rect(-10000, from * TrackViewModel.DISPLAY_HEIGHT, 20000, (to - from) * TrackViewModel.DISPLAY_HEIGHT);
+                        Rect r = new Rect(-10000, from * globalParams.TrackDisplayHeight, 20000, (to - from) * globalParams.TrackDisplayHeight);
                         if (geom == null) geom = new RectangleGeometry(r);
                         else geom = Geometry.Combine(geom, new RectangleGeometry(r), GeometryCombineMode.Union, null);
                     };
@@ -181,18 +158,8 @@ namespace GlowSequencer.ViewModel
             }
         }
 
-        public bool IsSelected
-        {
-            get { return sequencer.SelectedBlocks.Contains(this); }
-        }
-
-        public virtual bool IsSegmentActive
-        {
-            get { return sequencer.ActiveMusicSegment == SegmentContext; }
-        }
-
-        public float TmpLoopOffset { get; set; }
-
+        public bool IsSelected => sequencer.SelectedBlocks.Contains(this);
+        public virtual bool IsSegmentActive => sequencer.ActiveMusicSegment == SegmentContext;
 
         public Model.Block GetModel()
         {
@@ -205,6 +172,11 @@ namespace GlowSequencer.ViewModel
         }
 
         public virtual void OnTracksCollectionChanged()
+        {
+            NotifyTrackRelatedProperties();
+        }
+
+        private void NotifyTrackRelatedProperties()
         {
             Notify(nameof(DisplayTopOffset));
             Notify(nameof(DisplayHeight));

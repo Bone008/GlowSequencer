@@ -12,9 +12,6 @@ namespace GlowSequencer.ViewModel
 
     public class TrackViewModel : Observable
     {
-        public const int DISPLAY_HEIGHT = 50;
-
-
         private SequencerViewModel sequencer;
         private Model.Track model;
 

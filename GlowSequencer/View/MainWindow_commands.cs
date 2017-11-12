@@ -20,7 +20,7 @@ namespace GlowSequencer.View
         private static RoutedCommand Make(InputGestureCollection gestures = null, [System.Runtime.CompilerServices.CallerMemberName] string name = null)
         {
             if (gestures == null) gestures = new InputGestureCollection();
-            return new RoutedCommand(name, typeof(SequencerCommands), gestures);
+            return new RoutedUICommand(name, name, typeof(SequencerCommands), gestures);
         }
 
         public static readonly RoutedCommand ExportGlo = Make(new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
@@ -43,6 +43,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand RenameTrack = Make(new InputGestureCollection { new KeyGesture(Key.F2) });
         public static readonly RoutedCommand DuplicateTrack = Make();
         public static readonly RoutedCommand DeleteTrack = Make();
+        public static readonly RoutedCommand SetTrackHeight = Make();
 
         public static readonly RoutedCommand MusicLoadFile = Make(new InputGestureCollection { new KeyGesture(Key.O, ModifierKeys.Control | ModifierKeys.Shift) });
         public static readonly RoutedCommand MusicClearFile = Make();
@@ -217,27 +218,11 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteExportGlo(object sender, ExecutedRoutedEventArgs e)
         {
-            TimeSpan startTime = TimeSpan.Zero;
-
-            var converter = new Util.TimeSpanToStringConverter();
-
-            string lastInput = (string)converter.Convert(startTime, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture);
-            object inputResult;
-            do
-            {
-                var prompt = new PromptWindow("Export start time");
-                prompt.Owner = this;
-                prompt.PromptText = lastInput;
-
-                if (prompt.ShowDialog() != true)
-                    return;
-
-                inputResult = converter.ConvertBack(prompt.PromptText, typeof(TimeSpan), null, System.Globalization.CultureInfo.InvariantCulture);
-            } while (inputResult == null);
-
-            startTime = (TimeSpan)inputResult;
-
-
+            var result = Mastermind.ShowPromptTimeSpan(this, "Export start time", TimeSpan.Zero);
+            if (!result.Success)
+                return;
+            TimeSpan startTime = result.Value;
+            
             string exportName = main.DocumentName;
             if (exportName.EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
                 exportName = exportName.Substring(0, exportName.Length - FileSerializer.EXTENSION_PROJECT.Length);
@@ -526,6 +511,17 @@ namespace GlowSequencer.View
 
             sequencer.DeleteTrack(track);
         }
+        
+        private void CommandBinding_ExecuteSetTrackHeight(object sender, ExecutedRoutedEventArgs e)
+        {
+            var result = Mastermind.ShowPrompt(this, "Enter track height in pixels", globalParams.TrackDisplayHeight.ToString(), double.Parse,
+                            value => value > 0 && !double.IsNaN(value));
+            if (!result.Success)
+                return;
+
+            globalParams.TrackDisplayHeight = result.Value;
+        }
+
 
         private void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
         {

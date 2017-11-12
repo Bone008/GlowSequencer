@@ -82,34 +82,11 @@ namespace GlowSequencer.View
             if (segment == null)
                 throw new ArgumentException("invalid parameter");
 
-            TimeSpan? delta = PromptTimeDelta();
-            if (delta == null)
+            var result = Mastermind.ShowPromptTimeSpan(this, "Enter time delta", TimeSpan.Zero);
+            if (!result.Success)
                 return; // cancelled by user
 
-            segment.TimeOrigin += delta.Value;
-        }
-
-
-        private TimeSpan? PromptTimeDelta()
-        {
-            var converter = new Util.TimeSpanToStringConverter();
-
-            string lastInput = (string)converter.Convert(TimeSpan.Zero, typeof(string), null, System.Globalization.CultureInfo.InvariantCulture);
-            object inputResult;
-            do
-            {
-                var prompt = new PromptWindow("Enter time delta");
-                prompt.Owner = this;
-                prompt.PromptText = lastInput;
-
-                if (prompt.ShowDialog() != true)
-                    return null;
-
-                inputResult = converter.ConvertBack(prompt.PromptText, typeof(TimeSpan), null, System.Globalization.CultureInfo.InvariantCulture);
-            } while (inputResult == null);
-
-            return (TimeSpan)inputResult;
+            segment.TimeOrigin += result.Value;
         }
     }
-
 }

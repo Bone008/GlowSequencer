@@ -43,6 +43,7 @@
         <CommandBinding Command="local:SequencerCommands.RenameTrack" Executed="CommandBinding_ExecuteRenameTrack"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.DuplicateTrack" Executed="CommandBinding_ExecuteDuplicateTrack"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.DeleteTrack" Executed="CommandBinding_ExecuteDeleteTrack"  CanExecute="CommandBinding_CanExecuteIfMoreThanOneTrack" />
+        <CommandBinding Command="local:SequencerCommands.SetTrackHeight" Executed="CommandBinding_ExecuteSetTrackHeight"  CanExecute="CommandBinding_CanExecuteAlways" />
 
         <CommandBinding Command="local:SequencerCommands.MusicLoadFile" Executed="CommandBinding_ExecuteMusicLoadFile"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.MusicClearFile" Executed="CommandBinding_ExecuteMusicClearFile"  CanExecute="CommandBinding_CanExecuteIfMusicFile" />
@@ -115,6 +116,8 @@
                 <MenuItem Header="_Rename" Command="local:SequencerCommands.RenameTrack" CommandParameter="{Binding SelectedTrack}"/>
                 <MenuItem Header="D_uplicate" Command="local:SequencerCommands.DuplicateTrack" CommandParameter="{Binding SelectedTrack}"/>
                 <MenuItem Header="_Delete" Command="local:SequencerCommands.DeleteTrack" CommandParameter="{Binding SelectedTrack}"/>
+                <Separator/>
+                <MenuItem Header="_Set display height ..." Command="local:SequencerCommands.SetTrackHeight"/>
             </MenuItem>
             <MenuItem Header="_Music">
                 <MenuItem Header="_Load file ..." Command="local:SequencerCommands.MusicLoadFile" />
@@ -170,18 +173,24 @@
                     </ItemsControl.ContextMenu>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="50" Style="{StaticResource s_TimelineTrackRow}"
-								PreviewMouseDown="timelineTrack_PreviewMouseDown" MouseDown="timelineTrackLabel_MouseDown">
+                            <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1"
+                                    Height="{Binding Source={StaticResource vm_Global}, Path=TrackDisplayHeight}"
+                                    Style="{StaticResource s_TimelineTrackRow}"
+								    PreviewMouseDown="timelineTrack_PreviewMouseDown" MouseDown="timelineTrackLabel_MouseDown">
                                 <Border.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header="Add track" Command="local:SequencerCommands.AddTrack" CommandParameter="{Binding}" />
                                         <Separator/>
-                                        <MenuItem Header="Rename track" FontWeight="Bold" Command="local:SequencerCommands.RenameTrack" CommandParameter="{Binding}"/>
-                                        <MenuItem Header="Duplicate track" Command="local:SequencerCommands.DuplicateTrack" CommandParameter="{Binding}"/>
-                                        <MenuItem Header="Delete track" Command="local:SequencerCommands.DeleteTrack" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="_Rename track" FontWeight="Bold" Command="local:SequencerCommands.RenameTrack" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="D_uplicate track" Command="local:SequencerCommands.DuplicateTrack" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="_Delete track" Command="local:SequencerCommands.DeleteTrack" CommandParameter="{Binding}"/>
+                                        <Separator/>
+                                        <MenuItem Header="_Set display height ..." Command="local:SequencerCommands.SetTrackHeight"/>
                                     </ContextMenu>
                                 </Border.ContextMenu>
-                                <Label Content="{Binding Label}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+                                <Label Content="{Binding Label}" FontWeight="Bold"
+                                       FontSize="{Binding Source={StaticResource vm_Global}, Path=TrackLabelFontSize}"
+                                       Padding="5,0" VerticalContentAlignment="Center"/>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -235,7 +244,9 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1" Height="50" Style="{StaticResource s_TimelineTrackRow}" />
+                                <Border BorderBrush="#FFA4A4A4" BorderThickness="0,0,0,1"
+                                        Height="{Binding Source={StaticResource vm_Global}, Path=TrackDisplayHeight}"
+                                        Style="{StaticResource s_TimelineTrackRow}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

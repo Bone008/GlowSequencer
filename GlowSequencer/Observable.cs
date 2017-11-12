@@ -77,5 +77,22 @@ namespace GlowSequencer
             funcReferences.Add(func);
             CollectionChangedEventManager.AddHandler(source, func);
         }
+
+        /// <summary>Listens to CollectionChanged events and and invokes a callback.
+        /// The benefit is a weak subscription that keeps a strong reference while the subscriber is alive.</summary>
+        protected void ForwardCollectionEvents(INotifyCollectionChanged source, Action notifyHandler)
+        {
+            EventHandler<NotifyCollectionChangedEventArgs> func = (sender, e) => notifyHandler();
+            funcReferences.Add(func);
+            CollectionChangedEventManager.AddHandler(source, func);
+        }
+
+        /// <summary>Listens to CollectionChanged events and and invokes a callback.
+        /// The benefit is a weak subscription that keeps a strong reference while the subscriber is alive.</summary>
+        protected void ForwardCollectionEvents(INotifyCollectionChanged source, EventHandler<NotifyCollectionChangedEventArgs> notifyHandler)
+        {
+            funcReferences.Add(notifyHandler);
+            CollectionChangedEventManager.AddHandler(source, notifyHandler);
+        }
     }
 }
