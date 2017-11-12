@@ -25,9 +25,9 @@ namespace GlowSequencer.ViewModel
             : base(sequencer, model, "Color")
         {
             this.model = model;
-            ForwardPropertyEvents("Color", model, "Color");
-            ForwardPropertyEvents("RenderedColor1", model, "RenderedColor1");
-            ForwardPropertyEvents("RenderedColor2", model, "RenderedColor2");
+            ForwardPropertyEvents(nameof(model.Color), model, nameof(Color));
+            ForwardPropertyEvents(nameof(model.RenderedColor1), model, nameof(RenderedColor1));
+            ForwardPropertyEvents(nameof(model.RenderedColor2), model, nameof(RenderedColor2));
         }
 
         public new Model.ColorBlock GetModel()

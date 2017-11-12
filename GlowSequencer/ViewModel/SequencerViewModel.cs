@@ -133,7 +133,7 @@ namespace GlowSequencer.ViewModel
             if (model.MusicFileName != null)
                 Playback.LoadFileAsync(model.MusicFileName).Forget();
 
-            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents("EndTime", bvm, nameof(TimelineLength));
+            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents(nameof(bvm.EndTime), bvm, nameof(TimelineLength));
             AllBlocks.ToList().ForEach(fn_SubscribeToBlock);
             AllBlocks.CollectionChanged += (_, e) =>
             {
@@ -141,12 +141,12 @@ namespace GlowSequencer.ViewModel
                 Notify(nameof(TimelineLength));
             };
 
-            ForwardPropertyEvents("CursorPosition", this, "CursorPixelPosition", nameof(CursorPixelPositionOnViewport), "CursorPositionComplex");
-            ForwardPropertyEvents("TimePixelScale", this, "CursorPixelPosition", nameof(CursorPixelPositionOnViewport),
-                                                          "CurrentViewLeftPositionTime", "CurrentViewRightPositionTime",
-                                                          "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex",
-                                                          nameof(TimelineWidth), "GridInterval");
-            ForwardPropertyEvents("ActiveMusicSegment", this, "CursorPositionComplex", "CurrentViewLeftPositionComplex", "CurrentViewRightPositionComplex", "GridInterval");
+            ForwardPropertyEvents(nameof(CursorPosition), this, nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport), nameof(CursorPositionComplex));
+            ForwardPropertyEvents(nameof(TimePixelScale), this, nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport),
+                                                                nameof(CurrentViewLeftPositionTime), nameof(CurrentViewRightPositionTime),
+                                                                nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex),
+                                                                nameof(TimelineWidth), nameof(GridInterval));
+            ForwardPropertyEvents(nameof(ActiveMusicSegment), this, nameof(CursorPositionComplex), nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex), nameof(GridInterval));
 
             ForwardPropertyEvents(nameof(Playback.MusicDuration), Playback, nameof(TimelineLength));
             ForwardPropertyEvents(nameof(TimelineLength), this, nameof(TimelineWidth));
@@ -164,7 +164,7 @@ namespace GlowSequencer.ViewModel
         // (easier than subscribing to ActiveMusicSegment.Bpm-changed every time it changes)
         public void NotifyGridInterval()
         {
-            Notify("GridInterval");
+            Notify(nameof(GridInterval));
         }
 
         public float GetGridOffset()

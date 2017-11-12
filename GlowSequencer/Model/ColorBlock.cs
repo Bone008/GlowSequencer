@@ -20,10 +20,10 @@ namespace GlowSequencer.Model
         public ColorBlock(Timeline timeline, params Track[] tracks)
             : base(timeline, tracks)
         {
-            ForwardPropertyEvents("Color", this, "RenderedColor1", "RenderedColor2");
-            ForwardPropertyEvents("ColorModifierFn", this, "RenderedColor1", "RenderedColor2");
-            ForwardPropertyEvents("StartTime", this, () => { if (ColorModifierFn != null) { Notify("RenderedColor1"); Notify("RenderedColor2"); } });
-            ForwardPropertyEvents("Duration", this, () => { if (ColorModifierFn != null) { Notify("RenderedColor2"); } });
+            ForwardPropertyEvents(nameof(Color), this, nameof(RenderedColor1), nameof(RenderedColor2));
+            ForwardPropertyEvents(nameof(ColorModifierFn), this, nameof(RenderedColor1), nameof(RenderedColor2));
+            ForwardPropertyEvents(nameof(StartTime), this, () => { if (ColorModifierFn != null) { Notify(nameof(RenderedColor1)); Notify(nameof(RenderedColor2)); } });
+            ForwardPropertyEvents(nameof(Duration), this, () => { if (ColorModifierFn != null) { Notify(nameof(RenderedColor2)); } });
         }
 
         internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)

@@ -174,8 +174,6 @@ namespace GlowSequencer.View
                     return;
 
                 main.OpenDocument(diag.FileName);
-                //Model.Timeline timeline = FileSerializer.LoadFromFile(diag.FileName);
-                //DataContext = sequencer = new SequencerViewModel(timeline) { CurrentWinWidth = sequencer.CurrentWinWidth };
             }
         }
 

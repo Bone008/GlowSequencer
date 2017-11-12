@@ -62,31 +62,30 @@ namespace GlowSequencer.ViewModel
 
             //Tracks = model.Tracks.Select(g => new TrackViewModel(sequencer, g));
 
-            ForwardPropertyEvents("StartTime", model, "StartTime", "EndTime", "DisplayOffset");
-            //ForwardPropertyEvents("StartTime", model, () => { foreach (var g in sequencer.Tracks) g.OnMaxBlockExtentChanged(); });
+            ForwardPropertyEvents(nameof(model.StartTime), model, nameof(StartTime), nameof(EndTime), nameof(DisplayOffset));
+            //ForwardPropertyEvents(nameof(model.StartTime), model, () => { foreach (var g in sequencer.Tracks) g.OnMaxBlockExtentChanged(); });
 
-            ForwardPropertyEvents("Duration", model, "Duration", "EndTime", "DisplayWidth");
-            //ForwardPropertyEvents("Duration", model, () => { foreach (var g in sequencer.Tracks) g.OnMaxBlockExtentChanged(); });
+            ForwardPropertyEvents(nameof(model.Duration), model, nameof(Duration), nameof(EndTime), nameof(DisplayWidth));
+            //ForwardPropertyEvents(nameof(model.Duration), model, () => { foreach (var g in sequencer.Tracks) g.OnMaxBlockExtentChanged(); });
 
-            ForwardPropertyEvents("SegmentContext", model, "SegmentContext", "IsSegmentActive");
-            //ForwardPropertyEvents("SegmentContext", model, () =>
+            ForwardPropertyEvents(nameof(model.SegmentContext), model, nameof(SegmentContext), nameof(IsSegmentActive));
+            //ForwardPropertyEvents(nameof(model.SegmentContext), model, () =>
             //{
-            //    ForwardPropertyEvents("Bpm", model.SegmentContext, "StartTimeComplex", "EndTimeComplex", "DurationComplex");
-            //    ForwardPropertyEvents("BeatsPerBar", model.SegmentContext, "StartTimeComplex", "EndTimeComplex", "DurationComplex");
-            //    ForwardPropertyEvents("TimeOrigin", model.SegmentContext, "StartTimeComplex", "EndTimeComplex");
+            //    ForwardPropertyEvents("Bpm", model.SegmentContext, nameof(StartTimeComplex), nameof(EndTimeComplex), nameof(DurationComplex));
+            //    ForwardPropertyEvents("BeatsPerBar", model.SegmentContext, nameof(StartTimeComplex), nameof(EndTimeComplex), nameof(DurationComplex));
+            //    ForwardPropertyEvents("TimeOrigin", model.SegmentContext, nameof(StartTimeComplex), nameof(EndTimeComplex));
             //}, true);
 
             // track affiliation
-            CollectionChangedEventManager.AddHandler(model.Tracks, (sender, e) => { Notify("DisplayTopOffset"); Notify("DisplayHeight"); Notify("DisplayClip"); });
+            CollectionChangedEventManager.AddHandler(model.Tracks, (sender, e) => { Notify(nameof(DisplayTopOffset)); Notify(nameof(DisplayHeight)); Notify(nameof(DisplayClip)); });
             // tracks in general
             // moved to OnTracksCollectionChanged(), called by the sequencer, because when this view model is constructed, the "Tracks" collection may still be under construction
-            //CollectionChangedEventManager.AddHandler(sequencer.Tracks, (sender, e) => { Notify("DisplayTopOffset"); Notify("DisplayHeight"); Notify("DisplayClip"); });
+            //CollectionChangedEventManager.AddHandler(sequencer.Tracks, (sender, e) => { Notify(nameof(DisplayTopOffset)); Notify(nameof(DisplayHeight)); Notify(nameof(DisplayClip)); });
 
             // subscribe to sequencer
-            ForwardPropertyEvents("SelectedBlock", sequencer, "IsSelected");
-            ForwardPropertyEvents("ActiveMusicSegment", sequencer, "IsSegmentActive");
-            ForwardPropertyEvents("TimePixelScale", sequencer, "DisplayOffset", "DisplayWidth");
-
+            ForwardPropertyEvents(nameof(sequencer.ActiveMusicSegment), sequencer, nameof(IsSegmentActive));
+            ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, nameof(DisplayOffset), nameof(DisplayWidth));
+            
             sequencer.SelectedBlocks.CollectionChanged += (sender, e) =>
             {
                 if ((e.Action == NotifyCollectionChangedAction.Add && e.NewItems.Contains(this))
@@ -94,7 +93,7 @@ namespace GlowSequencer.ViewModel
                     || e.Action == NotifyCollectionChangedAction.Replace
                     || e.Action == NotifyCollectionChangedAction.Reset)
                 {
-                    Notify("IsSelected");
+                    Notify(nameof(IsSelected));
                 }
             };
         }
@@ -207,9 +206,9 @@ namespace GlowSequencer.ViewModel
 
         public virtual void OnTracksCollectionChanged()
         {
-            Notify("DisplayTopOffset");
-            Notify("DisplayHeight");
-            Notify("DisplayClip");
+            Notify(nameof(DisplayTopOffset));
+            Notify(nameof(DisplayHeight));
+            Notify(nameof(DisplayClip));
         }
 
         public void AddToTrack(TrackViewModel track)

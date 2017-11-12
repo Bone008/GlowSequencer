@@ -75,7 +75,7 @@ namespace GlowSequencer.ViewModel
             selectedBlocks = sequencer.SelectedBlocks;
             selectedBlocks.CollectionChanged += selectedBlocks_CollectionChanged;
 
-            ForwardPropertyEvents("SegmentContext", this, () =>
+            ForwardPropertyEvents(nameof(SegmentContext), this, () =>
             {
                 if (!sequencer.SynchronizeActiveWithSelection || !IsMusicSegmentModifiable) return;
                 var context = SegmentContext;
@@ -101,32 +101,32 @@ namespace GlowSequencer.ViewModel
                         item.PropertyChanged += item_PropertyChanged;
             }
 
-            Notify("IsActive");
-            Notify("TypeLabel");
-            Notify("SegmentContext");
-            Notify("IsMusicSegmentModifiable");
-            Notify("TrackAffiliation");
-            Notify("StartTimeComplex");
-            Notify("EndTimeComplex");
-            Notify("DurationComplex");
-            Notify("Color");
-            Notify("StartColor");
-            Notify("EndColor");
+            Notify(nameof(IsActive));
+            Notify(nameof(TypeLabel));
+            Notify(nameof(SegmentContext));
+            Notify(nameof(IsMusicSegmentModifiable));
+            Notify(nameof(TrackAffiliation));
+            Notify(nameof(StartTimeComplex));
+            Notify(nameof(EndTimeComplex));
+            Notify(nameof(DurationComplex));
+            Notify(nameof(Color));
+            Notify(nameof(StartColor));
+            Notify(nameof(EndColor));
         }
 
         private void item_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
             {
-                case "SegmentContext": Notify("SegmentContext"); Notify("StartTimeComplex"); Notify("EndTimeComplex"); Notify("DurationComplex"); break;
+                case nameof(BlockViewModel.SegmentContext): Notify(nameof(SegmentContext)); Notify(nameof(StartTimeComplex)); Notify(nameof(EndTimeComplex)); Notify(nameof(DurationComplex)); break;
 
-                case "StartTime": Notify("StartTimeComplex"); break;
-                case "EndTime": Notify("EndTimeComplex"); break;
-                case "Duration": Notify("DurationComplex"); break;
+                case nameof(BlockViewModel.StartTime): Notify(nameof(StartTimeComplex)); break;
+                case nameof(BlockViewModel.EndTime): Notify(nameof(EndTimeComplex)); break;
+                case nameof(BlockViewModel.Duration): Notify(nameof(DurationComplex)); break;
 
-                case "Color": Notify("Color"); break;
-                case "StartColor": Notify("StartColor"); break;
-                case "EndColor": Notify("EndColor"); break;
+                case nameof(ColorBlockViewModel.Color): Notify(nameof(Color)); break;
+                case nameof(RampBlockViewModel.StartColor): Notify(nameof(StartColor)); break;
+                case nameof(RampBlockViewModel.EndColor): Notify(nameof(EndColor)); break;
             }
         }
 
@@ -216,7 +216,7 @@ namespace GlowSequencer.ViewModel
                 this.context = context;
                 _track = track;
 
-                CollectionChangedEventManager.AddHandler(track.Blocks, (sender, e) => Notify("AffiliationState"));
+                CollectionChangedEventManager.AddHandler(track.Blocks, (sender, e) => Notify(nameof(AffiliationState)));
             }
         }
     }

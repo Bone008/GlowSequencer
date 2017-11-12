@@ -43,14 +43,14 @@ namespace GlowSequencer.Model
             foreach (var t in tracks)
                 _tracks.Add(t);
 
-            _tracks.CollectionChanged += (sender, e) => Notify("TrackNotificationPlaceholder");
+            _tracks.CollectionChanged += (sender, e) => Notify(nameof(TrackNotificationPlaceholder));
 
             _segmentContext = timeline.DefaultMusicSegment;
         }
 
         public void NotifyColorModifierFn()
         {
-            Notify("ColorModifierFn");
+            Notify(nameof(ColorModifierFn));
         }
 
         public float GetEndTime()

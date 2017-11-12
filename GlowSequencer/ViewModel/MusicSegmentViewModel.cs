@@ -34,14 +34,14 @@ namespace GlowSequencer.ViewModel
 
             ReferringBlocksDummies = sequencer.GetModel().Blocks.Where(b => b.SegmentContext == model).Select(b => (object)null);
 
-            ForwardPropertyEvents("Label", model, "Label");
-            ForwardPropertyEvents("Bpm", model, "Bpm");
-            ForwardPropertyEvents("BeatsPerBar", model, "BeatsPerBar");
-            ForwardPropertyEvents("TimeOrigin", model, "TimeOrigin", "TimeOriginSeconds");
-            ForwardPropertyEvents("IsReadOnly", model, "IsReadOnly");
-            ForwardPropertyEvents("IsDefault", model, "IsDefault");
+            ForwardPropertyEvents(nameof(model.Label), model, nameof(Label));
+            ForwardPropertyEvents(nameof(model.Bpm), model, nameof(Bpm));
+            ForwardPropertyEvents(nameof(model.BeatsPerBar), model, nameof(BeatsPerBar));
+            ForwardPropertyEvents(nameof(model.TimeOrigin), model, nameof(TimeOrigin), nameof(TimeOriginSeconds));
+            ForwardPropertyEvents(nameof(model.IsReadOnly), model, nameof(IsReadOnly));
+            ForwardPropertyEvents(nameof(model.IsDefault), model, nameof(IsDefault));
 
-            ForwardPropertyEvents("Bpm", this, () => sequencer.NotifyGridInterval());
+            ForwardPropertyEvents(nameof(Bpm), this, () => sequencer.NotifyGridInterval());
         }
 
         private void ChangeBpm(float value)

@@ -202,6 +202,7 @@
             <local:WaveformControl Grid.Column="2" Grid.Row="1"
                                    Background="Transparent" MouseWheel="timeline_MouseWheel" MouseDown="timeline_MouseDown"
                                    MouseDoubleClick="WaveFormControl_MouseDoubleClick"
+                                   PreviewKeyDown="TimelineScrollers_PreviewKeyDown"
                                    PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
                                    TimeScale="{Binding TimePixelScale}"
                                    Waveform="{Binding Playback.CurrentWaveform, Mode=OneWay}"
@@ -311,7 +312,8 @@
                 </Line>
             </Canvas>
 
-            <StackPanel Orientation="Vertical" Grid.Column="3" Grid.Row="1" Grid.RowSpan="3">
+            <StackPanel Orientation="Vertical" Grid.Column="3" Grid.Row="1" Grid.RowSpan="3"
+                        Background="Transparent" MouseWheel="timeline_MouseWheel">
                 <Slider Orientation="Vertical" HorizontalAlignment="Center"
                         Height="100" ToolTip="Playback volume"
                         Value="{Binding Playback.MusicVolume}" Maximum="1" Minimum="0" SmallChange="0.02" LargeChange="0.1" />

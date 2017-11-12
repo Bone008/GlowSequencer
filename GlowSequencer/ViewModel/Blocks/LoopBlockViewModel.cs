@@ -35,7 +35,7 @@ namespace GlowSequencer.ViewModel
             : base(sequencer, model, "Loop")
         {
             this.model = model;
-            ForwardPropertyEvents("Repetitions", model, "Repetitions", "ChildrenRepetitions", "DisplayWidth", "EndTimeOccupied");
+            ForwardPropertyEvents(nameof(model.Repetitions), model, nameof(Repetitions), nameof(ChildrenRepetitions), nameof(DisplayWidth), nameof(EndTimeOccupied));
         }
 
     }

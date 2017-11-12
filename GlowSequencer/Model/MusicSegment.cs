@@ -76,7 +76,7 @@ namespace GlowSequencer.Model
 
         public void OnIsDefaultChanged()
         {
-            Notify("IsDefault");
+            Notify(nameof(IsDefault));
         }
 
 

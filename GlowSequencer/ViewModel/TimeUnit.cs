@@ -33,10 +33,10 @@ namespace GlowSequencer.ViewModel
                 _seconds = value + (_absolute ? _musicData.TimeOrigin : 0);
 
                 _setter(value.Value + (_absolute ? _musicData.TimeOrigin : 0));
-                //Notify("Seconds");
-                //Notify("TotalBeats");
-                //Notify("Bars");
-                //Notify("Beats");
+                //Notify(nameof(Seconds));
+                //Notify(nameof(TotalBeats));
+                //Notify(nameof(Bars));
+                //Notify(nameof(Beats));
             }
         }
 

@@ -78,10 +78,10 @@ namespace GlowSequencer.ViewModel
         public TransferViewModel(MainViewModel main)
         {
             this.main = main;
-            ForwardPropertyEvents("CurrentDocument", main, "AllTracks");
-            ForwardPropertyEvents("AerotechAppExePath", this, "CanStartTransfer", "CanStartTransferReason");
-            ForwardPropertyEvents("StartMusicAfterTransfer", this, "CanStartTransfer", "CanStartTransferReason");
-            ForwardPropertyEvents("MusicWindowProcessId", this, "CanStartTransfer", "CanStartTransferReason");
+            ForwardPropertyEvents(nameof(main.CurrentDocument), main, nameof(AllTracks));
+            ForwardPropertyEvents(nameof(AerotechAppExePath), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
+            ForwardPropertyEvents(nameof(StartMusicAfterTransfer), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
+            ForwardPropertyEvents(nameof(MusicWindowProcessId), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
 
             LoadSettings();
             var _ = RefreshWindowListAsync();
@@ -92,7 +92,7 @@ namespace GlowSequencer.ViewModel
             if (_logOutput.Length > 0)
                 _logOutput.AppendLine();
             _logOutput.Append(line);
-            Notify("LogOutput");
+            Notify(nameof(LogOutput));
         }
 
         public async Task StartTransferAsync()
@@ -104,8 +104,8 @@ namespace GlowSequencer.ViewModel
 
             activeTransfer = new TransferToEquipmentController(persistedSettings, _selectedTracks.Select(t => t.GetModel()).ToList());
             transferCancel = new CancellationTokenSource();
-            Notify("IsTransferIdle");
-            Notify("IsTransferInProgress");
+            Notify(nameof(IsTransferIdle));
+            Notify(nameof(IsTransferInProgress));
 
             await activeTransfer.RunTransferAsync(
                     new Progress<float>(p => TransferProgress = p * 100),
@@ -115,8 +115,8 @@ namespace GlowSequencer.ViewModel
 
             transferCancel = null;
             activeTransfer = null;
-            Notify("IsTransferInProgress");
-            Notify("IsTransferIdle");
+            Notify(nameof(IsTransferInProgress));
+            Notify(nameof(IsTransferIdle));
         }
 
         public void CancelTransfer()

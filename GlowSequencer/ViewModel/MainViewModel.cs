@@ -30,8 +30,8 @@ namespace GlowSequencer.ViewModel
         public MainViewModel()
         {
             OpenNewDocument();
-            ForwardPropertyEvents("FilePath", this, "DocumentName", "DocumentNameDecorated");
-            ForwardPropertyEvents("IsDirty", this, "DocumentNameDecorated");
+            ForwardPropertyEvents(nameof(FilePath), this, nameof(DocumentName), nameof(DocumentNameDecorated));
+            ForwardPropertyEvents(nameof(IsDirty), this, nameof(DocumentNameDecorated));
         }
 
         public void OpenNewDocument()

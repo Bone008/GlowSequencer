@@ -26,8 +26,8 @@ namespace GlowSequencer.ViewModel
             : base(sequencer, model, "Ramp")
         {
             this.model = model;
-            ForwardPropertyEvents("StartColor", model, "StartColor");
-            ForwardPropertyEvents("EndColor", model, "EndColor");
+            ForwardPropertyEvents(nameof(model.StartColor), model, nameof(StartColor));
+            ForwardPropertyEvents(nameof(model.EndColor), model, nameof(EndColor));
         }
 
 

@@ -37,7 +37,7 @@ namespace GlowSequencer.Model
                     Duration = Duration; // re-evaluate GetMinDuration(), will not raise any events if the old duration was already within limits
                     foreach (Block b in e.NewItems)
                     {
-                        ForwardPropertyEvents("TrackNotificationPlaceholder", b, RecalcTracks);
+                        ForwardPropertyEvents(nameof(b.TrackNotificationPlaceholder), b, RecalcTracks);
                         b.ColorModifierFn = TransformChildColor;
                     }
                 }
@@ -51,9 +51,9 @@ namespace GlowSequencer.Model
 
 
             Action notifyChildrenCol = () => { foreach (var child in _children) child.NotifyColorModifierFn(); };
-            ForwardPropertyEvents("Duration", this, notifyChildrenCol);
-            ForwardPropertyEvents("OverlayStartColor", this, notifyChildrenCol);
-            ForwardPropertyEvents("OverlayEndColor", this, notifyChildrenCol);
+            ForwardPropertyEvents(nameof(Duration), this, notifyChildrenCol);
+            ForwardPropertyEvents(nameof(OverlayStartColor), this, notifyChildrenCol);
+            ForwardPropertyEvents(nameof(OverlayEndColor), this, notifyChildrenCol);
         }
 
 

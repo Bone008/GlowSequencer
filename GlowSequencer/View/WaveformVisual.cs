@@ -124,6 +124,26 @@ namespace GlowSequencer.View
             geometry.Freeze();
 
             drawingContext.DrawGeometry(fillBrush, borderPen, geometry);
+
+            // Alternative rendering method that draws rectangles/lines directly onto the drawingContext.
+
+            //for (int i=0; i<maximums.Length; i++)
+            //{
+            //    double y = SampleToYPosition(maximums[i]);
+            //    double h = SampleToYPosition(minimums[i]) - y;
+            //    if (h > halfHeight * 0.1 || i == 0)
+            //    {
+            //        drawingContext.DrawRectangle(fillBrush, null, new Rect(
+            //            offsetPx + i * xScale, y,
+            //            xScale, h));
+            //    } else
+            //    {
+            //        double prevMid = (SampleToYPosition(maximums[i - 1]) + SampleToYPosition(minimums[i - 1])) / 2;
+            //        drawingContext.DrawLine(new Pen(fillBrush, 3),
+            //            new Point(offsetPx + (i-1) * xScale, prevMid),
+            //            new Point(offsetPx + i * xScale, y + h/2));
+            //    }
+            //}
         }
         
         private double SampleToYPosition(float value)

@@ -92,8 +92,12 @@ namespace GlowSequencer.View
         
         private void MusicSegment_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Bpm" || e.PropertyName == "BeatsPerBar" || e.PropertyName == "TimeOriginSeconds")
+            if (e.PropertyName == nameof(MusicSegmentViewModel.Bpm)
+                || e.PropertyName == nameof(MusicSegmentViewModel.BeatsPerBar)
+                || e.PropertyName == nameof(MusicSegmentViewModel.TimeOriginSeconds))
+            {
                 InvalidateVisual();
+            }
         }
 
 
