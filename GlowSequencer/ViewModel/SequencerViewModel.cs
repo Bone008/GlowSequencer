@@ -206,9 +206,9 @@ namespace GlowSequencer.ViewModel
         }
 
         /// <summary>
-        /// Called after undo/redo to make sure that no deleted blocks are in the selection.
+        /// Called after undo/redo to make sure that no deleted blocks or tracks are in the selection.
         /// </summary>
-        public void SanityCheckSelectedBlocks()
+        public void SanityCheckSelections()
         {
             // TODO: once we have a better ObservableCollection, use RemoveAll for better performance
             for (int i = SelectedBlocks.Count - 1; i >= 0; i--)
@@ -217,6 +217,11 @@ namespace GlowSequencer.ViewModel
                 if (!model.Blocks.Contains(block))
                     SelectedBlocks.RemoveAt(i);
             }
+
+            if (!Tracks.Contains(SelectedTrack))
+                // At this point, we don't really know where the selected track was,
+                // so just go with the first one.
+                SelectedTrack = Tracks.FirstOrDefault();
         }
 
         // ===== Commands =====
@@ -531,6 +536,9 @@ namespace GlowSequencer.ViewModel
             },
 
             () => model.Tracks.Remove(newTrack));
+
+            // select new track
+            SelectedTrack = Tracks[newTrack.GetIndex()];
         }
 
         public void DuplicateTrack(TrackViewModel trackVM)
