@@ -33,6 +33,26 @@ namespace GlowSequencer.Model
                 }
         }
 
+        public override float GetEndTimeOccupied()
+        {
+            return StartTime + Duration * _repetitions;
+        }
+
+        protected override GloColor GetColorAtLocalTimeCore(float localTime, Track track)
+        {
+            // De-loop.
+            float time = localTime % Duration;
+
+            Block activeBlock = Children
+                .Where(b => b.IsTimeInOccupiedRange(time) && b.Tracks.Contains(track))
+                .LastOrDefault();
+
+            if (activeBlock != null)
+                return activeBlock.GetColorAtTime(time, track);
+            else
+                return GloColor.Black;
+        }
+
         [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {

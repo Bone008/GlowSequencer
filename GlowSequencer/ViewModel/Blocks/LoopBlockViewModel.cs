@@ -20,22 +20,12 @@ namespace GlowSequencer.ViewModel
 
         public IEnumerable<ReadOnlyContinuousCollection<BlockViewModel>> ChildrenRepetitions { get { return Enumerable.Repeat(Children, Repetitions); } }
 
-        /*public override double DisplayWidth
-        {
-            get { return base.DisplayWidth * Repetitions; }
-        }*/
-
-        public override float EndTimeOccupied
-        {
-            get { return StartTime + Duration * Repetitions; }
-        }
-
-
         public LoopBlockViewModel(SequencerViewModel sequencer, Model.LoopBlock model)
             : base(sequencer, model, "Loop")
         {
             this.model = model;
-            ForwardPropertyEvents(nameof(model.Repetitions), model, nameof(Repetitions), nameof(ChildrenRepetitions), nameof(DisplayWidth), nameof(EndTimeOccupied));
+            ForwardPropertyEvents(nameof(model.Repetitions), model,
+                nameof(Repetitions), nameof(ChildrenRepetitions), nameof(EndTimeOccupied));
         }
 
     }

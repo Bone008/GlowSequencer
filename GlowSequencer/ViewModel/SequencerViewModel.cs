@@ -41,6 +41,7 @@ namespace GlowSequencer.ViewModel
         public GuiLabs.Undo.ActionManager ActionManager { get; private set; }
         public SelectionProperties SelectionData { get; private set; }
         public PlaybackViewModel Playback { get; private set; }
+        public VisualizationViewModel Visualization { get; private set; }
 
         public ReadOnlyContinuousCollection<MusicSegmentViewModel> MusicSegments { get; private set; }
         public ReadOnlyContinuousCollection<TrackViewModel> Tracks { get; private set; }
@@ -129,11 +130,12 @@ namespace GlowSequencer.ViewModel
 
             ActiveMusicSegment = MusicSegments[model.DefaultMusicSegment.GetIndex()];
             Playback = new PlaybackViewModel(this);
+            Visualization = new VisualizationViewModel(this);
 
             if (model.MusicFileName != null)
                 Playback.LoadFileAsync(model.MusicFileName).Forget();
 
-            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents(nameof(bvm.EndTime), bvm, nameof(TimelineLength));
+            Action<BlockViewModel> fn_SubscribeToBlock = bvm => ForwardPropertyEvents(nameof(bvm.EndTimeOccupied), bvm, nameof(TimelineLength));
             AllBlocks.ToList().ForEach(fn_SubscribeToBlock);
             AllBlocks.CollectionChanged += (_, e) =>
             {
@@ -141,17 +143,23 @@ namespace GlowSequencer.ViewModel
                 Notify(nameof(TimelineLength));
             };
 
-            ForwardPropertyEvents(nameof(CursorPosition), this, nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport), nameof(CursorPositionComplex));
-            ForwardPropertyEvents(nameof(TimePixelScale), this, nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport),
-                                                                nameof(CurrentViewLeftPositionTime), nameof(CurrentViewRightPositionTime),
-                                                                nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex),
-                                                                nameof(TimelineWidth), nameof(GridInterval));
-            ForwardPropertyEvents(nameof(ActiveMusicSegment), this, nameof(CursorPositionComplex), nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex), nameof(GridInterval));
+            ForwardPropertyEvents(nameof(CursorPosition), this,
+                nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport), nameof(CursorPositionComplex));
+            ForwardPropertyEvents(nameof(TimePixelScale), this,
+                nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport),
+                nameof(CurrentViewLeftPositionTime), nameof(CurrentViewRightPositionTime),
+                nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex),
+                nameof(TimelineWidth), nameof(GridInterval));
+            ForwardPropertyEvents(nameof(ActiveMusicSegment), this,
+                nameof(CursorPositionComplex), nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex),
+                nameof(GridInterval));
 
             ForwardPropertyEvents(nameof(Playback.MusicDuration), Playback, nameof(TimelineLength));
             ForwardPropertyEvents(nameof(TimelineLength), this, nameof(TimelineWidth));
 
-            ForwardCollectionEvents(SelectedBlocks, nameof(CanConvertToColor), nameof(CanConvertToRamp), nameof(CanConvertToAutoDeduced), nameof(ConvertAutoDeduceGestureText));
+            ForwardCollectionEvents(SelectedBlocks,
+                nameof(CanConvertToColor), nameof(CanConvertToRamp),
+                nameof(CanConvertToAutoDeduced), nameof(ConvertAutoDeduceGestureText));
 
             Tracks.CollectionChanged += (_, e) =>
             {

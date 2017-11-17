@@ -363,8 +363,35 @@
 
         <GridSplitter HorizontalAlignment="Stretch" Height="5" ResizeDirection="Rows" Grid.Row="2" Background="#FFD0D0D0" />
 
-        <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Grid.Row="3" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
-
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="170" />
+            </Grid.ColumnDefinitions>
+            
+            <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" ResizeDirection="Columns"/>
+            <!-- TODO: Put in UserControl or similar. -->
+            <ItemsControl Grid.Column="2" ItemsSource="{Binding Visualization.VisualizedTracks}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:VisualizedTrackViewModel}">
+                        <Border Margin="5,5,0,0" Width="24" Height="24"
+                                BorderBrush="Black" BorderThickness="1">
+                            <Border.Background>
+                                <SolidColorBrush Color="{Binding CurrentColor, Converter={StaticResource conv_MoreVibrantColor}}"/>
+                            </Border.Background>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+        
         <!-- Status bar in footer -->
         <Border Grid.Row="4" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
                 BorderThickness="0,1,0,0" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">

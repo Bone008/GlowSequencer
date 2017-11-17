@@ -62,8 +62,8 @@ namespace GlowSequencer.ViewModel
             this.model = model;
             this._typeLabel = typeLabel;
 
-            ForwardPropertyEvents(nameof(model.StartTime), model, nameof(StartTime), nameof(EndTime), nameof(DisplayOffset));
-            ForwardPropertyEvents(nameof(model.Duration), model, nameof(Duration), nameof(EndTime), nameof(DisplayWidth));
+            ForwardPropertyEvents(nameof(model.StartTime), model, nameof(StartTime), nameof(EndTime), nameof(EndTimeOccupied), nameof(DisplayOffset));
+            ForwardPropertyEvents(nameof(model.Duration), model, nameof(Duration), nameof(EndTime), nameof(EndTimeOccupied), nameof(DisplayWidth));
 
             ForwardPropertyEvents(nameof(model.SegmentContext), model, nameof(SegmentContext), nameof(IsSegmentActive));
             // track affiliation
@@ -101,13 +101,8 @@ namespace GlowSequencer.ViewModel
             get { return StartTime + Duration; }
             set { Duration = value - StartTime; }
         }
-
-        public virtual float EndTimeOccupied
-        {
-            get { return EndTime; }
-        }
-
-
+        public float EndTimeOccupied => model.GetEndTimeOccupied();
+        
         public virtual MusicSegmentViewModel SegmentContext
         {
             // note that null is no longer an expected value for SegmentContext
@@ -115,8 +110,7 @@ namespace GlowSequencer.ViewModel
             set { sequencer.ActionManager.RecordSetProperty(model, m => m.SegmentContext, (value == null ? null : value.GetModel())); }
             //set { model.SegmentContext = (value == null ? null : value.GetModel()); }
         }
-
-
+        
         public double DisplayOffset => StartTime * sequencer.TimePixelScale;
         public double DisplayTopOffset => model.Tracks.Min(t => t.GetIndex()) * globalParams.TrackDisplayHeight;
         public double DisplayWidth => Duration * sequencer.TimePixelScale;

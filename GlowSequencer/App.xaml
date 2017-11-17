@@ -190,9 +190,9 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <ItemsControl
-                                                Width="{Binding DataContext.DisplayWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}"
-                                                ItemsSource="{Binding}"
-                                                Style="{DynamicResource s_TimelineBlockContainer}">
+                                        Width="{Binding DataContext.DisplayWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}"
+                                        ItemsSource="{Binding}"
+                                        Style="{DynamicResource s_TimelineBlockContainer}">
                                     </ItemsControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

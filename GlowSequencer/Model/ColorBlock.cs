@@ -32,6 +32,11 @@ namespace GlowSequencer.Model
                 yield return new FileSerializer.PrimitiveBlock(StartTime, GetEndTime(), _color, _color);
         }
 
+        protected override GloColor GetColorAtLocalTimeCore(float localTime, Track track)
+        {
+            return _color;
+        }
+
         [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {

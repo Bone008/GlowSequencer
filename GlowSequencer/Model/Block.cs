@@ -11,10 +11,9 @@ namespace GlowSequencer.Model
 {
     public abstract class Block : Observable, ICloneable
     {
-
         public const float MIN_DURATION_TECHNICAL_LIMIT = 0.01f;
 
-        protected Timeline timeline;
+        protected readonly Timeline timeline;
 
         private float _startTime = 0;
         private float _duration = MIN_DURATION_TECHNICAL_LIMIT;
@@ -33,7 +32,8 @@ namespace GlowSequencer.Model
         /// <summary>Pseudo-property that always returns true but will be notified whenever the Tracks collection changes.</summary>
         public bool TrackNotificationPlaceholder { get { return true; } }
 
-
+        /// <summary>This was the start of the implementation of "color overlays" for groups,
+        /// I think, but it never worked out properly.</summary>
         public Func<float, GloColor, GloColor> ColorModifierFn { get { return _colorModifierFn; } set { SetProperty(ref _colorModifierFn, value); } }
 
 
@@ -53,16 +53,44 @@ namespace GlowSequencer.Model
         {
             Notify(nameof(ColorModifierFn));
         }
-
+        
         public float GetEndTime()
         {
             return _startTime + _duration;
+        }
+
+        public virtual float GetEndTimeOccupied()
+        {
+            return GetEndTime();
         }
 
         public virtual float GetMinDuration()
         {
             return MIN_DURATION_TECHNICAL_LIMIT;
         }
+
+        public bool IsTimeInOccupiedRange(float time)
+        {
+            return StartTime <= time && time < GetEndTimeOccupied();
+        }
+
+        /// <summary>Calculates the block's color at some time during the block.</summary>
+        /// <param name="time">must be within range</param>
+        /// <param name="track">must be contained in the block</param>
+        public GloColor GetColorAtTime(float time, Track track)
+        {
+            // Performance optimization: only validate args in debug mode.
+#if DEBUG
+            if (!IsTimeInOccupiedRange(time)) throw new ArgumentOutOfRangeException(nameof(time));
+            if (!Tracks.Contains(track)) throw new ArgumentException("invalid track");
+#endif
+
+            // Note: If ColorModifierFn becomes relevant, we could apply it generically to the result here.
+            return GetColorAtLocalTimeCore(time - StartTime, track);
+        }
+
+        /// <summary>Note that we use local time here instead of global time.</summary>
+        protected abstract GloColor GetColorAtLocalTimeCore(float localTime, Track track);
 
         public virtual void ExtendToTrack(Track fromTrack, Track toTrack, GuiLabs.Undo.ActionManager am = null)
         {
@@ -110,9 +138,8 @@ namespace GlowSequencer.Model
         {
             return Enumerable.Empty<FileSerializer.PrimitiveBlock>();
         }
-
-        /// <summary>Obsolete: "replaced with new algorithm that uses BakePrimitive"</summary>
-        [Obsolete]
+        
+        [Obsolete("replaced with new algorithm that uses BakePrimitive")]
         public abstract IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context);
 
         public virtual XElement ToXML()

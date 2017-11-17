@@ -16,6 +16,11 @@ namespace GlowSequencer.Model
         {
         }
 
+        protected override GloColor GetColorAtLocalTimeCore(float localTime, Track track)
+        {
+            throw new NotImplementedException();
+        }
+
         [Obsolete]
         public override IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context)
         {

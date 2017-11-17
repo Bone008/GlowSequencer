@@ -108,7 +108,7 @@ namespace GlowSequencer
         public class PrimitiveBlock
         {
             private static int idGen = 10000;
-            public int id = ++idGen;
+            public readonly int id = ++idGen;
 
             public int startTime, endTime; // endTime is exclusive
             public GloColor startColor, endColor;
