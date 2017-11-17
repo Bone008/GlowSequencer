@@ -107,7 +107,7 @@ namespace GlowSequencer.Audio
                     // Note that we cannot use Array.Clear, because buffer may actually be
                     // a unioned byte array instead, and Array.Clear would be confused.
                     for (int i = offset; i < offset + count; i++)
-                        buffer[i] = 0;
+                        buffer[i] = 0.0f;
                     return count;
                 }
                 else return 0;

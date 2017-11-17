@@ -3,6 +3,7 @@ using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -533,7 +534,7 @@ namespace GlowSequencer.View
             diag.FilterIndex = 0;
 
             if (sequencer.Playback.MusicFileName != null)
-                diag.InitialDirectory = System.IO.Path.GetDirectoryName(sequencer.Playback.MusicFileName);
+                diag.InitialDirectory = Path.GetDirectoryName(sequencer.Playback.MusicFileName);
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {

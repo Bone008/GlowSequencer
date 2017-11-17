@@ -63,6 +63,8 @@ namespace GlowSequencer.ViewModel
             //ForwardPropertyEvents(nameof(sequencer.CurrentViewRightPositionTime), sequencer, InvalidateWaveform);
             ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged);
             audioPlayback.PlaybackStopped += OnPlaybackStopped;
+
+            audioPlayback.Init(EmptySampleProvider.Singleton);
         }
 
         private void InvalidateWaveform()
@@ -116,7 +118,6 @@ namespace GlowSequencer.ViewModel
 
         public bool Stop()
         {
-            if (!audioPlayback.IsInitialized) return false;
             if (!audioPlayback.IsPlaying) return false;
 
             audioPlayback.Stop();
@@ -127,7 +128,7 @@ namespace GlowSequencer.ViewModel
         public void ClearFile()
         {
             Stop();
-            audioPlayback.Clear();
+            audioPlayback.Init(EmptySampleProvider.Singleton);
             audioFile = null;
             CurrentWaveform = null;
             RenderWaveformAsync(false).Forget();

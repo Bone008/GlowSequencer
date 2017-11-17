@@ -95,9 +95,9 @@
     </ApplicationDefinition>
     <Compile Include="ActionManagerExtensions.cs" />
     <Compile Include="Audio\BufferedAudioFile.cs" />
+    <Compile Include="Audio\EmptySampleProvider.cs" />
     <Compile Include="Audio\ISeekableSampleProvider.cs" />
     <Compile Include="Audio\LoudnessHelper.cs" />
-    <Compile Include="Audio\SampleAggregator.cs" />
     <Compile Include="Audio\Waveform.cs" />
     <Compile Include="Audio\WaveformGenerator.cs" />
     <Compile Include="Audio\WaveOutHelper.cs" />

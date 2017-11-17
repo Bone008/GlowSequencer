@@ -327,15 +327,12 @@
                         Background="Transparent" MouseWheel="timeline_MouseWheel">
                 <Slider Orientation="Vertical" HorizontalAlignment="Center"
                         Height="100" ToolTip="Playback volume"
-                        IsEnabled="{Binding Playback.MusicFileName, Converter={StaticResource conv_NullToBool}}"
                         Value="{Binding Playback.MusicVolume}" Maximum="1" Minimum="0" SmallChange="0.02" LargeChange="0.1" />
                 <Label HorizontalAlignment="Center">Vol</Label>
                 <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonPlay}"
-                        IsEnabled="{Binding Playback.MusicFileName, Converter={StaticResource conv_NullToBool}}"
                         Visibility="{Binding Playback.IsPlaying, Converter={StaticResource conv_BoolToVisibility}, ConverterParameter=inverted}"
                         Command="local:SequencerCommands.PlayPause"/>
                 <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonPause}"
-                        IsEnabled="{Binding Playback.MusicFileName, Converter={StaticResource conv_NullToBool}}"
                         Visibility="{Binding Playback.IsPlaying, Converter={StaticResource conv_BoolToVisibility}}"
                         Command="local:SequencerCommands.PlayPause"/>
                 <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonZoomIn}"

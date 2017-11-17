@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace GlowSequencer.Audio
 {
+    /// <summary>Encapsulates control over playback and positioning.</summary>
     public class AudioPlayback : IDisposable
     {
         private WaveOut playbackDevice = null;
@@ -43,6 +44,8 @@ namespace GlowSequencer.Audio
             playbackDevice.Init(sampleProvider);
         }
 
+        // Note: Actually no longer used because instead of disabling playback with no music,
+        // we load an EmptySampleProvider instead.
         public void Clear()
         {
             Stop();
