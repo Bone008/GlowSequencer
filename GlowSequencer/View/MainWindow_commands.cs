@@ -222,7 +222,7 @@ namespace GlowSequencer.View
             if (!result.Success)
                 return;
             TimeSpan startTime = result.Value;
-            
+
             string exportName = main.DocumentName;
             if (exportName.EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
                 exportName = exportName.Substring(0, exportName.Length - FileSerializer.EXTENSION_PROJECT.Length);
@@ -511,7 +511,7 @@ namespace GlowSequencer.View
 
             sequencer.DeleteTrack(track);
         }
-        
+
         private void CommandBinding_ExecuteSetTrackHeight(object sender, ExecutedRoutedEventArgs e)
         {
             var result = Mastermind.ShowPrompt(this, "Enter track height in pixels", globalParams.TrackDisplayHeight.ToString(), double.Parse,
@@ -531,6 +531,9 @@ namespace GlowSequencer.View
             diag.Filter = string.Format("Audio file ({0})|{1}|All files|*.*",
                 string.Join(", ", extensions), string.Join(";", extensions));
             diag.FilterIndex = 0;
+
+            if (sequencer.Playback.MusicFileName != null)
+                diag.InitialDirectory = System.IO.Path.GetDirectoryName(sequencer.Playback.MusicFileName);
 
             if (diag.ShowDialog(this).GetValueOrDefault(false))
             {
