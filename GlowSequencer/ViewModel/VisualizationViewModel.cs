@@ -25,49 +25,26 @@ namespace GlowSequencer.ViewModel
     {
         private readonly SequencerViewModel sequencer;
 
-        private List<Block> cachedOrderedBlocks = null;
-        private float lastCacheTime = -1;
-        private int lastCacheIndex = 0;
-
         public ReadOnlyContinuousCollection<VisualizedTrackViewModel> VisualizedTracks { get; private set; }
 
         public VisualizationViewModel(SequencerViewModel sequencer)
         {
             this.sequencer = sequencer;
-
             VisualizedTracks = sequencer.GetModel().Tracks.Select(t => new VisualizedTrackViewModel(t));
-
-            ForwardPropertyEvents(nameof(sequencer.Playback.IsPlaying), sequencer.Playback, OnIsPlayingChanged);
+            
             ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged, true);
-        }
-
-        private void OnIsPlayingChanged()
-        {
-            // Make sure we have the cached lookup available when playback is started.
-            if (sequencer.Playback.IsPlaying)
-                cachedOrderedBlocks = Enumerable.OrderBy(sequencer.GetModel().Blocks, b => b.StartTime).ToList();
-            else
-                cachedOrderedBlocks = null;
-
-            lastCacheTime = -1;
-            lastCacheIndex = 0;
         }
 
         private void OnCursorPositionChanged()
         {
-            List<Block> orderedBlocks;
-            if (cachedOrderedBlocks == null)
-                // FIXME this breaks overlapping blocks sometimes!
-                orderedBlocks = Enumerable.OrderBy(sequencer.GetModel().Blocks, b => b.StartTime).ToList();
-            else
-                orderedBlocks = cachedOrderedBlocks;
-
             float now = sequencer.CursorPosition;
+            List<Block> blockCandidates = ((IEnumerable<Block>)sequencer.GetModel().Blocks)
+                .Where(b => b.IsTimeInOccupiedRange(now))
+                .ToList();
+
             foreach (var vm in VisualizedTracks)
             {
-                // TODO optimize
-                Block activeBlock = orderedBlocks
-                    .Where(b => b.IsTimeInOccupiedRange(now))
+                Block activeBlock = blockCandidates
                     .Where(b => b.Tracks.Contains(vm.track))
                     .LastOrDefault();
 
