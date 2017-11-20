@@ -1,14 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GlowSequencer.Util
 {
     public static class ColorUtil
     {
+        public static double GetPerceivedBrightness(System.Windows.Media.Color color)
+        {
+            // According to the formula of https://www.w3.org/TR/AERT#color-contrast.
+            return (color.R * 0.299 + color.G * 0.587 + color.B * 0.114) / 255.0;
+        }
+
         public static void ColorToHSV(Color color, out double hue, out double saturation, out double value)
         {
             int max = Math.Max(color.R, Math.Max(color.G, color.B));

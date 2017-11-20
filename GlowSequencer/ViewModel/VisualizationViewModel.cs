@@ -8,30 +8,26 @@ using System.Windows.Media;
 
 namespace GlowSequencer.ViewModel
 {
-    public class VisualizedTrackViewModel : Observable
-    {
-        internal readonly Track track;
-        private Color _currentColor = Colors.Black;
-
-        public Color CurrentColor { get { return _currentColor; } set { SetProperty(ref _currentColor, value); } }
-
-        public VisualizedTrackViewModel(Track track)
-        {
-            this.track = track;
-        }
-    }
-
     public class VisualizationViewModel : Observable
     {
         private readonly SequencerViewModel sequencer;
 
+        public double StageWidth => 300;
+        public double StageHeight => 200;
         public ReadOnlyContinuousCollection<VisualizedTrackViewModel> VisualizedTracks { get; private set; }
+
+        [Obsolete("only for designer", true)]
+        public VisualizationViewModel()
+        {
+            sequencer = null;
+            VisualizedTracks = new ObservableCollection<Track> { new Track(new Timeline(), "test"), new Track(new Timeline(), "test2") }.Select(t => new VisualizedTrackViewModel(t));
+        }
 
         public VisualizationViewModel(SequencerViewModel sequencer)
         {
             this.sequencer = sequencer;
             VisualizedTracks = sequencer.GetModel().Tracks.Select(t => new VisualizedTrackViewModel(t));
-            
+
             ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged, true);
         }
 

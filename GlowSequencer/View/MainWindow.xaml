@@ -369,45 +369,10 @@
 
             <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}" Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}}" />
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" ResizeDirection="Columns"/>
-            <StackPanel Orientation="Vertical" Grid.Column="2">
-                <Label FontWeight="Bold">Visualization</Label>
-                <!-- TODO: Put in UserControl or similar. -->
-                <ItemsControl ItemsSource="{Binding Visualization.VisualizedTracks}" Padding="10">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:VisualizedTrackViewModel}">
-
-                            <Path Grid.Column="2" Margin="1"
-                                  Stroke="Black" StrokeThickness="1"
-                                  Data="M52.25,520.75c-9,0-16-4-16-14s8-15,8-15l-4.5-201c0,0-0.75-15.5-1.75-21.75S15,140.5,15,126.75
-		                                s1.75-31.5,3.5-39.5s14.25-58,15.125-60s-1.458-6.417,1.542-9.25s11.999-7.667,19.333-7.667S70.833,15.167,73.833,18
-		                                s0.667,7.25,1.542,9.25s13.375,52,15.125,60S94,113,94,126.75S72,262.75,71,269s-1.75,21.75-1.75,21.75l-4.5,201c0,0,8,5,8,15
-		                                s-7,14-16,14">
-                                <Path.Fill>
-                                    <SolidColorBrush Color="{Binding CurrentColor, Converter={StaticResource conv_MoreVibrantColor}}"/>
-                                </Path.Fill>
-                                <Path.LayoutTransform>
-                                    <TransformGroup>
-                                        <ScaleTransform ScaleX="0.2" ScaleY="0.2"/>
-                                        <RotateTransform Angle="180"/>
-                                    </TransformGroup>
-                                </Path.LayoutTransform>
-                            </Path>
-
-                            <!--<Border Margin="5,5,0,0" Width="24" Height="24"
-                                    BorderBrush="Black" BorderThickness="1">
-                                <Border.Background>
-                                    <SolidColorBrush Color="{Binding CurrentColor, Converter={StaticResource conv_MoreVibrantColor}}"/>
-                                </Border.Background>
-                            </Border>-->
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
+            <DockPanel Grid.Column="2">
+                <Label DockPanel.Dock="Top" FontWeight="Bold">Visualization</Label>
+                <local:VisualizationControl DataContext="{Binding Visualization}"/>
+            </DockPanel>
         </Grid>
 
         <!-- Status bar in footer -->
