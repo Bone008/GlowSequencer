@@ -60,6 +60,7 @@ namespace GlowSequencer.View
     public partial class MainWindow
     {
         private const string CLIPBOARD_BLOCKS_FORMAT = "glowsequencer.blocks";
+        private static readonly string[] MUSIC_EXTENSIONS = { "mp3", "m4a", "wav", "wma", "aiff", "aac" };
 
         static MainWindow()
         {
@@ -526,7 +527,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteMusicLoadFile(object sender, ExecutedRoutedEventArgs e)
         {
-            string[] extensions = { "*.mp3", "*.m4a", "*.wav", "*.wma", "*.aiff", "*.aac" };
+            var extensions = MUSIC_EXTENSIONS.Select(ext => $"*.{ext}");
             var diag = new Microsoft.Win32.OpenFileDialog();
             diag.Title = "Open music file";
             diag.Filter = string.Format("Audio file ({0})|{1}|All files|*.*",
@@ -536,13 +537,18 @@ namespace GlowSequencer.View
             if (sequencer.Playback.MusicFileName != null)
                 diag.InitialDirectory = Path.GetDirectoryName(sequencer.Playback.MusicFileName);
 
-            if (diag.ShowDialog(this).GetValueOrDefault(false))
+            if (diag.ShowDialog(this) ?? false)
             {
-                sequencer.ActionManager.RecordAction(
-                    MakeMusicFileAction(diag.FileName),
-                    MakeMusicFileAction(sequencer.Playback.MusicFileName) // old loaded file
-                );
+                DoMusicLoadFile(diag.FileName);
             }
+        }
+
+        private void DoMusicLoadFile(string file)
+        {
+            sequencer.ActionManager.RecordAction(
+                MakeMusicFileAction(file),
+                MakeMusicFileAction(sequencer.Playback.MusicFileName) // old loaded file
+            );
         }
 
         private void CommandBinding_ExecuteMusicClearFile(object sender, ExecutedRoutedEventArgs e)

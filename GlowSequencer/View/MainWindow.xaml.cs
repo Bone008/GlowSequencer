@@ -700,7 +700,7 @@ namespace GlowSequencer.View
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (files.Length == 1 && files[0].EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
+                if (IsSingleProjectFile(files) || IsSingleMusicFile(files))
                     e.Effects = DragDropEffects.Move;
                 else
                     e.Effects = DragDropEffects.None;
@@ -716,12 +716,26 @@ namespace GlowSequencer.View
 
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-            if (files.Length != 1 || !files[0].EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase))
-                return;
+            if (IsSingleProjectFile(files))
+            {
+                if (main.IsDirty && !ConfirmUnchanged())
+                    return;
+                main.OpenDocument(files[0]);
+            }
+            else if(IsSingleMusicFile(files))
+            {
+                DoMusicLoadFile(files[0]);
+            }
+        }
 
-            if (main.IsDirty && !ConfirmUnchanged())
-                return;
-            main.OpenDocument(files[0]);
+        private static bool IsSingleProjectFile(string[] files)
+        {
+            return files.Length == 1 && files[0].EndsWith(FileSerializer.EXTENSION_PROJECT, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        private static bool IsSingleMusicFile(string[] files)
+        {
+            return files.Length == 1 && MUSIC_EXTENSIONS.Any(ext => files[0].EndsWith(ext, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }
