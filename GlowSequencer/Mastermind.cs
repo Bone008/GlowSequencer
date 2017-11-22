@@ -13,6 +13,7 @@ namespace GlowSequencer
         private static MusicSegmentsWindow winMusicSegments = null;
         private static AboutWindow winAbout = null;
         private static TransferWindow winTransfer = null;
+        private static PoppedOutWindow winPoppedOutSelectionData = null;
 
         private static void OpenWindow<T>(ref T win, Action closeHandler) where T : Window, new()
         {
@@ -51,6 +52,28 @@ namespace GlowSequencer
             OpenWindow(ref winTransfer, () => new TransferWindow(main), () => winTransfer = null);
         }
 
+        public static void OpenPoppedOutSelectionPropertiesWindow(object dataContext, double innerWidth, double innerHeight, Action closeHandler)
+        {
+            OpenWindow(ref winPoppedOutSelectionData, () =>
+            {
+                double outerWidth = innerWidth + 2 * SystemParameters.ResizeFrameVerticalBorderWidth;
+                double outerHeight = innerHeight + SystemParameters.WindowCaptionHeight + 2 * SystemParameters.ResizeFrameHorizontalBorderHeight;
+                var mainWin = Application.Current.MainWindow;
+                var win = new PoppedOutWindow
+                {
+                    Width = outerWidth,
+                    Height = outerHeight,
+                    Left = mainWin.Left,
+                    Top = mainWin.Top + mainWin.Height - outerHeight,
+                    DataContext = dataContext,
+                };
+                // Forward key events to main window so shortcuts work.
+                win.KeyDown += (_, evt) => mainWin.RaiseEvent(evt);
+                // Forward command bindings
+                win.CommandBindings.AddRange(mainWin.CommandBindings);
+                return win;
+            }, () => { winPoppedOutSelectionData = null; closeHandler?.Invoke(); });
+        }
 
         public static PromptResult<string> ShowPromptString(Window owner, string title, string initialInput = null, Func<string, bool> validPredicate = null)
         {

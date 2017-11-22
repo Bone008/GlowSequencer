@@ -737,5 +737,22 @@ namespace GlowSequencer.View
         {
             return files.Length == 1 && MUSIC_EXTENSIONS.Any(ext => files[0].EndsWith(ext, StringComparison.InvariantCultureIgnoreCase));
         }
+
+        private void ButtonPopOut_Click(object sender, RoutedEventArgs e)
+        {
+            Mastermind.OpenPoppedOutSelectionPropertiesWindow(sequencer.SelectionData,
+                selectionDataPresenter.ActualWidth,
+                selectionDataPresenter.ActualHeight,
+                ReintegratePoppedOut);
+
+            selectionDataColumn.Width = new GridLength(0);
+            selectionDataColumn.MaxWidth = 0;
+        }
+
+        private void ReintegratePoppedOut()
+        {
+            selectionDataColumn.Width = GridLength.Auto;
+            selectionDataColumn.MaxWidth = double.PositiveInfinity;
+        }
     }
 }

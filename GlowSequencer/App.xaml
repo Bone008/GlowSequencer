@@ -236,6 +236,7 @@
                       CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedColor}" />
         </ContextMenu>
 
+        <!-- Note: This has to have a key because the datatype is recursively used in a ContentPresenter in this template. -->
         <DataTemplate x:Key="GenericProperties" DataType="{x:Type vm:SelectionProperties}">
             <DataTemplate.Resources>
                 <DataTemplate x:Key="PropertiesColor">
