@@ -104,8 +104,11 @@
     <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
     <Compile Include="ViewModel\VisualizedTrackViewModel.cs" />
-    <Compile Include="View\PoppedOutWindow.xaml.cs">
-      <DependentUpon>PoppedOutWindow.xaml</DependentUpon>
+    <Compile Include="View\PoppedOutVisualizationWindow.xaml.cs">
+      <DependentUpon>PoppedOutVisualizationWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\PoppedOutSelectionDataWindow.xaml.cs">
+      <DependentUpon>PoppedOutSelectionDataWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\VisualizationControl.xaml.cs">
       <DependentUpon>VisualizationControl.xaml</DependentUpon>
@@ -205,7 +208,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\PoppedOutWindow.xaml">
+    <Page Include="View\PoppedOutVisualizationWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\PoppedOutSelectionDataWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

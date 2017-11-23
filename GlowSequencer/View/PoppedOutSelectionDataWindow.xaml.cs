@@ -15,11 +15,11 @@ using System.Windows.Shapes;
 namespace GlowSequencer.View
 {
     /// <summary>
-    /// Interaction logic for PoppedOutWindow.xaml
+    /// Interaction logic for PoppedOutSelectionDataWindow.xaml
     /// </summary>
-    public partial class PoppedOutWindow : Window
+    public partial class PoppedOutSelectionDataWindow : Window
     {
-        public PoppedOutWindow()
+        public PoppedOutSelectionDataWindow()
         {
             InitializeComponent();
         }

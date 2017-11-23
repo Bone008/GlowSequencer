@@ -64,7 +64,7 @@
             <RowDefinition Height="24"/>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="5"/>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*" Name="lowerAreaRow"/>
             <RowDefinition Height="24"/>
         </Grid.RowDefinitions>
 
@@ -364,21 +364,33 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Name="selectionDataColumn" Width="3*"/>
                 <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Name="visualizationColumn" Width="1*" />
             </Grid.ColumnDefinitions>
 
-            <ContentPresenter Name="selectionDataPresenter"
-                              Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}"
-                              Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}, ConverterParameter=nocollapse}" />
-            <Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                    Width="30" Height="30" FontSize="7"
-                    Click="ButtonPopOut_Click">Pop out</Button>
-            
+            <Grid Name="selectionDataContent">
+                <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}"
+                                  Visibility="{Binding IsActive, Converter={StaticResource conv_BoolToVisibility}, ConverterParameter=nocollapse}" />
+                <Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                        Width="30" Height="30" FontSize="9"
+                        Click="ButtonPopOut_Click">
+                    <TextBlock TextWrapping="Wrap" TextAlignment="Center">Pop out</TextBlock>
+                </Button>
+            </Grid>
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" ResizeDirection="Columns"/>
-            <DockPanel Grid.Column="2">
-                <Label DockPanel.Dock="Top" FontWeight="Bold">Visualization</Label>
-                <local:VisualizationControl DataContext="{Binding Visualization}"/>
-            </DockPanel>
+            <Grid Name="visualizationContent" Grid.Column="2">
+                <DockPanel>
+                    <Label Name="visLabel" DockPanel.Dock="Top" FontWeight="Bold">Visualization</Label>
+                    <local:VisualizationControl DataContext="{Binding Visualization}"/>
+                </DockPanel>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Width="{Binding ElementName=visLabel, Path=ActualHeight}"
+                    Height="{Binding ElementName=visLabel, Path=ActualHeight}">X</Button>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Width="30" Height="30" FontSize="9"
+                    Click="ButtonPopOut2_Click">
+                    <TextBlock TextWrapping="Wrap" TextAlignment="Center">Pop out</TextBlock>
+                </Button>
+            </Grid>
         </Grid>
 
         <!-- Status bar in footer -->

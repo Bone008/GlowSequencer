@@ -738,21 +738,67 @@ namespace GlowSequencer.View
             return files.Length == 1 && MUSIC_EXTENSIONS.Any(ext => files[0].EndsWith(ext, StringComparison.InvariantCultureIgnoreCase));
         }
 
+
+        private GridLength colWidthWhilePoppingOut = GridLength.Auto;
+        private GridLength colWidthWhilePoppingOut2 = GridLength.Auto;
+        private GridLength lowerAreaHeightWhileCollapsing = GridLength.Auto;
+
         private void ButtonPopOut_Click(object sender, RoutedEventArgs e)
         {
-            Mastermind.OpenPoppedOutSelectionPropertiesWindow(sequencer.SelectionData,
-                selectionDataPresenter.ActualWidth,
-                selectionDataPresenter.ActualHeight,
+            Mastermind.OpenPoppedOutSelectionPropertiesWindow(
+                selectionDataContent.ActualWidth,
+                selectionDataContent.ActualHeight,
                 ReintegratePoppedOut);
 
+            selectionDataContent.Visibility = Visibility.Collapsed;
+            colWidthWhilePoppingOut = selectionDataColumn.Width;
             selectionDataColumn.Width = new GridLength(0);
             selectionDataColumn.MaxWidth = 0;
+            UpdateLowerAreaCollapse();
         }
 
-        private void ReintegratePoppedOut()
+        private void ReintegratePoppedOut(Window win)
         {
-            selectionDataColumn.Width = GridLength.Auto;
+            selectionDataContent.Visibility = Visibility.Visible;
+            selectionDataColumn.Width = colWidthWhilePoppingOut;
             selectionDataColumn.MaxWidth = double.PositiveInfinity;
+            UpdateLowerAreaCollapse();
+        }
+
+        private void ButtonPopOut2_Click(object sender, RoutedEventArgs e)
+        {
+            Mastermind.OpenPoppedOutVisualizationWindow(
+                visualizationContent.ActualWidth,
+                visualizationContent.ActualHeight,
+                ReintegratePoppedOut2);
+
+            visualizationContent.Visibility = Visibility.Collapsed;
+            colWidthWhilePoppingOut2 = visualizationColumn.Width;
+            visualizationColumn.Width = new GridLength(0);
+            visualizationColumn.MaxWidth = 0;
+            UpdateLowerAreaCollapse();
+        }
+
+        private void ReintegratePoppedOut2(Window win)
+        {
+            visualizationContent.Visibility = Visibility.Visible;
+            visualizationColumn.Width = colWidthWhilePoppingOut2;
+            visualizationColumn.MaxWidth = double.PositiveInfinity;
+            UpdateLowerAreaCollapse();
+        }
+
+        private void UpdateLowerAreaCollapse()
+        {
+            if(selectionDataContent.Visibility == Visibility.Collapsed && visualizationContent.Visibility == Visibility.Collapsed)
+            {
+                lowerAreaHeightWhileCollapsing = lowerAreaRow.Height;
+                lowerAreaRow.Height = new GridLength(0);
+                lowerAreaRow.MaxHeight = 0;
+            } else
+            {
+                lowerAreaRow.Height = lowerAreaHeightWhileCollapsing;
+                lowerAreaRow.MaxHeight = double.PositiveInfinity;
+            }
         }
     }
 }
