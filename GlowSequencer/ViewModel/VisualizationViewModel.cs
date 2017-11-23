@@ -12,16 +12,9 @@ namespace GlowSequencer.ViewModel
     {
         private readonly SequencerViewModel sequencer;
 
-        public double StageWidth => 300;
-        public double StageHeight => 200;
+        //public double StageWidth => 300;
+        //public double StageHeight => 200;
         public ReadOnlyContinuousCollection<VisualizedTrackViewModel> VisualizedTracks { get; private set; }
-
-        [Obsolete("only for designer", true)]
-        public VisualizationViewModel()
-        {
-            sequencer = null;
-            VisualizedTracks = new ObservableCollection<Track> { new Track(new Timeline(), "test"), new Track(new Timeline(), "test2") }.Select(t => new VisualizedTrackViewModel(t));
-        }
 
         public VisualizationViewModel(SequencerViewModel sequencer)
         {
@@ -49,6 +42,24 @@ namespace GlowSequencer.ViewModel
                 else
                     vm.CurrentColor = activeBlock.GetColorAtTime(now, vm.track).ToViewColor();
             }
+        }
+
+
+
+
+        [Obsolete("only for designer", true)]
+        public VisualizationViewModel()
+        {
+            sequencer = null;
+            var tl = new Timeline();
+            VisualizedTracks = new ObservableCollection<Track> {
+                new Track(tl, "Track 01"),
+                new Track(tl, "Track 02"),
+                new Track(tl, "Track 03"),
+                new Track(tl, "Track 04"),
+                new Track(tl, "Track 05"),
+                new Track(tl, "Track 06"),
+            }.Select(t => new VisualizedTrackViewModel(t));
         }
     }
 }
