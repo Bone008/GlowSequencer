@@ -50,6 +50,10 @@
         <Style x:Key="s_FormLabelWide" TargetType="Label" BasedOn="{StaticResource s_FormLabel}">
             <Setter Property="Width" Value="180"/>
         </Style>
+
+        <Style x:Key="s_FormLabelNarrow" TargetType="Label" BasedOn="{StaticResource s_FormLabel}">
+            <Setter Property="Width" Value="100"/>
+        </Style>
         
         <Style x:Key="s_FormRow" TargetType="StackPanel">
             <Setter Property="Orientation" Value="Horizontal" />
@@ -242,7 +246,7 @@
                 <DataTemplate x:Key="PropertiesColor">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
-                            <Label Content="Color:" Style="{StaticResource s_FormLabel}"/>
+                            <Label Content="Color:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
                         </StackPanel>
                     </StackPanel>
@@ -251,15 +255,15 @@
                 <DataTemplate x:Key="PropertiesRamp">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="Start color:" Style="{StaticResource s_FormLabel}"/>
+                            <Label Content="Start color:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
                         </StackPanel>
                         <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="End color:" Style="{StaticResource s_FormLabel}"/>
+                            <Label Content="End color:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
                         </StackPanel>
                         <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="" Style="{StaticResource s_FormLabel}"/>
+                            <Label Content="" Style="{StaticResource s_FormLabelNarrow}"/>
                             <Button Content="Swap" Width="60" Command="view:SequencerCommands.SwapRampColors" CommandParameter="{Binding}" />
                         </StackPanel>
                     </StackPanel>
@@ -268,7 +272,7 @@
                 <DataTemplate x:Key="PropertiesLoop">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="Repetitions:" Style="{StaticResource s_FormLabel}"/>
+                            <Label Content="Repetitions:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <TextBox Width="50" HorizontalContentAlignment="Right" Text="{Binding Repetitions, TargetNullValue='?'}" />
                         </StackPanel>
                     </StackPanel>
@@ -286,7 +290,7 @@
                     <TextBlock Text="{Binding TypeLabel, StringFormat='\{0} block properties'}" />
                 </Label>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="5">
-                    <Label Content="Music segment:" Style="{StaticResource s_FormLabel}"/>
+                    <Label Content="Music segment:" Style="{StaticResource s_FormLabelNarrow}"/>
                     <ComboBox Width="250"
                               ItemsSource="{Binding CurrentDocument.MusicSegments, Source={StaticResource vm_Main}}" ItemTemplate="{StaticResource MusicSegmentLabel}"
                               SelectedItem="{Binding SegmentContext}"
@@ -294,68 +298,70 @@
                     <Button Content="Manage" Command="view:SequencerCommands.MusicManageSegments" Width="60" Margin="5,0,0,0"/>
                 </StackPanel>
 
-                <WrapPanel Orientation="Vertical" Grid.Row="1">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <StackPanel Orientation="Vertical">
-                            <Label Content="Tracks:" Style="{StaticResource s_FormLabel}"/>
-                            <Button Content="All" Command="view:SequencerCommands.TrackAffiliationAll" CommandParameter="{Binding}" Width="40" HorizontalAlignment="Right" Margin="10,0" />
-                            <Button Content="Invert" Command="view:SequencerCommands.TrackAffiliationInvert" CommandParameter="{Binding}" Width="40" HorizontalAlignment="Right" Margin="10,5" />
-                        </StackPanel>
-                        <ItemsControl ItemsSource="{Binding TrackAffiliation}" Padding="0,5">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Vertical"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <CheckBox IsChecked="{Binding AffiliationState}" IsEnabled="{Binding CanModify}"  Content="{Binding Track.Label}" Margin="0,0,5,0" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-
-                    <StackPanel Orientation="Vertical" Margin="0,0,0,5">
-                        <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="Start time:" Style="{StaticResource s_FormLabel}"/>
-                            <view:TimeUnitEditControl x:Name="editStartTime" Value="{Binding StartTimeComplex}" ActiveUnit="0"/>
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="End time:" Style="{StaticResource s_FormLabel}"/>
-                            <view:TimeUnitEditControl Value="{Binding EndTimeComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="Duration:" Style="{StaticResource s_FormLabel}"/>
-                            <view:TimeUnitEditControl Value="{Binding DurationComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                <ScrollViewer Name="scroller" Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <WrapPanel Orientation="Vertical" Height="{Binding ElementName=scroller, Path=ViewportHeight}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <StackPanel Orientation="Vertical">
+                                <Label Content="Tracks:" Style="{StaticResource s_FormLabelNarrow}"/>
+                                <Button Content="All" Command="view:SequencerCommands.TrackAffiliationAll" CommandParameter="{Binding}" Width="40" HorizontalAlignment="Right" Margin="10,0" />
+                                <Button Content="Invert" Command="view:SequencerCommands.TrackAffiliationInvert" CommandParameter="{Binding}" Width="40" HorizontalAlignment="Right" Margin="10,5" />
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding TrackAffiliation}" Padding="0,5">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Vertical"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding AffiliationState}" IsEnabled="{Binding CanModify}"  Content="{Binding Track.Label}" Margin="0,0,5,0" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
 
-                        <StackPanel Style="{StaticResource s_FormRow}">
-                            <Label Content="" Style="{StaticResource s_FormLabel}"/>
-                            <CheckBox Content="Synchronize units" Margin="85,0,0,0" VerticalAlignment="Center" IsChecked="True" IsEnabled="False"/>
-                        </StackPanel>
-                    </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="0,0,0,5">
+                            <StackPanel Style="{StaticResource s_FormRow}">
+                                <Label Content="Start time:" Style="{StaticResource s_FormLabelNarrow}"/>
+                                <view:TimeUnitEditControl x:Name="editStartTime" Value="{Binding StartTimeComplex}" ActiveUnit="0"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource s_FormRow}">
+                                <Label Content="End time:" Style="{StaticResource s_FormLabelNarrow}"/>
+                                <view:TimeUnitEditControl Value="{Binding EndTimeComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource s_FormRow}">
+                                <Label Content="Duration:" Style="{StaticResource s_FormLabelNarrow}"/>
+                                <view:TimeUnitEditControl Value="{Binding DurationComplex}" ActiveUnit="{Binding ElementName=editStartTime, Path=ActiveUnit, Mode=TwoWay}"/>
+                            </StackPanel>
 
-                    <ContentPresenter Content="{Binding}">
-                        <ContentPresenter.Resources>
-                            <Style TargetType="ContentPresenter">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Color">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource PropertiesColor}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Ramp">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource PropertiesRamp}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Loop">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource PropertiesLoop}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding TypeLabel}" Value="Mixed">
-                                        <Setter Property="Visibility" Value="Hidden" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentPresenter.Resources>
-                    </ContentPresenter>
-                </WrapPanel>
+                            <StackPanel Style="{StaticResource s_FormRow}">
+                                <Label Content="" Style="{StaticResource s_FormLabelNarrow}"/>
+                                <CheckBox Content="Synchronize units" Margin="85,0,0,0" VerticalAlignment="Center" IsChecked="True" IsEnabled="False"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <ContentPresenter Content="{Binding}">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="ContentPresenter">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding TypeLabel}" Value="Color">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource PropertiesColor}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding TypeLabel}" Value="Ramp">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource PropertiesRamp}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding TypeLabel}" Value="Loop">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource PropertiesLoop}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding TypeLabel}" Value="Mixed">
+                                            <Setter Property="Visibility" Value="Hidden" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                    </WrapPanel>
+                </ScrollViewer>
             </Grid>
         </DataTemplate>
 
