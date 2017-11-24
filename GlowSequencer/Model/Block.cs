@@ -53,7 +53,7 @@ namespace GlowSequencer.Model
         {
             Notify(nameof(ColorModifierFn));
         }
-        
+
         public float GetEndTime()
         {
             return _startTime + _duration;
@@ -138,7 +138,7 @@ namespace GlowSequencer.Model
         {
             return Enumerable.Empty<FileSerializer.PrimitiveBlock>();
         }
-        
+
         [Obsolete("replaced with new algorithm that uses BakePrimitive")]
         public abstract IEnumerable<GloCommand> ToGloCommands(GloSequenceContext context);
 
@@ -158,7 +158,8 @@ namespace GlowSequencer.Model
         {
             _startTime = (float)element.Element("start-time");
             _duration = (float)element.Element("duration");
-            _segmentContext = timeline.MusicSegments[((int?)element.Element("segment-context")).GetValueOrDefault(0)];
+            int segmentIndex = (int?)element.Element("segment-context") ?? 0;
+            _segmentContext = timeline.MusicSegments[Math.Min(Math.Max(segmentIndex, 0), timeline.MusicSegments.Count - 1)];
         }
 
         public static Block FromXML(Timeline timeline, XElement element)
