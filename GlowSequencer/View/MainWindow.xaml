@@ -163,6 +163,10 @@
                 </ComboBox.ContextMenu>
             </ComboBox>
 
+            <Label Grid.Row="1"  FontWeight="Bold" FontSize="16" Padding="5,0" VerticalContentAlignment="Center">
+                Music
+            </Label>
+
             <ScrollViewer x:Name="trackLabelsScroller" Grid.Row="3" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Visible" PanningMode="Both"
                           ScrollChanged="trackLabelsScroller_ScrollChanged" PreviewKeyDown="TimelineScrollers_PreviewKeyDown">
                 <ItemsControl ItemsSource="{Binding Tracks}" Background="Transparent" MouseWheel="timeline_MouseWheel">
