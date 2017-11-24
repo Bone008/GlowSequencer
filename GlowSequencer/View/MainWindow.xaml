@@ -5,7 +5,7 @@
         xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="GlowSequencer.View.MainWindow"
-        Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="750" Width="1200"
+        Title="{Binding DocumentNameDecorated, StringFormat=\{0\} - Glow Sequencer}" Height="750" Width="1200" WindowState="Maximized"
         Closing="Window_Closing"
         AllowDrop="True" DragOver="Window_Drag" Drop="Window_Drop"
         DataContext="{StaticResource vm_Main}" Icon="/GlowSequencer;component/Resources/icon.ico">
