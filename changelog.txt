@@ -4,6 +4,12 @@
 
 Changelog
 
+v1.5.0 (2017-11-24):
+- Added live color visualization of tracks
+- Added rudimentary "pop out" feature for bottom panes to allow more vertical space
+- Automatically scroll the timeline when the cursor leaves the viewport during playback
+- Small user experience improvements
+
 v1.4.0 (2017-11-13):
 - Added loading of audio files
  * Rendering of waveform (linear and logarithmic)
