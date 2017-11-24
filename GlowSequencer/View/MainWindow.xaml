@@ -382,9 +382,9 @@
                     <Label Name="visLabel" DockPanel.Dock="Top" FontWeight="Bold">Visualization</Label>
                     <local:VisualizationControl DataContext="{Binding Visualization}"/>
                 </DockPanel>
-                <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                <!--<Button HorizontalAlignment="Right" VerticalAlignment="Top"
                     Width="{Binding ElementName=visLabel, Path=ActualHeight}"
-                    Height="{Binding ElementName=visLabel, Path=ActualHeight}">X</Button>
+                    Height="{Binding ElementName=visLabel, Path=ActualHeight}">X</Button>-->
                 <Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
                     Width="30" Height="30" FontSize="9"
                     Click="ButtonPopOut2_Click">
