@@ -316,10 +316,10 @@
                     ClipToBounds="True" IsHitTestVisible="False">
                 <Line x:Name="selectionCursor"
                             Canvas.Top="{Binding Source={x:Static SystemParameters.HorizontalScrollBarHeight}, Converter={StaticResource conv_Invert}}"
-							Canvas.Left="{Binding CursorPixelPositionOnViewport}" Y2="1" Stretch="Fill"
+							Canvas.Left="{Binding CursorPixelPositionOnViewport, NotifyOnTargetUpdated=True}" Y2="1" Stretch="Fill"
 							Height="{Binding ActualHeight, ElementName=selectionCursorCanvas}"
 							Stroke="Black" StrokeDashArray="1 2" StrokeThickness="2" SnapsToDevicePixels="True"
-							IsHitTestVisible="False">
+							IsHitTestVisible="False" TargetUpdated="selectionCursor_TargetUpdated">
                 </Line>
             </Canvas>
 

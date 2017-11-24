@@ -644,6 +644,13 @@ namespace GlowSequencer.View
                 trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - trackBlocksScroller.ActualWidth + TIMELINE_CURSOR_PADDING_RIGHT_PX);
         }
 
+        // same as above, but jumps further ahead when scrolling to the right
+        private void ScrollCursorIntoViewForPlayback()
+        {
+            if (sequencer.CursorPixelPosition > trackBlocksScroller.HorizontalOffset + trackBlocksScroller.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
+                trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - 0.3 * trackBlocksScroller.ActualWidth + TIMELINE_CURSOR_PADDING_RIGHT_PX);
+        }
+
         private void ScrollSelectedTrackIntoView()
         {
             int i = sequencer.SelectedTrack.GetIndex();
@@ -798,6 +805,14 @@ namespace GlowSequencer.View
             {
                 lowerAreaRow.Height = lowerAreaHeightWhileCollapsing;
                 lowerAreaRow.MaxHeight = double.PositiveInfinity;
+            }
+        }
+
+        private void selectionCursor_TargetUpdated(object sender, DataTransferEventArgs e)
+        {
+            if(e.Property == Canvas.LeftProperty && sequencer.Playback.IsPlaying)
+            {
+                ScrollCursorIntoViewForPlayback();
             }
         }
     }
