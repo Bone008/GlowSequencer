@@ -27,6 +27,8 @@ namespace GlowSequencer.View
         {
             InitializeComponent();
             DataContext = vm = new TransferViewModel(main);
+
+            MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
         }
 
         private void transferredTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -92,13 +94,21 @@ namespace GlowSequencer.View
             await vm.RefreshWindowListAsync();
         }
 
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.NewSize.Height != e.PreviousSize.Height && Top + e.NewSize.Height > SystemParameters.PrimaryScreenHeight)
+            {
+                Top = SystemParameters.MaximizedPrimaryScreenHeight - e.NewSize.Height;
+            }
+        }
+
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
             var diag = new Microsoft.Win32.OpenFileDialog();
             diag.DefaultExt = ".exe";
             diag.Filter = "Executable files (*.exe)|*.exe|All files|*.*";
             diag.FilterIndex = 0;
-            
+
             // attempt to navigate to directory already present in the text field
             string dir = null;
             try { dir = System.IO.Path.GetDirectoryName(vm.AerotechAppExePath); }

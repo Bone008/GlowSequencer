@@ -3,131 +3,134 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
         Title="Transfer to equipment" Width="600" SizeToContent="Height"
-        Closing="Window_Closing" Activated="Window_Activated" Icon="/GlowSequencer;component/Resources/icon.ico" WindowStartupLocation="CenterOwner">
+        Closing="Window_Closing" Activated="Window_Activated" SizeChanged="Window_SizeChanged"
+        Icon="/GlowSequencer;component/Resources/icon.ico" WindowStartupLocation="CenterOwner">
 
-    <StackPanel Orientation="Vertical" Margin="10">
-        <StackPanel IsEnabled="{Binding IsTransferIdle}">
-            <Label Padding="0,5">Path to Aerotech Glo-Ultimate App:</Label>
-            <DockPanel>
-                <Button TabIndex="1" DockPanel.Dock="Right" Content="Browse ..." Padding="10,0" Margin="5,0" Click="BrowseButton_Click" />
-                <TextBox TabIndex="0" Text="{Binding AerotechAppExePath, UpdateSourceTrigger=PropertyChanged}" />
-            </DockPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Orientation="Vertical" Margin="10">
+            <StackPanel IsEnabled="{Binding IsTransferIdle}">
+                <Label Padding="0,5">Path to Aerotech Glo-Ultimate App:</Label>
+                <DockPanel>
+                    <Button TabIndex="1" DockPanel.Dock="Right" Content="Browse ..." Padding="10,0" Margin="5,0" Click="BrowseButton_Click" />
+                    <TextBox TabIndex="0" Text="{Binding AerotechAppExePath, UpdateSourceTrigger=PropertyChanged}" />
+                </DockPanel>
 
-            <TextBlock TextWrapping="Wrap" Margin="0,10">
-            <Run>The necessary *.glo files will be automatically generated into a subdirectory of the Aerotech program.</Run>
-            <LineBreak />
-            <Run>Make sure that you have write access to above directory.</Run>
-            </TextBlock>
+                <TextBlock TextWrapping="Wrap" Margin="0,10">
+                <Run>The necessary *.glo files will be automatically generated into a subdirectory of the Aerotech program.</Run>
+                <LineBreak />
+                <Run>Make sure that you have write access to above directory.</Run>
+                </TextBlock>
 
-            <Grid>
-                <Label Padding="0,5">Transferred tracks:</Label>
-                <Button Click="SelectNone_Click" HorizontalAlignment="Right" Width="60" Margin="0,3,70,3">None</Button>
-                <Button Click="SelectAll_Click" HorizontalAlignment="Right" Width="60" Margin="0,3">All</Button>
-            </Grid>
-            <ListBox x:Name="transferredTracks" SelectionMode="Extended"
-                 MaxHeight="150"
-                 ItemsSource="{Binding AllTracks}"
-                 SelectionChanged="transferredTracks_SelectionChanged">
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type vm:TrackViewModel}">
-                        <CheckBox Content="{Binding Label}" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}, Path=IsSelected}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                <Grid>
+                    <Label Padding="0,5">Transferred tracks:</Label>
+                    <Button Click="SelectNone_Click" HorizontalAlignment="Right" Width="60" Margin="0,3,70,3">None</Button>
+                    <Button Click="SelectAll_Click" HorizontalAlignment="Right" Width="60" Margin="0,3">All</Button>
+                </Grid>
+                <ListBox x:Name="transferredTracks" SelectionMode="Extended"
+                     MaxHeight="150"
+                     ItemsSource="{Binding AllTracks}"
+                     SelectionChanged="transferredTracks_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:TrackViewModel}">
+                            <CheckBox Content="{Binding Label}" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}, Path=IsSelected}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
-            <StackPanel Orientation="Horizontal" Margin="0,5">
-                <Label>Start time:</Label>
-                <TextBox Width="150" Text="{Binding ExportStartTime, Converter={StaticResource conv_TimeSpanToString}}" />
-                <Button Width="50" Margin="10,0" Click="CursorButton_Click">Cursor</Button>
-                <Button Width="50" Click="ZeroButton_Click">Zero</Button>
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label>Start time:</Label>
+                    <TextBox Width="150" Text="{Binding ExportStartTime, Converter={StaticResource conv_TimeSpanToString}}" />
+                    <Button Width="50" Margin="10,0" Click="CursorButton_Click">Cursor</Button>
+                    <Button Width="50" Click="ZeroButton_Click">Zero</Button>
+                </StackPanel>
+
+                <Expander Header="Advanced settings" Margin="0,10" BorderBrush="#FFABADB3" BorderThickness="1" Padding="5">
+                    <Grid>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for Glo-Ultimate to recognize all clubs after startup.">
+                                <Label Style="{StaticResource s_FormLabelWide}" Content="Delay after program start:" />
+                                <TextBox Text="{Binding DelayBeforeStart}" Width="50" HorizontalContentAlignment="Right" />
+                                <Label Content="ms"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for an upload to complete before continuing.">
+                                <Label Style="{StaticResource s_FormLabelWide}" Content="Delay for uploads:" />
+                                <TextBox Text="{Binding DelayForUpload}" Width="50" HorizontalContentAlignment="Right" />
+                                <Label Content="ms"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait between each simulated key press.">
+                                <Label Style="{StaticResource s_FormLabelWide}" Content="Delay between key presses:" />
+                                <TextBox Text="{Binding DelayBetweenKeys}" Width="50" HorizontalContentAlignment="Right" />
+                                <Label Content="ms"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button Content="Reset" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5" Padding="15,1" Click="ResetAdvanced_Click" />
+                    </Grid>
+                </Expander>
+
+                <RadioButton Margin="0,5" GroupName="postaction" IsChecked="True">Do nothing after successful transfer.</RadioButton>
+                <RadioButton Margin="0,5" GroupName="postaction" IsChecked="{Binding CloseProgramAfterTransfer}">Close Glo-Ultimate App after successful transfer.</RadioButton>
+                <RadioButton Margin="0,5" GroupName="postaction" IsChecked="{Binding StartAutomagicallyAfterTransfer}"
+                             Checked="StartAutomagically_CheckedChanged"  Unchecked="StartAutomagically_CheckedChanged">Start sequence automatically after successful transfer.</RadioButton>
+
+                <CheckBox x:Name="startExternalCb" Margin="20,5" Content="Start external music after successful transfer."
+                      IsChecked="{Binding StartMusicAfterTransfer}" />
+
+                <GroupBox Margin="20,0,0,0" Visibility="{Binding StartMusicAfterTransfer, Converter={StaticResource conv_BoolToVisibility}}">
+                    <StackPanel Orientation="Vertical">
+                        <Label>Window to select:</Label>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Padding="10,0" Margin="10,0,0,0" Click="RefreshList_Click">Refresh list</Button>
+                            <ComboBox ItemsSource="{Binding ProcessesWithWindows}" SelectedValue="{Binding MusicWindowProcessId}" SelectedValuePath="Id">
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ComboBoxItem}">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding MainWindowTitle, Mode=OneWay}" />
+                                            <Run>   </Run>
+                                            <Run Text="{Binding ProcessName, Mode=OneWay}" Foreground="DarkGray" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DockPanel>
+
+                        <TextBlock Margin="0,5" TextWrapping="Wrap">In the external program, the spacebar will be pressed at the same time as the sequence is started.</TextBlock>
+                    </StackPanel>
+                </GroupBox>
+
             </StackPanel>
 
-            <Expander Header="Advanced settings" Margin="0,10" BorderBrush="#FFABADB3" BorderThickness="1" Padding="5">
-                <Grid>
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for Glo-Ultimate to recognize all clubs after startup.">
-                            <Label Style="{StaticResource s_FormLabelWide}" Content="Delay after program start:" />
-                            <TextBox Text="{Binding DelayBeforeStart}" Width="50" HorizontalContentAlignment="Right" />
-                            <Label Content="ms"/>
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait for an upload to complete before continuing.">
-                            <Label Style="{StaticResource s_FormLabelWide}" Content="Delay for uploads:" />
-                            <TextBox Text="{Binding DelayForUpload}" Width="50" HorizontalContentAlignment="Right" />
-                            <Label Content="ms"/>
-                        </StackPanel>
-                        <StackPanel Style="{StaticResource s_FormRow}" ToolTip="How long to wait between each simulated key press.">
-                            <Label Style="{StaticResource s_FormLabelWide}" Content="Delay between key presses:" />
-                            <TextBox Text="{Binding DelayBetweenKeys}" Width="50" HorizontalContentAlignment="Right" />
-                            <Label Content="ms"/>
-                        </StackPanel>
-                    </StackPanel>
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap" HorizontalAlignment="Right" TextAlignment="Right">
+                <Run>All equipment has to be connected to the computer before starting the transfer.</Run>
+                <LineBreak />
+                <Run>Please do not press any buttons while the Aerotech software is running.</Run>
+                </TextBlock>
 
-                    <Button Content="Reset" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="5" Padding="15,1" Click="ResetAdvanced_Click" />
-                </Grid>
-            </Expander>
 
-            <RadioButton Margin="0,5" GroupName="postaction" IsChecked="True">Do nothing after successful transfer.</RadioButton>
-            <RadioButton Margin="0,5" GroupName="postaction" IsChecked="{Binding CloseProgramAfterTransfer}">Close Glo-Ultimate App after successful transfer.</RadioButton>
-            <RadioButton Margin="0,5" GroupName="postaction" IsChecked="{Binding StartAutomagicallyAfterTransfer}"
-                         Checked="StartAutomagically_CheckedChanged"  Unchecked="StartAutomagically_CheckedChanged">Start sequence automatically after successful transfer.</RadioButton>
-            
-            <CheckBox x:Name="startExternalCb" Margin="20,5" Content="Start external music after successful transfer."
-                  IsChecked="{Binding StartMusicAfterTransfer}" />
+                <Button Width="100" Height="30" HorizontalAlignment="Right" Margin="0,10"
+                        Content="Cancel" Click="Cancel_Click"
+                        Visibility="{Binding IsTransferInProgress, Converter={StaticResource conv_BoolToVisibility}}" />
+                <Button Width="100" Height="30" HorizontalAlignment="Right" Margin="0,10"
+                        Content="Start" Click="Start_Click"
+                        Visibility="{Binding IsTransferIdle, Converter={StaticResource conv_BoolToVisibility}}"
+                        IsEnabled="{Binding CanStartTransfer}"
+                        ToolTip="{Binding CanStartTransferReason}" ToolTipService.ShowOnDisabled="True"
+                        />
 
-            <GroupBox Margin="20,0,0,0" Visibility="{Binding StartMusicAfterTransfer, Converter={StaticResource conv_BoolToVisibility}}">
-                <StackPanel Orientation="Vertical">
-                    <Label>Window to select:</Label>
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Padding="10,0" Margin="10,0,0,0" Click="RefreshList_Click">Refresh list</Button>
-                        <ComboBox ItemsSource="{Binding ProcessesWithWindows}" SelectedValue="{Binding MusicWindowProcessId}" SelectedValuePath="Id">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="{x:Type ComboBoxItem}">
-                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock>
-                                        <Run Text="{Binding MainWindowTitle, Mode=OneWay}" />
-                                        <Run>   </Run>
-                                        <Run Text="{Binding ProcessName, Mode=OneWay}" Foreground="DarkGray" />
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </DockPanel>
 
-                    <TextBlock Margin="0,5" TextWrapping="Wrap">In the external program, the spacebar will be pressed at the same time as the sequence is started.</TextBlock>
-                </StackPanel>
-            </GroupBox>
+                <ProgressBar Height="25" Value="{Binding TransferProgress}" Maximum="100" />
+
+                <Label>Log:</Label>
+                <TextBox IsReadOnly="True" Height="100" Text="{Binding LogOutput, Mode=OneWay}" VerticalContentAlignment="Top"
+                     TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" TextChanged="TextBox_TextChanged" />
+            </StackPanel>
 
         </StackPanel>
-        
-        <StackPanel>
-            <TextBlock TextWrapping="Wrap" HorizontalAlignment="Right" TextAlignment="Right">
-            <Run>All equipment has to be connected to the computer before starting the transfer.</Run>
-            <LineBreak />
-            <Run>Please do not press any buttons while the Aerotech software is running.</Run>
-            </TextBlock>
-
-
-            <Button Width="100" Height="30" HorizontalAlignment="Right" Margin="0,10"
-                    Content="Cancel" Click="Cancel_Click"
-                    Visibility="{Binding IsTransferInProgress, Converter={StaticResource conv_BoolToVisibility}}" />
-            <Button Width="100" Height="30" HorizontalAlignment="Right" Margin="0,10"
-                    Content="Start" Click="Start_Click"
-                    Visibility="{Binding IsTransferIdle, Converter={StaticResource conv_BoolToVisibility}}"
-                    IsEnabled="{Binding CanStartTransfer}"
-                    ToolTip="{Binding CanStartTransferReason}" ToolTipService.ShowOnDisabled="True"
-                    />
-
-
-            <ProgressBar Height="25" Value="{Binding TransferProgress}" Maximum="100" />
-
-            <Label>Log:</Label>
-            <TextBox IsReadOnly="True" Height="100" Text="{Binding LogOutput, Mode=OneWay}" VerticalContentAlignment="Top"
-                 TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" TextChanged="TextBox_TextChanged" />
-        </StackPanel>
-
-    </StackPanel>
+    </ScrollViewer>
 </Window>
