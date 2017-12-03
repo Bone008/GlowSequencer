@@ -50,6 +50,11 @@ namespace GlowSequencer.View
             ((TextBox)sender).ScrollToEnd();
         }
 
+        private void SelectNone_Click(object sender, RoutedEventArgs e)
+        {
+            transferredTracks.SelectedItems.Clear();
+        }
+
         private void SelectAll_Click(object sender, RoutedEventArgs e)
         {
             transferredTracks.SelectAll();

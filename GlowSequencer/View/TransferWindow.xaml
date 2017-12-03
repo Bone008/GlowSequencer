@@ -21,7 +21,8 @@
 
             <Grid>
                 <Label Padding="0,5">Transferred tracks:</Label>
-                <Button Click="SelectAll_Click" HorizontalAlignment="Right" Padding="20,0" Margin="0,3">All</Button>
+                <Button Click="SelectNone_Click" HorizontalAlignment="Right" Width="60" Margin="0,3,70,3">None</Button>
+                <Button Click="SelectAll_Click" HorizontalAlignment="Right" Width="60" Margin="0,3">All</Button>
             </Grid>
             <ListBox x:Name="transferredTracks" SelectionMode="Extended"
                  MaxHeight="150"
