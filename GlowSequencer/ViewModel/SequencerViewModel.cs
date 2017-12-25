@@ -482,7 +482,7 @@ namespace GlowSequencer.ViewModel
             group.StartTime = SelectedBlocks.Min(b => b.StartTime);
             foreach (var b in SelectedBlocks)
             {
-                // create an independant copy of the block so transforming its time to local reference frame does not screw up undo
+                // create an independent copy of the block so transforming its time to local reference frame does not screw up undo
                 Block newChild = Block.FromXML(model, b.GetModel().ToXML());
 
                 group.AddChild(newChild, true);
@@ -505,19 +505,19 @@ namespace GlowSequencer.ViewModel
                 {
                     SelectedBlocks.Remove(groupVM);
 
-                    GroupBlock group = (Model.GroupBlock)groupVM.GetModel();
+                    GroupBlock group = (GroupBlock)groupVM.GetModel();
                     ActionManager.RecordRemove(model.Blocks, group);
 
                     foreach (Block b in group.Children.ToArray())
                     {
-                        // create an independant copy of the block so transforming its time back to global reference frame does not screw up undo
-                        Block independantBlock = Block.FromXML(model, b.ToXML());
+                        // create an independent copy of the block so transforming its time back to global reference frame does not screw up undo
+                        Block independentBlock = Block.FromXML(model, b.ToXML());
 
-                        independantBlock.StartTime += group.StartTime;
+                        independentBlock.StartTime += group.StartTime;
                         ActionManager.RecordRemove(group.Children, b);
-                        ActionManager.RecordAdd(model.Blocks, independantBlock);
+                        ActionManager.RecordAdd(model.Blocks, independentBlock);
 
-                        SelectBlock(BlockViewModel.FromModel(this, independantBlock), CompositionMode.Additive);
+                        SelectBlock(BlockViewModel.FromModel(this, independentBlock), CompositionMode.Additive);
                     }
                 }
             }
