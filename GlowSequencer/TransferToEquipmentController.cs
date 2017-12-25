@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GlowSequencer.Util;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,14 +29,17 @@ namespace GlowSequencer
         private InputSimulator inputSim = null;
         private bool success = false;
 
-        public TransferToEquipmentController(TransferToEquipmentSettings persistedSettings, IList<Model.Track> tracks)
+        public TransferToEquipmentController(TransferToEquipmentSettings settings, IList<Model.Track> tracks)
         {
-            this.settings = persistedSettings;
+            this.settings = settings;
             this.tracks = tracks;
         }
 
         public async Task RunTransferAsync(IProgress<float> progress, IProgress<string> log, CancellationToken cancel)
         {
+            for (int i = 0; i < 100; i++) {
+                log.Report(GenerateRandomString(3));
+                await Task.Delay(20); }
             try
             {
                 if (tracks.Count > 0)
@@ -43,12 +47,16 @@ namespace GlowSequencer
                     log.Report("Generating glo files ...");
                     string tmpDir = Path.Combine(Path.GetDirectoryName(settings.AerotechAppExePath), GLO_SUBDIR_NAME);
                     Directory.CreateDirectory(tmpDir);
+                    string versionId = GenerateRandomString(3);
+
+                    // clean up potential left-over files from previous runs
+                    Directory.EnumerateFiles(tmpDir, ".glo").ForEach(File.Delete);
 
                     for (int i = 0; i < tracks.Count; i++)
                     {
                         await Task.Run(() =>
                         {
-                            string file = Path.Combine(tmpDir, string.Format("{0:0000}_" + FileSerializer.SanitizeString(tracks[i].Label) + ".glo", i));
+                            string file = Path.Combine(tmpDir, string.Format("{0:000}_{1}_{2}.glo", i + 1, FileSerializer.SanitizeString(tracks[i].Label), versionId));
                             FileSerializer.ExportTrack(tracks[i], file, (float)settings.ExportStartTime.TotalSeconds);
                         }, cancel);
                         ReportProgress(progress, TaskStage.ExportFiles, i + 1, tracks.Count);
@@ -57,7 +65,7 @@ namespace GlowSequencer
 
                 // close open instances of the Aerotech program
                 Process[] runningPrograms = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(settings.AerotechAppExePath));
-                if(runningPrograms.Any())
+                if (runningPrograms.Any())
                 {
                     log.Report("Trying to close running instances of Glo Ultimate App ...");
                     foreach (var p in runningPrograms)
@@ -103,7 +111,7 @@ namespace GlowSequencer
                     }
                 }
 
-                if(settings.StartAutomagicallyAfterTransfer)
+                if (settings.StartAutomagicallyAfterTransfer)
                 {
                     log.Report("Starting the sequence ...");
                     Press(VirtualKeyCode.F12);
@@ -125,7 +133,7 @@ namespace GlowSequencer
 
                             //log.Report(DateTime.Now.ToString("HH:mm:ss.ffff"));
                         }
-                            
+
                         log.Report("Starting music ...");
                         SetForegroundWindow(musicProc.MainWindowHandle);
                         inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
@@ -145,12 +153,19 @@ namespace GlowSequencer
                 progress.Report(0);
                 log.Report("Transfer was canceled." + Environment.NewLine);
             }
-            catch(InvalidOperationException e)
+            catch (InvalidOperationException e)
             {
                 Cleanup();
                 progress.Report(0);
                 log.Report("Error: Aerotech program was closed unexpectedly: " + e.Message);
             }
+        }
+
+        private static string GenerateRandomString(int length)
+        {
+            const string ALPHABET = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuwxyz";
+            var r = new Random();
+            return new string(Enumerable.Range(0, length).Select(_ => ALPHABET[r.Next(ALPHABET.Length)]).ToArray());
         }
 
         private Process LaunchAerotechProgram()
@@ -194,7 +209,7 @@ namespace GlowSequencer
         {
             float baseCompletion;
             float stageDuration;
-            switch(stage)
+            switch (stage)
             {
                 case TaskStage.ExportFiles: baseCompletion = 0.00f; stageDuration = 0.15f; break;
                 case TaskStage.OpenProgram: baseCompletion = 0.15f; stageDuration = 0.25f; break;
