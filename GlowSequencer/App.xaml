@@ -385,6 +385,7 @@
         </Style>
 
         <!-- Styles for specific icon buttons. -->
+        <Image x:Key="image_icon_cut" x:Shared="False" Source="Resources/icon_cut.png" />
         <Image x:Key="image_icon_lock" x:Shared="False" Source="Resources/icon_lock.png" />
         <Image x:Key="image_icon_lock_open" x:Shared="False" Source="Resources/icon_lock_open.png" />
         <Image x:Key="image_icon_pause" x:Shared="False" Source="Resources/icon_pause.png" />
@@ -392,6 +393,10 @@
         <Image x:Key="image_icon_zoom_in" x:Shared="False" Source="Resources/icon_zoom_in.png" />
         <Image x:Key="image_icon_zoom_out" x:Shared="False" Source="Resources/icon_zoom_out.png" />
 
+        <Style TargetType="Button" x:Key="s_IconButtonCut" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="ToolTip" Value="Cut blocks at cursor (C)" />
+            <Setter Property="Content" Value="{StaticResource image_icon_cut}" />
+        </Style>
         <Style TargetType="Button" x:Key="s_IconButtonLock" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Lock" />
             <!-- defining the image inline here does not work for multiple buttons, so we use an unshared reference, see: http://stackoverflow.com/a/6356936 -->

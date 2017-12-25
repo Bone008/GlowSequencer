@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Xml.Linq;
 
 namespace GlowSequencer.ViewModel
 {
@@ -519,6 +520,53 @@ namespace GlowSequencer.ViewModel
 
                         SelectBlock(BlockViewModel.FromModel(this, independentBlock), CompositionMode.Additive);
                     }
+                }
+            }
+        }
+
+        public void SplitBlocksAtCursor()
+        {
+            var blocksUnderCursor = SelectedBlocks
+                    .AsEnumerable()
+                    .Where(bvm => bvm.StartTime < CursorPosition && bvm.EndTime > CursorPosition)
+                    .Select(bvm => bvm.GetModel())
+                    .ToList();
+
+            using (ActionManager.CreateTransaction(false))
+            {
+                foreach (var block in blocksUnderCursor)
+                {
+                    // Generate 2 exact copies of the block.
+                    XElement serializedBlock = block.ToXML();
+                    var newBlockLeft = Block.FromXML(model, serializedBlock);
+                    var newBlockRight = Block.FromXML(model, serializedBlock);
+
+                    // Adjust ramps if necessary.
+                    if (block is RampBlock ramp)
+                    {
+                        GloColor splitColor = ramp.GetColorAtTime(CursorPosition, ramp.Tracks[0]);
+                        ((RampBlock)newBlockLeft).EndColor = splitColor;
+                        ((RampBlock)newBlockRight).StartColor = splitColor;
+                    }
+                    else if (block is LoopBlock)
+                    {
+                        // TODO: Loops are unsupported when splitting.
+                        continue;
+                    }
+
+                    // Generically adjust times.
+                    newBlockLeft.Duration = CursorPosition - block.StartTime;
+                    newBlockRight.StartTime = CursorPosition;
+                    newBlockRight.Duration = block.Duration - (CursorPosition - block.StartTime);
+
+                    // Replace in collections.
+                    int index = model.Blocks.IndexOf(block);
+                    ActionManager.RecordReplace(model.Blocks, index, newBlockLeft);
+                    ActionManager.RecordInsert(model.Blocks, index + 1, newBlockRight);
+
+                    SelectBlock(BlockViewModel.FromModel(this, block), CompositionMode.Subtractive);
+                    SelectBlock(BlockViewModel.FromModel(this, newBlockLeft), CompositionMode.Additive);
+                    SelectBlock(BlockViewModel.FromModel(this, newBlockRight), CompositionMode.Additive);
                 }
             }
         }

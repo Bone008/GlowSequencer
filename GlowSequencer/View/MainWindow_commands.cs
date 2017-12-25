@@ -35,6 +35,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand UngroupBlocks = Make(new InputGestureCollection { new KeyGesture(Key.G, ModifierKeys.Control | ModifierKeys.Shift) });
         public static readonly RoutedCommand MoveToFront = Make();
         public static readonly RoutedCommand MoveToBack = Make();
+        public static readonly RoutedCommand SplitAtCursor = Make();
 
         public static readonly RoutedCommand SwapRampColors = Make();
         public static readonly RoutedCommand TrackAffiliationAll = Make();
@@ -84,7 +85,8 @@ namespace GlowSequencer.View
 
         private void CommandBinding_CanExecuteIfSelected(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = (sequencer.SelectedBlocks.Count > 0);
+            // Hacky fix: This is called for the first time before "main" is initialized ...
+            e.CanExecute = main != null && (sequencer.SelectedBlocks.Count > 0);
         }
 
         private void CommandBinding_CanExecuteIfClipboard(object sender, CanExecuteRoutedEventArgs e)
@@ -471,6 +473,10 @@ namespace GlowSequencer.View
             sequencer.DeleteSelectedBlocks();
         }
 
+        private void CommandBinding_ExecuteSplitAtCursor(object sender, ExecutedRoutedEventArgs e)
+        {
+            sequencer.SplitBlocksAtCursor();
+        }
 
         private void CommandBinding_ExecuteAddTrack(object sender, ExecutedRoutedEventArgs e)
         {

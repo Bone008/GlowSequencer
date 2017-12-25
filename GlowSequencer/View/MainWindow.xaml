@@ -52,11 +52,13 @@
         <CommandBinding Command="local:SequencerCommands.ZoomIn" Executed="CommandBinding_ExecuteZoomIn"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomOut" Executed="CommandBinding_ExecuteZoomOut"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.About" Executed="CommandBinding_ExecuteAbout"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.SplitAtCursor" Executed="CommandBinding_ExecuteSplitAtCursor"  CanExecute="CommandBinding_CanExecuteIfSelected" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="I" Modifiers="Control" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
         <KeyBinding Key="I" Modifiers="Control+Shift" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
         <KeyBinding Key="C" Modifiers="Control+Shift" Command="local:SequencerCommands.ConvertToType" />
+        <KeyBinding Key="C" Command="local:SequencerCommands.SplitAtCursor" />
     </Window.InputBindings>
 
     <Grid DataContext="{Binding CurrentDocument}">
@@ -343,6 +345,8 @@
                         Command="local:SequencerCommands.ZoomIn"/>
                 <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonZoomOut}"
                         Command="local:SequencerCommands.ZoomOut"/>
+                <Button Margin="2,5,2,0" Style="{StaticResource s_IconButtonCut}"
+                        Command="local:SequencerCommands.SplitAtCursor"/>
 
                 <ToggleButton Margin="2,5,2,0" Height="30" ToolTip="Snap to grid (hold Ctrl to toggle)"
                         IsChecked="{Binding Source={StaticResource vm_Global}, Path=EnableSnapping}">
