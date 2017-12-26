@@ -62,7 +62,7 @@ namespace GlowSequencer.ViewModel
         {
             get
             {
-                if(CanStartTransfer) return null;
+                if (CanStartTransfer) return null;
                 if (!File.Exists(persistedSettings.AerotechAppExePath))
                     return "The path to Aerotech's Glo-Ultimate App is not valid!";
                 else
@@ -102,7 +102,12 @@ namespace GlowSequencer.ViewModel
                 throw new InvalidOperationException("cannot start transfer at this point");
 
             SaveSettings();
-            activeTransfer = new TransferToEquipmentController(persistedSettings, _selectedTracks.Select(t => t.GetModel()).ToList(), main.CurrentDocument.Playback);
+
+            var tracksList = _selectedTracks
+                    .Select(t => t.GetModel())
+                    .OrderBy(t => t.GetIndex())
+                    .ToList();
+            activeTransfer = new TransferToEquipmentController(persistedSettings, tracksList, main.CurrentDocument.Playback);
             transferCancel = new CancellationTokenSource();
             Notify(nameof(IsTransferIdle));
             Notify(nameof(IsTransferInProgress));
