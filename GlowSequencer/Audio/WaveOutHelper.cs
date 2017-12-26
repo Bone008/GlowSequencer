@@ -34,7 +34,7 @@ namespace GlowSequencer.Audio
                     return Math.Max(rawLeft, rawRight) / (float)0xFFFF;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.WriteLine("Failed to read volume: " + e);
                 return 1.0f; // Don't let this break the entire application.

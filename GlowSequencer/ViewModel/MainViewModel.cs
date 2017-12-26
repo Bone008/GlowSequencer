@@ -9,7 +9,7 @@ namespace GlowSequencer.ViewModel
 {
     public class MainViewModel : Observable
     {
-        
+
         // full path of the file the sequence was last saved to, null if not saved yet
         private string _currentFilePath = null;
 
@@ -55,7 +55,7 @@ namespace GlowSequencer.ViewModel
         public bool OpenDocument(string file)
         {
             Timeline timeline = FileSerializer.LoadFromFile(file);
-            if(timeline == null)
+            if (timeline == null)
             {
                 OpenNewDocument();
                 return false;
@@ -96,7 +96,7 @@ namespace GlowSequencer.ViewModel
 
             return FileSerializer.ExportGloFiles(CurrentDocument.GetModel(), filename + "_", ".glo", startTime);
         }
-        
+
 
         private SequencerViewModel MakeSequencerViewModel(Timeline timeline)
         {

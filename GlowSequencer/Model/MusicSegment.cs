@@ -52,7 +52,7 @@ namespace GlowSequencer.Model
             get { return _readonly; }
             private set { SetProperty(ref _readonly, value); }
         }
-        
+
         public bool IsDefault
         {
             get { return _timeline.DefaultMusicSegment == this; }

@@ -42,7 +42,7 @@ namespace GlowSequencer.ViewModel
                     throw new NotImplementedException("unknown block type: " + model.GetType().Name);
 
                 s_viewModelCache[model] = vm;
-                
+
             }
 
             return vm;
@@ -87,12 +87,12 @@ namespace GlowSequencer.ViewModel
             });
 
             // subscribe to track height changes
-            if(globalParams != null)
-            ForwardPropertyEvents(nameof(globalParams.TrackDisplayHeight), globalParams, NotifyTrackRelatedProperties);
+            if (globalParams != null)
+                ForwardPropertyEvents(nameof(globalParams.TrackDisplayHeight), globalParams, NotifyTrackRelatedProperties);
         }
 
         public string TypeLabel => _typeLabel;
-        
+
         public float StartTime { get { return model.StartTime; } set { sequencer.ActionManager.RecordSetProperty(model, m => m.StartTime, value); } }
         public float Duration { get { return model.Duration; } set { sequencer.ActionManager.RecordSetProperty(model, m => m.Duration, value); } }
 
@@ -102,7 +102,7 @@ namespace GlowSequencer.ViewModel
             set { Duration = value - StartTime; }
         }
         public float EndTimeOccupied => model.GetEndTimeOccupied();
-        
+
         public virtual MusicSegmentViewModel SegmentContext
         {
             // note that null is no longer an expected value for SegmentContext
@@ -110,7 +110,7 @@ namespace GlowSequencer.ViewModel
             set { sequencer.ActionManager.RecordSetProperty(model, m => m.SegmentContext, (value == null ? null : value.GetModel())); }
             //set { model.SegmentContext = (value == null ? null : value.GetModel()); }
         }
-        
+
         public double DisplayOffset => StartTime * sequencer.TimePixelScale;
         public double DisplayTopOffset => model.Tracks.Min(t => t.GetIndex()) * globalParams.TrackDisplayHeight;
         public double DisplayWidth => Duration * sequencer.TimePixelScale;
@@ -146,7 +146,7 @@ namespace GlowSequencer.ViewModel
                 // all tracks are a continuous piece --> no need to clip at all
                 if (geom == null)
                     return null;
-                
+
                 makeRect(start, indices[indices.Length - 1] + 1);
                 return geom;
             }

@@ -23,7 +23,7 @@ namespace GlowSequencer.Model
 
         public virtual IEnumerable<string> ToGloLines()
         {
-            if(Name != null)
+            if (Name != null)
                 yield return string.Join(", ", Enumerable.Repeat(Name, 1).Concat(GetArguments().Select(arg => arg.ToString())));
         }
     }
@@ -50,7 +50,7 @@ namespace GlowSequencer.Model
                 foreach (string line in subCmd.ToGloLines())
                     yield return prefix + line;
 
-            if(TerminatorName != null)
+            if (TerminatorName != null)
                 yield return TerminatorName;
         }
     }

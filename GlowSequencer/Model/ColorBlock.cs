@@ -16,7 +16,7 @@ namespace GlowSequencer.Model
 
         public GloColor RenderedColor1 { get { return (ColorModifierFn != null ? ColorModifierFn(StartTime, _color) : _color); } }
         public GloColor RenderedColor2 { get { return (ColorModifierFn != null ? ColorModifierFn(GetEndTime(), _color) : _color); } }
-        
+
         public ColorBlock(Timeline timeline, params Track[] tracks)
             : base(timeline, tracks)
         {

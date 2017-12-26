@@ -71,7 +71,7 @@ namespace GlowSequencer.View
                 children.Add(CreateWaveFormVisual());
             this.InvalidateVisual();
         }
-        
+
         private DrawingVisual CreateWaveFormVisual()
         {
             DrawingVisual drawingVisual = new DrawingVisual();
@@ -145,7 +145,7 @@ namespace GlowSequencer.View
             //    }
             //}
         }
-        
+
         private double SampleToYPosition(float value)
         {
             return (1 - sampleTransformerFunc(value)) * halfHeight;

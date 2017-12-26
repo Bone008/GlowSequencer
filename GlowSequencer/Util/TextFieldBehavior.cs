@@ -72,7 +72,7 @@ namespace GlowSequencer.Util
             if (e.Key == Key.Enter || e.Key == Key.Return)
             {
                 BindingExpression be = ((TextBox)sender).GetBindingExpression(TextBox.TextProperty);
-                if(be != null)
+                if (be != null)
                     be.UpdateSource();
             }
         }
@@ -80,7 +80,7 @@ namespace GlowSequencer.Util
         private static void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             // checking for the Tab key specifically is kind of evil, but it works pretty well
-            if(Keyboard.IsKeyDown(Key.Tab))
+            if (Keyboard.IsKeyDown(Key.Tab))
                 ((TextBox)sender).SelectAll();
         }
     }

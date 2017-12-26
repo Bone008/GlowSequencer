@@ -42,7 +42,7 @@ namespace GlowSequencer.Audio
             // It does not make sense to have more pixels than samples.
             if (scaleInPixelsPerSecond > sampleRate)
                 scaleInPixelsPerSecond = sampleRate;
-            
+
             List<float> minValues = new List<float>();
             List<float> maxValues = new List<float>();
 
@@ -50,7 +50,7 @@ namespace GlowSequencer.Audio
             long alignIntervalFactor = (long)Math.Round(sampleRate / scaleInPixelsPerSecond);
             long firstSample = (long)(fromTime * sampleRate) / alignIntervalFactor * alignIntervalFactor;
             long lastSample = (long)Math.Ceiling(toTime * sampleRate);
-            
+
             sampleProvider.Seek((int)firstSample * channels);
 
             long c = firstSample; // global sample counter (for all channels)

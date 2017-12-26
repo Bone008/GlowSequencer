@@ -89,7 +89,7 @@ namespace GlowSequencer.View
             if (e.NewValue as MusicSegmentViewModel != null)
                 ((MusicSegmentViewModel)e.NewValue).PropertyChanged += grid.MusicSegment_PropertyChanged;
         }
-        
+
         private void MusicSegment_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MusicSegmentViewModel.Bpm)

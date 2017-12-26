@@ -27,7 +27,7 @@ namespace GlowSequencer.Util
             bool v = (bool)value;
 
             // if uninverted and false || inverted and true --> set to null
-            if(v == (param == "inverted"))
+            if (v == (param == "inverted"))
                 return null;
             else
                 return Binding.DoNothing;

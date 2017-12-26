@@ -152,7 +152,7 @@ namespace GlowSequencer.Model
             foreach (XElement childElem in element.ElementOrEmpty("children").Elements("block"))
                 _children.Add(Block.FromXML(timeline, childElem));
 
-            
+
             CompatibilityHooks.GroupBlockFromXML(this);
         }
     }

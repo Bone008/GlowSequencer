@@ -539,7 +539,8 @@ namespace GlowSequencer.View
                 double mousePosPixels = mouseEvent.GetPosition(timeline).X;
                 zoomCenterSeconds = mousePosPixels / sequencer.TimePixelScale;
                 offsetFromEdgePixels = mouseEvent.GetPosition(trackBlocksScroller).X;
-            } else
+            }
+            else
             {
                 zoomCenterSeconds = sequencer.CursorPosition;
                 double cursorFromEdgePixels = sequencer.CursorPixelPosition - trackBlocksScroller.HorizontalOffset;
@@ -617,7 +618,7 @@ namespace GlowSequencer.View
                         GetIsSnapping()
                             ? SnapValue(sequencer.CursorPosition + sequencer.GridInterval * 0.51f)
                             : sequencer.CursorPosition + 2 / sequencer.TimePixelScale;
-                    
+
                     if (sequencer.CursorPixelPosition > timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
                         sequencer.CursorPixelPosition = timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX;
                     ScrollCursorIntoView();
@@ -729,7 +730,7 @@ namespace GlowSequencer.View
                     return;
                 main.OpenDocument(files[0]);
             }
-            else if(IsSingleMusicFile(files))
+            else if (IsSingleMusicFile(files))
             {
                 DoMusicLoadFile(files[0]);
             }
@@ -796,12 +797,13 @@ namespace GlowSequencer.View
 
         private void UpdateLowerAreaCollapse()
         {
-            if(selectionDataContent.Visibility == Visibility.Collapsed && visualizationContent.Visibility == Visibility.Collapsed)
+            if (selectionDataContent.Visibility == Visibility.Collapsed && visualizationContent.Visibility == Visibility.Collapsed)
             {
                 lowerAreaHeightWhileCollapsing = lowerAreaRow.Height;
                 lowerAreaRow.Height = new GridLength(0);
                 lowerAreaRow.MaxHeight = 0;
-            } else
+            }
+            else
             {
                 lowerAreaRow.Height = lowerAreaHeightWhileCollapsing;
                 lowerAreaRow.MaxHeight = double.PositiveInfinity;
@@ -810,7 +812,7 @@ namespace GlowSequencer.View
 
         private void selectionCursor_TargetUpdated(object sender, DataTransferEventArgs e)
         {
-            if(e.Property == Canvas.LeftProperty && sequencer.Playback.IsPlaying)
+            if (e.Property == Canvas.LeftProperty && sequencer.Playback.IsPlaying)
             {
                 ScrollCursorIntoViewForPlayback();
             }

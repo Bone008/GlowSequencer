@@ -193,7 +193,7 @@ namespace GlowSequencer.ViewModel
                 double padding = (viewRight - viewLeft) / 4; // use the width of one viewport on each side as padding
                 double waveformLeft = Math.Max(0, viewLeft - padding);
                 double waveformRight = viewRight + padding;
-                
+
                 Waveform result = await WaveformGenerator.CreateWaveformAsync(audioFile.CreateStream(),
                                                                               sequencer.TimePixelScale,
                                                                               waveformLeft,

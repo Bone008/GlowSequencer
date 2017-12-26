@@ -23,7 +23,7 @@ namespace GlowSequencer.View
         public AboutWindow()
         {
             InitializeComponent();
-            
+
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             versionText.Text = "v" + version.ToString();
         }

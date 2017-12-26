@@ -41,7 +41,7 @@ namespace GlowSequencer
                     Timeline timeline = Timeline.FromXML(doc.Root.Element("timeline"), Path.GetDirectoryName(filename));
                     return timeline;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     // Probably some old file format that we no longer support.
                     System.Windows.MessageBox.Show("An error occured while parsing \"" + filename + "\"!" + Environment.NewLine + Environment.NewLine + e.GetType().FullName + ": " + e.Message,

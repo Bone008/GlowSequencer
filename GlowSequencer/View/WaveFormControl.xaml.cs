@@ -33,7 +33,7 @@ namespace GlowSequencer.View
             DependencyProperty.Register("TimeScale", typeof(float), typeof(WaveformControl), new PropertyMetadata(1.0f));
         public static readonly DependencyProperty PixelOffsetProperty =
             DependencyProperty.Register("PixelOffset", typeof(double), typeof(WaveformControl), new PropertyMetadata(0.0));
-        
+
         public bool IsLoading
         {
             get { return (bool)GetValue(IsLoadingProperty); }

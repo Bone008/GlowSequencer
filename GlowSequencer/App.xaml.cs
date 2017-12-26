@@ -36,8 +36,8 @@ namespace GlowSequencer
             if (e.Args.Length > 0)
             {
                 string fileToLoad = e.Args[0];
-                
-                var main = (ViewModel.MainViewModel) Resources["vm_Main"];
+
+                var main = (ViewModel.MainViewModel)Resources["vm_Main"];
                 main.OpenDocument(fileToLoad);
             }
         }

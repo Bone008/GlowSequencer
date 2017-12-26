@@ -114,7 +114,7 @@ namespace GlowSequencer.ViewModel
                         var result = System.Windows.MessageBox.Show("Moving associated blocks by " + delta.ToString("0.##") + "s would cut them off at the beginning, causing a loss of information." + Environment.NewLine + Environment.NewLine +
                                                                     "Are you sure you want to continue?",
                                                                     "Warning", System.Windows.MessageBoxButton.YesNo);
-                        if(result != System.Windows.MessageBoxResult.Yes)
+                        if (result != System.Windows.MessageBoxResult.Yes)
                         {
                             t.Rollback();
                             return;

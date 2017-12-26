@@ -20,7 +20,7 @@ namespace GlowSequencer.Util
             if (value is TimeSpan)
             {
                 TimeSpan ts = (TimeSpan)value;
-                
+
                 string sign = "";
                 if (ts < TimeSpan.Zero)
                 {
@@ -30,7 +30,7 @@ namespace GlowSequencer.Util
 
                 bool compactMode = (parameter != null && bool.Parse(parameter.ToString()));
 
-                if(compactMode)
+                if (compactMode)
                     return sign + (ts.TotalMinutes >= 1 ? Math.Floor(ts.TotalMinutes) + ":" : "") + (ts.Seconds + (ts.Milliseconds / 1000.0)).ToString("0.###", CultureInfo.InvariantCulture);
                 else
                     return sign + Math.Floor(ts.TotalMinutes).ToString("00") + ":" + ts.ToString("ss\\.fff");
@@ -44,7 +44,7 @@ namespace GlowSequencer.Util
             if (value == null)
                 return null;
 
-            if(value is string)
+            if (value is string)
             {
                 string str = ((string)value).Replace(" ", "");
                 Match m = Regex.Match(str, @"^(-)?(?:(\d+):)?(\d+(?:\.\d+)?)$"); // accepts 'mm:ss.fff', 'mm:ss', 'ss.fff' and 'ss' format, as well as negatives

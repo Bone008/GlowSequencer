@@ -9,10 +9,10 @@ namespace GlowSequencer.Model
 {
     public class RampBlock : Block
     {
-        
+
         private GloColor _startColor = GloColor.Black;
         private GloColor _endColor = GloColor.White;
-        
+
         public GloColor StartColor { get { return _startColor; } set { SetProperty(ref _startColor, value); } }
         public GloColor EndColor { get { return _endColor; } set { SetProperty(ref _endColor, value); } }
 

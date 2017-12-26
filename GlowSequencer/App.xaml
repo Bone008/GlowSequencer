@@ -54,7 +54,7 @@
         <Style x:Key="s_FormLabelNarrow" TargetType="Label" BasedOn="{StaticResource s_FormLabel}">
             <Setter Property="Width" Value="100"/>
         </Style>
-        
+
         <Style x:Key="s_FormRow" TargetType="StackPanel">
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="Margin" Value="0,2" />
@@ -370,7 +370,7 @@
             <ContentPresenter/>
         </ControlTemplate>
 
-        
+
         <!-- Style for buttons with an icon as their primary content. -->
         <Style TargetType="ButtonBase" x:Key="s_IconButton">
             <Setter Property="Height" Value="30" />

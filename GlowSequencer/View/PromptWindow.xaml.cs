@@ -46,7 +46,7 @@ namespace GlowSequencer.View
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if(!AllowEmpty && string.IsNullOrEmpty(PromptText))
+            if (!AllowEmpty && string.IsNullOrEmpty(PromptText))
             {
                 MessageBox.Show(this, "Please enter a value.");
                 return;
