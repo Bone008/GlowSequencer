@@ -73,10 +73,9 @@ namespace GlowSequencer.View
         }
         private void StartAutomagically_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (!(bool)((ToggleButton)sender).IsChecked)
-                startExternalCb.IsChecked = false;
-
-            startExternalCb.IsEnabled = (bool)((ToggleButton)sender).IsChecked;
+            bool isChecked = ((ToggleButton)sender).IsChecked ?? false;
+            if (!isChecked)
+                noStartMusicCb.IsChecked = true;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
