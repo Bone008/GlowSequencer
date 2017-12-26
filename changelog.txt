@@ -4,6 +4,12 @@
 
 Changelog
 
+v1.6.0 (2017-12-26):
+- Added "Cut blocks at cursor" command
+- Added option to start internal music after transfer
+- Improved design of "Transfer to equipment" window
+- Generate unique *.glo file names for transfer to allow easier detection of failures
+
 v1.5.0 (2017-11-24):
 - Added live color visualization of tracks
 - Added rudimentary "pop out" feature for bottom panes to allow more vertical space
