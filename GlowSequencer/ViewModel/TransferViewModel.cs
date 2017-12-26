@@ -35,7 +35,8 @@ namespace GlowSequencer.ViewModel
         public int DelayBetweenKeys { get { return persistedSettings.DelayBetweenKeys; } set { persistedSettings.DelayBetweenKeys = value; Notify(); } }
 
 
-        public bool StartMusicAfterTransfer { get { return persistedSettings.StartMusicAfterTransfer; } set { persistedSettings.StartMusicAfterTransfer = value; Notify(); } }
+        public bool StartInternalMusicAfterTransfer { get { return persistedSettings.StartInternalMusicAfterTransfer; } set { persistedSettings.StartInternalMusicAfterTransfer = value; Notify(); } }
+        public bool StartExternalMusicAfterTransfer { get { return persistedSettings.StartExternalMusicAfterTransfer; } set { persistedSettings.StartExternalMusicAfterTransfer = value; Notify(); } }
         public int MusicWindowProcessId
         {
             get
@@ -56,7 +57,7 @@ namespace GlowSequencer.ViewModel
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks { get { return main.CurrentDocument.Tracks; } }
         public ICollection<TrackViewModel> SelectedTracks { get { return _selectedTracks; } set { SetProperty(ref _selectedTracks, value); } }
 
-        public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && (!StartMusicAfterTransfer || MusicWindowProcessId != 0); } }
+        public bool CanStartTransfer { get { return File.Exists(persistedSettings.AerotechAppExePath) && (!StartExternalMusicAfterTransfer || MusicWindowProcessId != 0); } }
         public string CanStartTransferReason
         {
             get
@@ -80,7 +81,7 @@ namespace GlowSequencer.ViewModel
             this.main = main;
             ForwardPropertyEvents(nameof(main.CurrentDocument), main, nameof(AllTracks));
             ForwardPropertyEvents(nameof(AerotechAppExePath), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
-            ForwardPropertyEvents(nameof(StartMusicAfterTransfer), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
+            ForwardPropertyEvents(nameof(StartExternalMusicAfterTransfer), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
             ForwardPropertyEvents(nameof(MusicWindowProcessId), this, nameof(CanStartTransfer), nameof(CanStartTransferReason));
 
             LoadSettings();
@@ -101,8 +102,7 @@ namespace GlowSequencer.ViewModel
                 throw new InvalidOperationException("cannot start transfer at this point");
 
             SaveSettings();
-
-            activeTransfer = new TransferToEquipmentController(persistedSettings, _selectedTracks.Select(t => t.GetModel()).ToList());
+            activeTransfer = new TransferToEquipmentController(persistedSettings, _selectedTracks.Select(t => t.GetModel()).ToList(), main.CurrentDocument.Playback);
             transferCancel = new CancellationTokenSource();
             Notify(nameof(IsTransferIdle));
             Notify(nameof(IsTransferInProgress));

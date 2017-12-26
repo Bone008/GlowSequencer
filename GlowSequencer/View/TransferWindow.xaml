@@ -62,16 +62,16 @@
                     <StackPanel Orientation="Vertical">
                         <RadioButton GroupName="musicaction" Margin="0,3" Content="Do not start music." Name="noStartMusicCb"
                                      IsChecked="True" />
-                        <!-- TODO: Implement start internal music feature. -->
-                        <!--<RadioButton GroupName="musicaction" Margin="0,3">
+                        <RadioButton GroupName="musicaction" Margin="0,3"
+                                     IsChecked="{Binding StartInternalMusicAfterTransfer}">
                             <TextBlock>Start internal music at <Run Text="{Binding ExportStartTime, Converter={StaticResource conv_TimeSpanToString}}"/>.</TextBlock>
-                        </RadioButton>-->
+                        </RadioButton>
                         <RadioButton GroupName="musicaction" Margin="0,3" Content="Start external music."
-                                     IsChecked="{Binding StartMusicAfterTransfer}" />
+                                     IsChecked="{Binding StartExternalMusicAfterTransfer}" />
                     </StackPanel>
                 </StackPanel>
 
-                <DockPanel Margin="0,5" Visibility="{Binding StartMusicAfterTransfer, Converter={StaticResource conv_BoolToVisibility}}">
+                <DockPanel Margin="0,5" Visibility="{Binding StartExternalMusicAfterTransfer, Converter={StaticResource conv_BoolToVisibility}}">
                     <Label DockPanel.Dock="Left" Style="{StaticResource s_FormLabelWide}">External music program:</Label>
                     <TextBlock DockPanel.Dock="Bottom" Margin="0,5,0,0" TextWrapping="Wrap">
                         In the external program, the spacebar will be pressed at the same time as the sequence is started.

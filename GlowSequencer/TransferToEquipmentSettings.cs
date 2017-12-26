@@ -10,34 +10,20 @@ namespace GlowSequencer
 {
     public class TransferToEquipmentSettings
     {
-        public string AerotechAppExePath { get; set; }
-        public TimeSpan ExportStartTime { get; set; }
-        public bool StartAutomagicallyAfterTransfer { get; set; }
-        public bool CloseProgramAfterTransfer { get; set; }
+        public string AerotechAppExePath { get; set; } = "";
+        public TimeSpan ExportStartTime { get; set; } = TimeSpan.Zero;
+        public bool StartAutomagicallyAfterTransfer { get; set; } = false;
+        public bool CloseProgramAfterTransfer { get; set; } = false;
 
-        public bool StartMusicAfterTransfer { get; set; }
-        public string MusicWindowProcessName { get; set; }
-        public string MusicWindowTitle { get; set; }
+        public bool StartInternalMusicAfterTransfer { get; set; } = false;
+        public bool StartExternalMusicAfterTransfer { get; set; } = false;
+        public string MusicWindowProcessName { get; set; } = null;
+        public string MusicWindowTitle { get; set; } = null;
 
         // advanced settings
-        public int DelayBetweenKeys { get; set; }
-        public int DelayForUpload { get; set; }
-        public int DelayBeforeStart { get; set; }
-
-        public TransferToEquipmentSettings()
-        {
-            // default values
-            AerotechAppExePath = "";
-            ExportStartTime = TimeSpan.Zero;
-            StartAutomagicallyAfterTransfer = true;
-            CloseProgramAfterTransfer = true;
-            StartMusicAfterTransfer = false;
-            MusicWindowProcessName = null;
-            MusicWindowTitle = null;
-            DelayBetweenKeys = 150;
-            DelayForUpload = 1500;
-            DelayBeforeStart = 5000;
-        }
+        public int DelayBetweenKeys { get; set; } = 150;
+        public int DelayForUpload { get; set; } = 1500;
+        public int DelayBeforeStart { get; set; } = 5000;
 
         public Process GetMusicProcess()
         {
@@ -72,8 +58,9 @@ namespace GlowSequencer
                 new XElement("export-start-time", ExportStartTime),
                 new XElement("start-post-transfer-automagically", StartAutomagicallyAfterTransfer),
                 new XElement("close-program-after-transfer", CloseProgramAfterTransfer),
+                new XElement("start-internal-music", StartInternalMusicAfterTransfer),
                 new XElement("start-music",
-                    new XAttribute("enabled", StartMusicAfterTransfer),
+                    new XAttribute("enabled", StartExternalMusicAfterTransfer),
                     new XElement("process-name", MusicWindowProcessName),
                     new XElement("window-title", MusicWindowTitle)
                 ),
@@ -91,9 +78,10 @@ namespace GlowSequencer
             ExportStartTime = (TimeSpan?)elem.Element("export-start-time") ?? ExportStartTime;
             StartAutomagicallyAfterTransfer = (bool?)elem.Element("start-post-transfer-automagically") ?? StartAutomagicallyAfterTransfer;
             CloseProgramAfterTransfer = (bool?)elem.Element("close-program-after-transfer") ?? CloseProgramAfterTransfer;
+            StartInternalMusicAfterTransfer = (bool?)elem.Element("start-internal-music") ?? StartInternalMusicAfterTransfer;
 
             XElement startMusicElem = elem.Element("start-music") ?? new XElement("start-music");
-            StartMusicAfterTransfer = (bool?)startMusicElem.Attribute("enabled") ?? StartMusicAfterTransfer;
+            StartExternalMusicAfterTransfer = (bool?)startMusicElem.Attribute("enabled") ?? StartExternalMusicAfterTransfer;
             MusicWindowProcessName = (string)startMusicElem.Element("process-name") ?? MusicWindowProcessName;
             MusicWindowTitle = (string)startMusicElem.Element("window-title") ?? MusicWindowTitle;
 

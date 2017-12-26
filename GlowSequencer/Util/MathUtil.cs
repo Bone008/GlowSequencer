@@ -64,5 +64,17 @@ namespace GlowSequencer.Util
         {
             return Math.Min(max, Math.Max(min, value));
         }
+
+        /// <summary>Returns the smaller of two TimeSpan values.</summary>
+        public static TimeSpan Min(TimeSpan x, TimeSpan y)
+        {
+            return (x < y ? x : y);
+        }
+
+        /// <summary>Returns the larger of two TimeSpan values.</summary>
+        public static TimeSpan Max(TimeSpan x, TimeSpan y)
+        {
+            return (x > y ? x : y);
+        }
     }
 }

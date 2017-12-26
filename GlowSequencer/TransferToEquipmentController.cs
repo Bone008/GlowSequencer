@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using WindowsInput;
 using WindowsInput.Native;
+using GlowSequencer.Model;
+using GlowSequencer.ViewModel;
 
 namespace GlowSequencer
 {
@@ -21,18 +23,20 @@ namespace GlowSequencer
 
         private const string GLO_SUBDIR_NAME = "___tmp";
 
-        private TransferToEquipmentSettings settings;
-        private IList<Model.Track> tracks;
+        private readonly TransferToEquipmentSettings settings;
+        private readonly IList<Track> tracks;
+        private readonly PlaybackViewModel playback;
 
         // runtime state
         private Process aerotechProc = null;
         private InputSimulator inputSim = null;
         private bool success = false;
 
-        public TransferToEquipmentController(TransferToEquipmentSettings settings, IList<Model.Track> tracks)
+        public TransferToEquipmentController(TransferToEquipmentSettings settings, IList<Track> tracks, PlaybackViewModel playback)
         {
             this.settings = settings;
             this.tracks = tracks;
+            this.playback = playback;
         }
 
         public async Task RunTransferAsync(IProgress<float> progress, IProgress<string> log, CancellationToken cancel)
@@ -116,21 +120,29 @@ namespace GlowSequencer
                     Press(VirtualKeyCode.F5);
                 }
 
-                if (settings.StartMusicAfterTransfer)
+                if (settings.ExportStartTime < TimeSpan.Zero &&
+                    (settings.StartInternalMusicAfterTransfer || settings.StartExternalMusicAfterTransfer))
+                {
+                    log.Report("Waiting " + -settings.ExportStartTime + " before starting music ...");
+                    await Task.Delay(-settings.ExportStartTime, cancel);
+                }
+
+                if (settings.StartInternalMusicAfterTransfer)
+                {
+                    log.Report("Starting internal music ...");
+                    float time = (float)MathUtil.Max(settings.ExportStartTime, TimeSpan.Zero).TotalSeconds;
+                    bool result = playback.PlayAt(time);
+                    if (!result)
+                        log.Report("Error: Could not start internal music!");
+                }
+
+                if (settings.StartExternalMusicAfterTransfer)
                 {
                     Process musicProc = settings.GetMusicProcess();
                     if (musicProc == null)
-                        log.Report("External music program not running, unable to start music!");
+                        log.Report("Error: External music program not running, unable to start music!");
                     else
                     {
-                        if (settings.ExportStartTime < TimeSpan.Zero)
-                        {
-                            log.Report("Waiting " + -settings.ExportStartTime + " before starting music ...");
-                            await Task.Delay(-settings.ExportStartTime, cancel);
-
-                            //log.Report(DateTime.Now.ToString("HH:mm:ss.ffff"));
-                        }
-
                         log.Report("Starting music ...");
                         SetForegroundWindow(musicProc.MainWindowHandle);
                         inputSim.Keyboard.KeyPress(VirtualKeyCode.SPACE);
