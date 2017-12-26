@@ -37,9 +37,6 @@ namespace GlowSequencer
 
         public async Task RunTransferAsync(IProgress<float> progress, IProgress<string> log, CancellationToken cancel)
         {
-            for (int i = 0; i < 100; i++) {
-                log.Report(GenerateRandomString(3));
-                await Task.Delay(20); }
             try
             {
                 if (tracks.Count > 0)
