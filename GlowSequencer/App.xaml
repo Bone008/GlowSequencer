@@ -314,7 +314,9 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <CheckBox IsChecked="{Binding AffiliationState}" IsEnabled="{Binding CanModify}"  Content="{Binding Track.Label}" Margin="0,0,5,0" />
+                                        <CheckBox IsChecked="{Binding AffiliationState}" IsEnabled="{Binding CanModify}"  Content="{Binding Track.Label}" Margin="0,0,5,0"
+                                                  MouseEnter="GenericPropertiesTrackCheckBox_MouseEnter"
+                                                  GotMouseCapture="GenericPropertiesTrackCheckBox_GotMouseCapture" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

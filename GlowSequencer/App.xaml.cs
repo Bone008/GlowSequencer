@@ -31,6 +31,7 @@ namespace GlowSequencer
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            EventManager.RegisterClassHandler(typeof(Window), Window.PreviewMouseUpEvent, new MouseButtonEventHandler(OnPreviewMouseUp));
             Application.Current.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 
             if (e.Args.Length > 0)
@@ -59,25 +60,58 @@ namespace GlowSequencer
                 e.Handled = true;
         }
 
-
-        //private void TrackCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
-        //{
-        //    CheckBox cb = (CheckBox)sender;
-        //    return;
-        //    var data = cb.DataContext as Tuple<ViewModel.TrackViewModel, bool, ViewModel.BlockViewModel>;
-
-        //    if (cb.IsChecked.Value)
-        //        data.Item3.AddToTrack(data.Item1);
-        //    else if (data.Item3.GetModel().Tracks.Count > 1)
-        //        data.Item3.RemoveFromTrack(data.Item1);
-        //    else
-        //        cb.IsChecked = true;
-        //}
-
         private void AnyContextMenu_Opening(object sender, ContextMenuEventArgs e)
         {
             //UIElement placementTarget = ((ContextMenu)sender).PlacementTarget;
             //FocusManager.SetFocusedElement(placementTarget, placementTarget);
+        }
+        
+        private void OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                draggingTargetState = null;
+        }
+        
+        // Tracks dragging over checkboxes. Null means that no dragging is currently active.
+        private bool? draggingTargetState = null;
+
+        // Allow click & drag to select multiple checkboxes. Adapted from https://stackoverflow.com/a/28402504.
+        // TODO: This should be moved into some more specific place like a UserControl.
+        private void GenericPropertiesTrackCheckBox_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var checkbox = (CheckBox)sender;
+            if (e.LeftButton == MouseButtonState.Pressed && draggingTargetState != null && GetThreeStateAfterClick(checkbox.IsChecked) == draggingTargetState)
+            {
+                checkbox.IsChecked = draggingTargetState;
+            }
+            else if(e.LeftButton == MouseButtonState.Released)
+            {
+                // This is a hacky improvement because the global OnPreviewMouseUp does not catch mouse releases
+                // if they happen outside of a window. So we reset the dragging state here as well.
+                draggingTargetState = null;
+            }
+        }
+
+        private void GenericPropertiesTrackCheckBox_GotMouseCapture(object sender, MouseEventArgs e)
+        {
+            var checkbox = (CheckBox)sender;
+            bool targetState = GetThreeStateAfterClick(checkbox.IsChecked);
+            checkbox.IsChecked = targetState;
+
+            // Only allow dragging if data binding did not interfere with state change.
+            if (checkbox.IsChecked == targetState)
+            {
+                draggingTargetState = checkbox.IsChecked;
+                checkbox.ReleaseMouseCapture(); // allow MouseEnter events for other checkboxes
+            }
+        }
+
+        private static bool GetThreeStateAfterClick(bool? state)
+        {
+            // indeterminate state ==> disabled
+            if (state == null) return false;
+            // invert otherwise
+            return !state.Value;
         }
     }
 }
