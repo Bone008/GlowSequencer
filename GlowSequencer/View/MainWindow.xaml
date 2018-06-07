@@ -215,8 +215,10 @@
 
             <!-- Music Waveform -->
             <local:WaveformControl Grid.Column="2" Grid.Row="1"
-                                   Background="Transparent" MouseWheel="timeline_MouseWheel" PreviewMouseDown="timeline_MouseDown"
-                                   MouseDoubleClick="WaveFormControl_MouseDoubleClick"
+                                   Background="Transparent"
+                                   MouseDown="waveform_MouseDown"
+                                   MouseDoubleClick="waveform_MouseDoubleClick"
+                                   MouseWheel="waveform_MouseWheel"
                                    PreviewKeyDown="TimelineScrollers_PreviewKeyDown"
                                    PixelOffset="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset}"
                                    TimeScale="{Binding TimePixelScale}"

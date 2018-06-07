@@ -432,6 +432,10 @@ namespace GlowSequencer.View
             return MathUtil.Clamp(MathUtil.FloorToInt(offset / globalParams.TrackDisplayHeight), 0, sequencer.Tracks.Count - 1);
         }
 
+        private void waveform_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            CommandBinding_ExecuteMusicLoadFile(sender, null);
+        }
 
         private void timeline_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -440,24 +444,37 @@ namespace GlowSequencer.View
                 sequencer.SelectedTrack = sequencer.Tracks[trackIndex];
         }
 
-        private void timeline_MouseDown(object sender, MouseButtonEventArgs e)
+        private void waveform_MouseDown(object sender, MouseButtonEventArgs e) => HandleTimelineMouseDown(e, false);
+        private void timeline_MouseDown(object sender, MouseButtonEventArgs e) => HandleTimelineMouseDown(e, true);
+
+        private void HandleTimelineMouseDown(MouseButtonEventArgs e, bool adjustSelection)
         {
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
                 return;
 
-            sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
+            var originalDataContext = ((FrameworkElement)e.OriginalSource).DataContext;
+            if (!(originalDataContext is BlockViewModel))
+            {
+                sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
+            }
 
-            var originalDC = ((FrameworkElement)e.OriginalSource).DataContext;
-            // if the click happened on an empty part of the timeline and we are not delta selecting, select nothing
-            if (CompositionModeFromKeyboard() == CompositionMode.None
-                && (originalDC == null || !(originalDC is BlockViewModel)))
+            // If the click happened on an empty part of the timeline and we are not delta selecting, select nothing.
+            if (adjustSelection
+                && CompositionModeFromKeyboard() == CompositionMode.None
+                && !(originalDataContext is BlockViewModel))
             {
                 sequencer.SelectBlock(null, CompositionMode.None);
             }
 
-            selectionDragStart = e.GetPosition(timeline);
-            timeline.CaptureMouse();
-            //Debug.WriteLine("d: set start point");
+            // This guard prevents a stuck selection box from appearing after double-clicking the waveform
+            // and closing the "Load music file" dialog, which triggers this event afterwards despite the
+            // mouse already having been released.
+            if (e.ClickCount == 1)
+            {
+                selectionDragStart = e.GetPosition(timeline);
+                timeline.CaptureMouse();
+                //Debug.WriteLine("d: set start point");
+            }
         }
 
         private void timeline_MouseMove(object sender, MouseEventArgs e)
@@ -514,6 +531,7 @@ namespace GlowSequencer.View
             }
         }
 
+        private void waveform_MouseWheel(object sender, MouseWheelEventArgs e) => timeline_MouseWheel(sender, e);
         private void timeline_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (Keyboard.Modifiers == ModifierKeys.Control)
@@ -693,12 +711,6 @@ namespace GlowSequencer.View
 
             MessageBox.Show(binding.ResolvedSourcePropertyName + " = " + binding.ResolvedSource);
 #endif
-        }
-
-
-        private void WaveFormControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            CommandBinding_ExecuteMusicLoadFile(sender, null);
         }
 
         // support for dropping in files
