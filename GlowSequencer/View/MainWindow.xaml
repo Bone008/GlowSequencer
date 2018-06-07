@@ -216,7 +216,7 @@
             <!-- Music Waveform -->
             <local:WaveformControl Grid.Column="2" Grid.Row="1"
                                    Background="Transparent"
-                                   MouseDown="waveform_MouseDown"
+                                   MouseUp="waveform_MouseUp"
                                    MouseDoubleClick="waveform_MouseDoubleClick"
                                    MouseWheel="waveform_MouseWheel"
                                    PreviewKeyDown="TimelineScrollers_PreviewKeyDown"

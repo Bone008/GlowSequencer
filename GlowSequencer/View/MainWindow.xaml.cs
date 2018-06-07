@@ -444,37 +444,27 @@ namespace GlowSequencer.View
                 sequencer.SelectedTrack = sequencer.Tracks[trackIndex];
         }
 
-        private void waveform_MouseDown(object sender, MouseButtonEventArgs e) => HandleTimelineMouseDown(e, false);
-        private void timeline_MouseDown(object sender, MouseButtonEventArgs e) => HandleTimelineMouseDown(e, true);
+        private void waveform_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
+                return;
+            sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
+        }
 
-        private void HandleTimelineMouseDown(MouseButtonEventArgs e, bool adjustSelection)
+        private void timeline_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
                 return;
 
-            var originalDataContext = ((FrameworkElement)e.OriginalSource).DataContext;
-            if (!(originalDataContext is BlockViewModel))
-            {
-                sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
-            }
-
             // If the click happened on an empty part of the timeline and we are not delta selecting, select nothing.
-            if (adjustSelection
-                && CompositionModeFromKeyboard() == CompositionMode.None
+            var originalDataContext = ((FrameworkElement)e.OriginalSource).DataContext;
+            if (CompositionModeFromKeyboard() == CompositionMode.None
                 && !(originalDataContext is BlockViewModel))
             {
                 sequencer.SelectBlock(null, CompositionMode.None);
             }
 
-            // This guard prevents a stuck selection box from appearing after double-clicking the waveform
-            // and closing the "Load music file" dialog, which triggers this event afterwards despite the
-            // mouse already having been released.
-            if (e.ClickCount == 1)
-            {
-                selectionDragStart = e.GetPosition(timeline);
-                timeline.CaptureMouse();
-                //Debug.WriteLine("d: set start point");
-            }
+            selectionDragStart = e.GetPosition(timeline);
         }
 
         private void timeline_MouseMove(object sender, MouseEventArgs e)
@@ -504,6 +494,7 @@ namespace GlowSequencer.View
                 {
                     selectionIsDragging = true;
                     selectionCompositionMode = CompositionModeFromKeyboard();
+                    timeline.CaptureMouse();
                     e.Handled = true;
                 }
             }
@@ -511,13 +502,8 @@ namespace GlowSequencer.View
 
         private void timeline_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            // for some reason this has to be above the if statement below
-            // ReleaseMouseCapture() apparently instantly calls the MouseMove handler or sth
-            if (selectionDragStart != null)
-            {
-                selectionDragStart = null;
-                timeline.ReleaseMouseCapture();
-            }
+            selectionDragStart = null;
+
             if (selectionIsDragging)
             {
                 selectionIsDragging = false;
@@ -527,6 +513,18 @@ namespace GlowSequencer.View
                 {
                     sequencer.ConfirmSelectionDelta();
                     selectionCompositionMode = CompositionMode.None;
+                }
+
+                timeline.ReleaseMouseCapture();
+            }
+            else
+            {
+                // If it was a non-dragging click on empty space, move the cursor.
+                var originalDataContext = ((FrameworkElement)e.OriginalSource).DataContext;
+                if ((e.ChangedButton == MouseButton.Left || e.ChangedButton == MouseButton.Right)
+                    && !(originalDataContext is BlockViewModel))
+                {
+                    sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
                 }
             }
         }
