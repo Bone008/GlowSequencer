@@ -183,8 +183,14 @@ namespace GlowSequencer.View
             }
             else
             {
+                // Make sure the clicked block is always selected before dragging.
                 if (!block.IsSelected)
-                    sequencer.SelectBlock(block, CompositionModeFromKeyboard());
+                {
+                    var compositionMode = CompositionModeFromKeyboard();
+                    if (compositionMode == CompositionMode.Subtractive)
+                        compositionMode = CompositionMode.None;
+                    sequencer.SelectBlock(block, compositionMode);
+                }
 
                 // record initial information
                 dragMode = mode;
@@ -249,8 +255,14 @@ namespace GlowSequencer.View
             FrameworkElement controlBlock = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
             BlockViewModel block = (control.DataContext as BlockViewModel);
 
+            // Make sure the clicked block is always selected before dragging.
             if (!block.IsSelected)
-                sequencer.SelectBlock(block, CompositionModeFromKeyboard());
+            {
+                var compositionMode = CompositionModeFromKeyboard();
+                if (compositionMode == CompositionMode.Subtractive)
+                    compositionMode = CompositionMode.None;
+                sequencer.SelectBlock(block, compositionMode);
+            }
 
             var localPos = e.Manipulators.First().GetPosition(controlBlock);
 
