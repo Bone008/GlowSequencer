@@ -35,6 +35,8 @@ namespace GlowSequencer.View
             public float initialDuration;
         }
 
+        private const int SELECTION_DRAG_INITIAL_THRESHOLD = 10;
+        private const int DRAG_INITIAL_THRESHOLD = 10;
         private const int DRAG_START_END_PIXEl_WINDOW = 6;
         private const int DRAG_START_END_PIXEl_WINDOW_TOUCH = 12;
         private const double TIMELINE_CURSOR_PADDING_LEFT_PX = 1;
@@ -50,6 +52,7 @@ namespace GlowSequencer.View
 
         private BlockDragMode dragMode = BlockDragMode.None;
         private Point dragStart = new Point(); // start of the drag, relative to the timeline
+        private bool dragNeedsToOvercomeThreshold = false;
         private int dragTrackBaseline = -1;
         private List<DraggedBlockData> draggedBlocks = null;
 
@@ -186,6 +189,7 @@ namespace GlowSequencer.View
                 // record initial information
                 dragMode = mode;
                 dragStart = e.GetPosition(timeline); // always relative to timeline
+                dragNeedsToOvercomeThreshold = true;
                 dragTrackBaseline = GetTrackIndexFromOffset(dragStart.Y);
                 draggedBlocks = sequencer.SelectedBlocks.Select(b => new DraggedBlockData { block = b, initialDuration = b.Duration, initialStartTime = b.StartTime }).ToList();
 
@@ -261,6 +265,7 @@ namespace GlowSequencer.View
             // record initial information
             dragMode = mode;
             dragStart = e.Manipulators.First().GetPosition(timeline); // always relative to timeline
+            dragNeedsToOvercomeThreshold = true;
             dragTrackBaseline = GetTrackIndexFromOffset(dragStart.Y);
             draggedBlocks = sequencer.SelectedBlocks.Select(b => new DraggedBlockData { block = b, initialDuration = b.Duration, initialStartTime = b.StartTime }).ToList();
 
@@ -304,12 +309,11 @@ namespace GlowSequencer.View
         {
             float deltaT = (float)(delta.X / sequencer.TimePixelScale);
 
-
             DraggedBlockData principalData = draggedBlocks.Single(db => db.block == principal);
 
             // adjust delta according to constraints
             // - grid snapping on the principal
-            // - repect min duration on all blocks
+            // - respect min duration on all blocks
             // - non-negative start time on the earliest block
             float minDurationDelta, minStartTime, snappedStartTime;
             switch (dragMode)
@@ -349,6 +353,16 @@ namespace GlowSequencer.View
                             deltaT = -minStartTime;
                     }
                     break;
+            }
+
+            if (dragNeedsToOvercomeThreshold)
+            {
+                if (Math.Abs(delta.X) < DRAG_INITIAL_THRESHOLD)
+                    // Note that the transaction below will still be created despite the reset,
+                    // but it will be empty as no values are actually changed.
+                    deltaT = 0;
+                else
+                    dragNeedsToOvercomeThreshold = false;
             }
 
             using (sequencer.ActionManager.CreateTransaction())
@@ -490,7 +504,7 @@ namespace GlowSequencer.View
             else if (selectionDragStart != null)
             {
                 Vector delta = e.GetPosition(timeline) - selectionDragStart.Value;
-                if (delta.LengthSquared > 10 * 10)
+                if (delta.LengthSquared >= SELECTION_DRAG_INITIAL_THRESHOLD * SELECTION_DRAG_INITIAL_THRESHOLD)
                 {
                     selectionIsDragging = true;
                     selectionCompositionMode = CompositionModeFromKeyboard();
