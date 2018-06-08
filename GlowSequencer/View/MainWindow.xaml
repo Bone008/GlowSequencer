@@ -364,6 +364,7 @@
                             <Setter Property="Canvas.Left" Value="{Binding DisplayOffset}"/>
                             <Setter Property="ClipToBounds" Value="False"/>
                             <EventSetter Event="MouseDown" Handler="Note_MouseDown"/>
+                            <EventSetter Event="MouseUp" Handler="Note_MouseUp"/>
                         </Style>
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>

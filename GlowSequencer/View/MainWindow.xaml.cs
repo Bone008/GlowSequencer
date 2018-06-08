@@ -24,6 +24,10 @@ namespace GlowSequencer.View
     /// </summary>
     public partial class MainWindow : Window
     {
+        private enum ScrollIntoViewMode
+        {
+            Edge, Center, ForPlayback
+        }
         private enum BlockDragMode
         {
             None, Block, Start, End
@@ -630,7 +634,7 @@ namespace GlowSequencer.View
                     else
                     {
                         sequencer.CursorPosition = 0;
-                        ScrollCursorIntoView();
+                        ScrollCursorIntoView(ScrollIntoViewMode.Edge);
                     }
                     e.Handled = true;
                     break;
@@ -643,7 +647,7 @@ namespace GlowSequencer.View
                     else
                     {
                         sequencer.CursorPixelPosition = timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX;
-                        ScrollCursorIntoView();
+                        ScrollCursorIntoView(ScrollIntoViewMode.Edge);
                     }
                     e.Handled = true;
                     break;
@@ -653,7 +657,7 @@ namespace GlowSequencer.View
                             ? SnapValue(sequencer.CursorPosition - sequencer.GridInterval * 0.51f)
                             : sequencer.CursorPosition - 2 / sequencer.TimePixelScale;
 
-                    ScrollCursorIntoView();
+                    ScrollCursorIntoView(ScrollIntoViewMode.Edge);
                     e.Handled = true;
                     break;
                 case Key.Right:
@@ -664,7 +668,7 @@ namespace GlowSequencer.View
 
                     if (sequencer.CursorPixelPosition > timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
                         sequencer.CursorPixelPosition = timeline.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX;
-                    ScrollCursorIntoView();
+                    ScrollCursorIntoView(ScrollIntoViewMode.Edge);
                     e.Handled = true;
                     break;
                 case Key.Up:
@@ -680,19 +684,33 @@ namespace GlowSequencer.View
             }
         }
 
-        private void ScrollCursorIntoView()
+        private void ScrollCursorIntoView(ScrollIntoViewMode mode)
         {
-            if (sequencer.CursorPixelPosition < trackBlocksScroller.HorizontalOffset + TIMELINE_CURSOR_PADDING_LEFT_PX)
-                trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - TIMELINE_CURSOR_PADDING_LEFT_PX);
-            else if (sequencer.CursorPixelPosition > trackBlocksScroller.HorizontalOffset + trackBlocksScroller.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
-                trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - trackBlocksScroller.ActualWidth + TIMELINE_CURSOR_PADDING_RIGHT_PX);
-        }
+            double scrollPos = trackBlocksScroller.HorizontalOffset;
+            double cursorPos = sequencer.CursorPixelPosition;
+            double viewportWidth = trackBlocksScroller.ActualWidth;
+            bool offToLeft = (cursorPos < scrollPos + TIMELINE_CURSOR_PADDING_LEFT_PX);
+            bool offToRight = (cursorPos > scrollPos + viewportWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX);
 
-        // same as above, but jumps further ahead when scrolling to the right
-        private void ScrollCursorIntoViewForPlayback()
-        {
-            if (sequencer.CursorPixelPosition > trackBlocksScroller.HorizontalOffset + trackBlocksScroller.ActualWidth - TIMELINE_CURSOR_PADDING_RIGHT_PX)
-                trackBlocksScroller.ScrollToHorizontalOffset(sequencer.CursorPixelPosition - 0.3 * trackBlocksScroller.ActualWidth + TIMELINE_CURSOR_PADDING_RIGHT_PX);
+            switch (mode)
+            {
+                case ScrollIntoViewMode.Edge:
+                    if (offToLeft)
+                        trackBlocksScroller.ScrollToHorizontalOffset(cursorPos - TIMELINE_CURSOR_PADDING_LEFT_PX);
+                    else if (offToRight)
+                        trackBlocksScroller.ScrollToHorizontalOffset(cursorPos - viewportWidth + TIMELINE_CURSOR_PADDING_RIGHT_PX);
+                    break;
+                case ScrollIntoViewMode.Center:
+                    if (offToLeft || offToRight)
+                        trackBlocksScroller.ScrollToHorizontalOffset(cursorPos - 0.5 * viewportWidth);
+                    break;
+                case ScrollIntoViewMode.ForPlayback:
+                    if (offToRight)
+                        trackBlocksScroller.ScrollToHorizontalOffset(cursorPos - 0.3 * viewportWidth);
+                    break;
+                default:
+                    throw new ArgumentException("unknown scroll mode!", nameof(mode));
+            }
         }
 
         private void ScrollSelectedTrackIntoView()
@@ -851,23 +869,30 @@ namespace GlowSequencer.View
         {
             if (e.Property == Canvas.LeftProperty && sequencer.Playback.IsPlaying)
             {
-                ScrollCursorIntoViewForPlayback();
+                ScrollCursorIntoView(ScrollIntoViewMode.ForPlayback);
             }
         }
 
 
         private void Note_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
             {
                 var noteVm = (sender as FrameworkElement)?.DataContext as NoteViewModel;
-                sequencer.CursorPosition = noteVm.TimeSeconds;
-                ScrollCursorIntoView();
+                SequencerCommands.EditNote.Execute(noteVm, sender as UIElement);
+            }
+        }
 
-                if (e.ClickCount == 2)
-                {
-                    SequencerCommands.EditNote.Execute(noteVm, sender as UIElement);
-                }
+        private void Note_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                // Note that this has to be in MouseUp, otherwise there is a quirk
+                // when changing the scroll position leads to the mouse no longer being over the note
+                // and the MouseUp of the waveform changing the cursor position again.
+                var noteVm = (sender as FrameworkElement)?.DataContext as NoteViewModel;
+                sequencer.CursorPosition = noteVm.TimeSeconds;
+                ScrollCursorIntoView(ScrollIntoViewMode.Edge);
             }
         }
     }

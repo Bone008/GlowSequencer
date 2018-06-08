@@ -475,6 +475,7 @@ namespace GlowSequencer.View
             }
 
             sequencer.SelectBlocks(pastedBlocks.Select(b => BlockViewModel.FromModel(sequencer, b)), CompositionMode.None);
+            ScrollCursorIntoView(ScrollIntoViewMode.Center);
         }
 
         private void CommandBinding_ExecuteDelete(object sender, ExecutedRoutedEventArgs e)
