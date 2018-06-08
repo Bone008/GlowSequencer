@@ -596,8 +596,14 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteEditNote(object sender, ExecutedRoutedEventArgs e)
         {
             NoteViewModel noteVm = (NoteViewModel)e.Parameter;
-            // TODO implement note editing
-            MessageBox.Show($"now editing note ${noteVm.Label} at ${noteVm.TimeSeconds}");
+
+            var win = new PromptWindow("Enter marker name");
+            win.Owner = this;
+            win.PromptText = noteVm.Label;
+            if(win.ShowDialog() == true)
+            {
+                noteVm.Label = win.PromptText;
+            }
         }
 
         private void CommandBinding_ExecuteDeleteNote(object sender, ExecutedRoutedEventArgs e)

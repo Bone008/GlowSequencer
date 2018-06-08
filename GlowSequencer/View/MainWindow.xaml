@@ -348,7 +348,7 @@
             </Canvas>
             <!-- Slightly shifted downwards, but invisible to mouse events other than clicking on the notes themselves. -->
             <Canvas Name="notesCanvas"
-                    Grid.Column="2" Margin="0,0,0,-8"
+                    Grid.Column="2" Margin="0,0,0,-7"
                     ClipToBounds="True">
                 <ItemsControl ItemsSource="{Binding Notes.Notes}"
                               Canvas.Left="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset, Converter={StaticResource conv_Invert}}"
@@ -363,6 +363,7 @@
                         <Style TargetType="ContentPresenter">
                             <Setter Property="Canvas.Left" Value="{Binding DisplayOffset}"/>
                             <Setter Property="ClipToBounds" Value="False"/>
+                            <EventSetter Event="MouseDown" Handler="Note_MouseDown"/>
                         </Style>
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>
@@ -374,11 +375,11 @@
                                         <MenuItem Header=" _Delete" Command="local:SequencerCommands.DeleteNote" CommandParameter="{Binding}"/>
                                     </ContextMenu>
                                 </Grid.ContextMenu>
-                                <TextBlock Margin="-8,0,0,16" Padding="3,2"
+                                <TextBlock Margin="-8,0,0,16" Padding="3,1"
                                            VerticalAlignment="Bottom"
-                                           Foreground="#FF005B3E" Background="#FFACCBC2"
-                                           FontSize="8" Text="{Binding Label}" />
-                                <Path VerticalAlignment="Bottom" Fill="#FF005B3E" Data="M -8,0 L 8,0 L 0,16 Z" />
+                                           Foreground="White" Background="#4CAF50"
+                                           FontSize="10" Text="{Binding Label}" />
+                                <Path VerticalAlignment="Bottom" Fill="#2E7D32" Data="M -8,0 L 8,0 L 0,16 Z" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

@@ -854,5 +854,21 @@ namespace GlowSequencer.View
                 ScrollCursorIntoViewForPlayback();
             }
         }
+
+
+        private void Note_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var noteVm = (sender as FrameworkElement)?.DataContext as NoteViewModel;
+                sequencer.CursorPosition = noteVm.TimeSeconds;
+                ScrollCursorIntoView();
+
+                if (e.ClickCount == 2)
+                {
+                    SequencerCommands.EditNote.Execute(noteVm, sender as UIElement);
+                }
+            }
+        }
     }
 }
