@@ -11,6 +11,9 @@ namespace GlowSequencer.ViewModel
     public class VisualizationViewModel : Observable
     {
         private readonly SequencerViewModel sequencer;
+        private bool _isEnabled = true;
+
+        public bool IsEnabled { get { return _isEnabled; } set { SetProperty(ref _isEnabled, value); } }
 
         //public double StageWidth => 300;
         //public double StageHeight => 200;
@@ -22,10 +25,29 @@ namespace GlowSequencer.ViewModel
             VisualizedTracks = sequencer.GetModel().Tracks.Select(t => new VisualizedTrackViewModel(t));
 
             ForwardPropertyEvents(nameof(sequencer.CursorPosition), sequencer, OnCursorPositionChanged, true);
+            ForwardPropertyEvents(nameof(IsEnabled), this, OnIsEnabledChanged);
+        }
+
+        private void OnIsEnabledChanged()
+        {
+            if (IsEnabled)
+            {
+                OnCursorPositionChanged();
+            }
+            else
+            {
+                foreach(var vm in VisualizedTracks)
+                {
+                    vm.CurrentColor = Colors.Black;
+                }
+            }
         }
 
         private void OnCursorPositionChanged()
         {
+            if (!IsEnabled)
+                return;
+
             float now = sequencer.CursorPosition;
             List<Block> blockCandidates = ((IEnumerable<Block>)sequencer.GetModel().Blocks)
                 .Where(b => b.IsTimeInOccupiedRange(now))

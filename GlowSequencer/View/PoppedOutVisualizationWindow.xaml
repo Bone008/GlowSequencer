@@ -9,6 +9,13 @@
         DataContext="{StaticResource vm_Main}">
     <Grid DataContext="{Binding CurrentDocument}">
         <local:VisualizationControl DataContext="{Binding Visualization}"/>
+        <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Background="Black"
+                Margin="0,0,30,0" Height="30" Padding="5,0">
+            <CheckBox IsChecked="{Binding Visualization.IsEnabled}"
+                      VerticalAlignment="Center"
+                      Foreground="White">Enabled</CheckBox>
+        </Border>
         <Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
                     Width="30" Height="30" FontSize="9"
                     Click="ButtonPopIn_Click">

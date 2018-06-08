@@ -389,12 +389,10 @@
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" ResizeDirection="Columns"/>
             <Grid Name="visualizationContent" Grid.Column="2">
                 <DockPanel>
-                    <Label Name="visLabel" DockPanel.Dock="Top" FontWeight="Bold">Visualization</Label>
+                    <CheckBox DockPanel.Dock="Top" IsChecked="{Binding Visualization.IsEnabled}" Margin="5" FontWeight="Bold"
+                              ToolTip="Click to enable/disable visualization.">Visualization</CheckBox>
                     <local:VisualizationControl DataContext="{Binding Visualization}"/>
                 </DockPanel>
-                <!--<Button HorizontalAlignment="Right" VerticalAlignment="Top"
-                    Width="{Binding ElementName=visLabel, Path=ActualHeight}"
-                    Height="{Binding ElementName=visLabel, Path=ActualHeight}">X</Button>-->
                 <Button HorizontalAlignment="Right" VerticalAlignment="Bottom"
                     Width="30" Height="30" FontSize="9"
                     Click="ButtonPopOut2_Click">

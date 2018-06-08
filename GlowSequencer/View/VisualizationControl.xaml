@@ -9,54 +9,58 @@
              d:DesignHeight="250" d:DesignWidth="500"
              d:DataContext="{d:DesignInstance vm:VisualizationViewModel, IsDesignTimeCreatable=True}"
              Background="Black">
-    <ScrollViewer Name="scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-        <!--<Border DockPanel.Dock="Bottom" Padding="3" Background="LightGray">
-            <StackPanel Orientation="Horizontal">
-                <Label>Prop size:</Label>
-                <Slider Orientation="Horizontal" Width="100"/>
-                <Label Margin="10,0,0,0">Labels:</Label>
-                <ComboBox SelectedIndex="1" Width="100">
-                    <ComboBoxItem>Off</ComboBoxItem>
-                    <ComboBoxItem>Automatic</ComboBoxItem>
-                    <ComboBoxItem>White</ComboBoxItem>
-                    <ComboBoxItem>Black</ComboBoxItem>
-                </ComboBox>
-                <Button Margin="10,0,0,0" Width="80">Save layout</Button>
-                <Button Margin="10,0,0,0" Width="80">Reset layout</Button>
-            </StackPanel>
-        </Border>-->
-        <ItemsControl Height="{Binding ElementName=scroller, Path=ViewportHeight}" Padding="10" ItemsSource="{Binding VisualizedTracks}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type vm:VisualizedTrackViewModel}">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,5,2">
-                        <Label Margin="0,0,5,0" Padding="0"
-                               HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
-                               Width="55" FontSize="11" Foreground="White"
-                               Content="{Binding Label}"/>
-                        <Path Grid.Column="2" Margin="1" VerticalAlignment="Center"
-                                        Stroke="LightGray" StrokeThickness="3"
-                                        Data="M52.25,520.75c-9,0-16-4-16-14s8-15,8-15l-4.5-201c0,0-0.75-15.5-1.75-21.75S15,140.5,15,126.75
-		                                    s1.75-31.5,3.5-39.5s14.25-58,15.125-60s-1.458-6.417,1.542-9.25s11.999-7.667,19.333-7.667S70.833,15.167,73.833,18
-		                                    s0.667,7.25,1.542,9.25s13.375,52,15.125,60S94,113,94,126.75S72,262.75,71,269s-1.75,21.75-1.75,21.75l-4.5,201c0,0,8,5,8,15
-		                                    s-7,14-16,14">
-                            <Path.Fill>
-                                <SolidColorBrush Color="{Binding CurrentColor, Converter={StaticResource conv_MoreVibrantColor}}"/>
-                            </Path.Fill>
-                            <Path.LayoutTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleX="0.2" ScaleY="0.2"/>
-                                    <RotateTransform Angle="-90"/>
-                                </TransformGroup>
-                            </Path.LayoutTransform>
-                        </Path>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+    <Grid>
+        <ScrollViewer Name="scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+            <!--<Border DockPanel.Dock="Bottom" Padding="3" Background="LightGray">
+                <StackPanel Orientation="Horizontal">
+                    <Label>Prop size:</Label>
+                    <Slider Orientation="Horizontal" Width="100"/>
+                    <Label Margin="10,0,0,0">Labels:</Label>
+                    <ComboBox SelectedIndex="1" Width="100">
+                        <ComboBoxItem>Off</ComboBoxItem>
+                        <ComboBoxItem>Automatic</ComboBoxItem>
+                        <ComboBoxItem>White</ComboBoxItem>
+                        <ComboBoxItem>Black</ComboBoxItem>
+                    </ComboBox>
+                    <Button Margin="10,0,0,0" Width="80">Save layout</Button>
+                    <Button Margin="10,0,0,0" Width="80">Reset layout</Button>
+                </StackPanel>
+            </Border>-->
+            <ItemsControl Height="{Binding ElementName=scroller, Path=ViewportHeight}" Padding="10" ItemsSource="{Binding VisualizedTracks}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:VisualizedTrackViewModel}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,5,2">
+                            <Label Margin="0,0,5,0" Padding="0"
+                                   HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
+                                   Width="55" FontSize="11" Foreground="White"
+                                   Content="{Binding Label}"/>
+                            <Path Grid.Column="2" Margin="1" VerticalAlignment="Center"
+                                  Stroke="LightGray" StrokeThickness="3"
+                                  Data="M52.25,520.75c-9,0-16-4-16-14s8-15,8-15l-4.5-201c0,0-0.75-15.5-1.75-21.75S15,140.5,15,126.75
+		                              s1.75-31.5,3.5-39.5s14.25-58,15.125-60s-1.458-6.417,1.542-9.25s11.999-7.667,19.333-7.667S70.833,15.167,73.833,18
+		                              s0.667,7.25,1.542,9.25s13.375,52,15.125,60S94,113,94,126.75S72,262.75,71,269s-1.75,21.75-1.75,21.75l-4.5,201c0,0,8,5,8,15
+		                              s-7,14-16,14">
+                                <Path.Fill>
+                                    <SolidColorBrush Color="{Binding CurrentColor, Converter={StaticResource conv_MoreVibrantColor}}"/>
+                                </Path.Fill>
+                                <Path.LayoutTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="0.2" ScaleY="0.2"/>
+                                        <RotateTransform Angle="-90"/>
+                                    </TransformGroup>
+                                </Path.LayoutTransform>
+                            </Path>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Rectangle Visibility="{Binding IsEnabled, Converter={StaticResource conv_BoolToVisibility}, ConverterParameter=inverted}" Fill="#CC000000"/>
+    </Grid>
 </UserControl>
