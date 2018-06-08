@@ -331,6 +331,38 @@
                 </Line>
             </Canvas>
 
+            <Canvas Name="notesCanvas"
+                    Grid.Column="2" Margin="0,0,0,-8"
+                    ClipToBounds="True">
+                <ItemsControl ItemsSource="{Binding Notes.Notes}"
+                              Canvas.Left="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset, Converter={StaticResource conv_Invert}}"
+                              Canvas.Bottom="0"
+                              Width="{Binding TimelineWidth}" Height="30">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding DisplayOffset}"/>
+                            <Setter Property="ClipToBounds" Value="False"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:NoteViewModel}">
+                            <Grid Height="30" ToolTip="{Binding Description}">
+                                <TextBlock Margin="-8,0,0,16" Padding="3,2"
+                                           VerticalAlignment="Bottom"
+                                           Foreground="#FF005B3E" Background="#FFACCBC2"
+                                           FontSize="8" Text="{Binding Label}" />
+                                <Path VerticalAlignment="Bottom" Fill="#FF005B3E" Data="M -8,0 L 8,0 L 0,16 Z" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Canvas>
+
             <StackPanel Orientation="Vertical" Grid.Column="3" Grid.Row="1" Grid.RowSpan="3"
                         Background="Transparent" MouseWheel="timeline_MouseWheel">
                 <Slider Orientation="Vertical" HorizontalAlignment="Center"

@@ -43,6 +43,7 @@ namespace GlowSequencer.ViewModel
         public SelectionProperties SelectionData { get; private set; }
         public PlaybackViewModel Playback { get; private set; }
         public VisualizationViewModel Visualization { get; private set; }
+        public NotesViewModel Notes { get; private set; }
 
         public ReadOnlyContinuousCollection<MusicSegmentViewModel> MusicSegments { get; private set; }
         public ReadOnlyContinuousCollection<TrackViewModel> Tracks { get; private set; }
@@ -132,6 +133,7 @@ namespace GlowSequencer.ViewModel
             ActiveMusicSegment = MusicSegments[model.DefaultMusicSegment.GetIndex()];
             Playback = new PlaybackViewModel(this);
             Visualization = new VisualizationViewModel(this);
+            Notes = new NotesViewModel(this);
 
             if (model.MusicFileName != null)
                 Playback.LoadFileAsync(model.MusicFileName).Forget();

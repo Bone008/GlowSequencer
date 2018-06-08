@@ -101,7 +101,10 @@
     <Compile Include="Audio\Waveform.cs" />
     <Compile Include="Audio\WaveformGenerator.cs" />
     <Compile Include="Audio\WaveOutHelper.cs" />
+    <Compile Include="Model\Note.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
+    <Compile Include="ViewModel\NotesViewModel.cs" />
+    <Compile Include="ViewModel\NoteViewModel.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
     <Compile Include="ViewModel\VisualizedTrackViewModel.cs" />
     <Compile Include="View\PoppedOutVisualizationWindow.xaml.cs">

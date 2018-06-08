@@ -18,6 +18,7 @@ namespace GlowSequencer.Model
 
         public ObservableCollection<Block> Blocks { get; private set; }
         public ObservableCollection<Track> Tracks { get; private set; }
+        public ObservableCollection<Note> Notes { get; private set; } // TODO serialize this
 
         /// <summary>Name of an audio file containing music. Should be a relative path if possible.
         /// Can be null if no in-app music is desired.</summary>
@@ -39,6 +40,7 @@ namespace GlowSequencer.Model
         {
             Blocks = new ObservableCollection<Block>();
             Tracks = new ObservableCollection<Track>();
+            Notes = new ObservableCollection<Note>();
             MusicSegments = new ObservableCollection<MusicSegment>();
             MusicSegments.Add(MusicSegment.CreateStandard(this)); // this is ALWAYS here, even when loading from XML
 
@@ -111,6 +113,10 @@ namespace GlowSequencer.Model
                 .AddChild(new ColorBlock(this, Tracks[0]) { StartTime = 0, Duration = 1.25f, Color = GloColor.FromRGB(0, 0, 255), SegmentContext = MusicSegments[0] }, false)
                 .AddChild(new ColorBlock(this, Tracks[0]) { StartTime = 1.5f, Duration = 1.5f, Color = GloColor.FromRGB(0, 255, 255), SegmentContext = MusicSegments[0] }, false)
                 );
+
+            Notes.Add(new Note { Label = "First marker", Time = 0.5f });
+            Notes.Add(new Note { Label = "Second marker", Time = 1.446f });
+            Notes.Add(new Note { Label = "Third marker", Time = 3.0f, Description = "This one is super fancy and has a description.\r\nThe possibilities are endless!" });
         }
 #endif
 
