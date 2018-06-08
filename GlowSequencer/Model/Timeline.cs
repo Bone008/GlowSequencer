@@ -131,7 +131,8 @@ namespace GlowSequencer.Model
                 new XElement("segments", MusicSegments.Skip(1).Select(s => s.ToXML()).ToArray()),
                 new XElement("default-segment", DefaultMusicSegment.GetIndex()),
                 new XElement("tracks", Tracks.Select(g => g.ToXML()).ToArray()),
-                new XElement("blocks", Blocks.Select(b => b.ToXML()).ToArray())
+                new XElement("blocks", Blocks.Select(b => b.ToXML()).ToArray()),
+                new XElement("notes", Notes.Select(n => n.ToXML()).ToArray())
             );
         }
 
@@ -158,6 +159,8 @@ namespace GlowSequencer.Model
                 t.Tracks.Add(track);
             foreach (var block in element.ElementOrEmpty("blocks").Elements("block").Select(g => Block.FromXML(t, g)))
                 t.Blocks.Add(block);
+            foreach (var note in element.ElementOrEmpty("notes").Elements("note").Select(n => Note.FromXML(t, n)))
+                t.Notes.Add(note);
 
             // TODO XML load validation
 

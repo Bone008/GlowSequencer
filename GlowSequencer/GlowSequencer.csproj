@@ -103,6 +103,7 @@
     <Compile Include="Audio\WaveOutHelper.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
+    <Compile Include="Util\StringUtil.cs" />
     <Compile Include="ViewModel\NotesViewModel.cs" />
     <Compile Include="ViewModel\NoteViewModel.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
