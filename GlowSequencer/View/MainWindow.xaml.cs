@@ -37,8 +37,8 @@ namespace GlowSequencer.View
 
         private const int SELECTION_DRAG_INITIAL_THRESHOLD = 10;
         private const int DRAG_INITIAL_THRESHOLD = 10;
-        private const int DRAG_START_END_PIXEl_WINDOW = 6;
-        private const int DRAG_START_END_PIXEl_WINDOW_TOUCH = 12;
+        private const int DRAG_START_END_PIXEL_WINDOW = 6;
+        private const int DRAG_START_END_PIXEL_WINDOW_TOUCH = 12;
         private const double TIMELINE_CURSOR_PADDING_LEFT_PX = 1;
         private const double TIMELINE_CURSOR_PADDING_RIGHT_PX = 3;
 
@@ -127,8 +127,8 @@ namespace GlowSequencer.View
 
 
                     // if the block start/end is already being dragged or if the mouse is at the left or right edge
-                    if (localMouse.X < DRAG_START_END_PIXEl_WINDOW ||
-                        (localMouse.X > controlBlock.ActualWidth - DRAG_START_END_PIXEl_WINDOW && localMouse.X < controlBlock.ActualWidth + DRAG_START_END_PIXEl_WINDOW))
+                    if (localMouse.X < DRAG_START_END_PIXEL_WINDOW ||
+                        (localMouse.X > controlBlock.ActualWidth - DRAG_START_END_PIXEL_WINDOW && localMouse.X < controlBlock.ActualWidth + DRAG_START_END_PIXEL_WINDOW))
                         e.Cursor = Cursors.SizeWE;
 
                     break;
@@ -160,9 +160,9 @@ namespace GlowSequencer.View
             BlockDragMode mode;
             if (e.RightButton == MouseButtonState.Pressed)
                 mode = BlockDragMode.Block;
-            else if (localMouse.X > controlBlock.ActualWidth - DRAG_START_END_PIXEl_WINDOW && localMouse.X < controlBlock.ActualWidth + DRAG_START_END_PIXEl_WINDOW)
+            else if (localMouse.X > controlBlock.ActualWidth - DRAG_START_END_PIXEL_WINDOW && localMouse.X < controlBlock.ActualWidth + DRAG_START_END_PIXEL_WINDOW)
                 mode = BlockDragMode.End;
-            else if (localMouse.X < DRAG_START_END_PIXEl_WINDOW)
+            else if (localMouse.X < DRAG_START_END_PIXEL_WINDOW)
                 mode = BlockDragMode.Start;
             else
                 mode = BlockDragMode.None;
@@ -267,9 +267,9 @@ namespace GlowSequencer.View
             var localPos = e.Manipulators.First().GetPosition(controlBlock);
 
             BlockDragMode mode;
-            if (localPos.X > controlBlock.ActualWidth - DRAG_START_END_PIXEl_WINDOW_TOUCH && localPos.X < controlBlock.ActualWidth + DRAG_START_END_PIXEl_WINDOW_TOUCH)
+            if (localPos.X > controlBlock.ActualWidth - DRAG_START_END_PIXEL_WINDOW_TOUCH && localPos.X < controlBlock.ActualWidth + DRAG_START_END_PIXEL_WINDOW_TOUCH)
                 mode = BlockDragMode.End;
-            else if (localPos.X < DRAG_START_END_PIXEl_WINDOW_TOUCH)
+            else if (localPos.X < DRAG_START_END_PIXEL_WINDOW_TOUCH)
                 mode = BlockDragMode.Start;
             else
                 mode = BlockDragMode.Block;
