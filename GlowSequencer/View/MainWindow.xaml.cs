@@ -463,18 +463,19 @@ namespace GlowSequencer.View
             CommandBinding_ExecuteMusicLoadFile(sender, null);
         }
 
-        private void timeline_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            int trackIndex = MathUtil.FloorToInt(e.GetPosition(timeline).Y / globalParams.TrackDisplayHeight);
-            if (trackIndex >= 0 && trackIndex < sequencer.Tracks.Count)
-                sequencer.SelectedTrack = sequencer.Tracks[trackIndex];
-        }
-
+        private void notesCanvasClickableArea_MouseUp(object sender, MouseButtonEventArgs e) => waveform_MouseUp(sender, e);
         private void waveform_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
                 return;
             sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
+        }
+
+        private void timeline_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            int trackIndex = MathUtil.FloorToInt(e.GetPosition(timeline).Y / globalParams.TrackDisplayHeight);
+            if (trackIndex >= 0 && trackIndex < sequencer.Tracks.Count)
+                sequencer.SelectedTrack = sequencer.Tracks[trackIndex];
         }
 
         private void timeline_MouseDown(object sender, MouseButtonEventArgs e)

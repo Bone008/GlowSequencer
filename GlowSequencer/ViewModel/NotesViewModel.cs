@@ -1,4 +1,5 @@
 ﻿using ContinuousLinq;
+using GlowSequencer.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,17 @@ namespace GlowSequencer.ViewModel
         {
             this.sequencer = sequencer;
             Notes = sequencer.GetModel().Notes.Select(note => new NoteViewModel(sequencer, note));
+        }
+
+        public void AddNoteAtCursor()
+        {
+            Note newNote = new Note { Time = sequencer.CursorPosition };
+            sequencer.ActionManager.RecordAdd(sequencer.GetModel().Notes, newNote);
+        }
+
+        public void DeleteNote(NoteViewModel noteVm)
+        {
+            sequencer.ActionManager.RecordRemove(sequencer.GetModel().Notes, noteVm.GetModel());
         }
     }
 }

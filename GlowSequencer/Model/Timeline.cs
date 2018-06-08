@@ -117,6 +117,7 @@ namespace GlowSequencer.Model
             Notes.Add(new Note { Label = "First marker", Time = 0.5f });
             Notes.Add(new Note { Label = "Second marker", Time = 1.446f });
             Notes.Add(new Note { Label = "Third marker", Time = 3.0f, Description = "This one is super fancy and has a description.\r\nThe possibilities are endless!" });
+            Notes.Add(new Note { Time = 4f });
         }
 #endif
 

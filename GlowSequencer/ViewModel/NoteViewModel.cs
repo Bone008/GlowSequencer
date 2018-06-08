@@ -1,4 +1,5 @@
-﻿using GlowSequencer.Model;
+﻿using System;
+using GlowSequencer.Model;
 
 namespace GlowSequencer.ViewModel
 {
@@ -22,6 +23,11 @@ namespace GlowSequencer.ViewModel
             ForwardPropertyEvents(nameof(model.Description), model, nameof(Description));
             ForwardPropertyEvents(nameof(model.Time), model, nameof(TimeSeconds), nameof(DisplayOffset));
             ForwardPropertyEvents(nameof(sequencer.TimePixelScale), sequencer, nameof(DisplayOffset));
+        }
+
+        public Note GetModel()
+        {
+            return model;
         }
     }
 }

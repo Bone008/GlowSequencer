@@ -48,6 +48,9 @@
         <CommandBinding Command="local:SequencerCommands.MusicLoadFile" Executed="CommandBinding_ExecuteMusicLoadFile"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.MusicClearFile" Executed="CommandBinding_ExecuteMusicClearFile"  CanExecute="CommandBinding_CanExecuteIfMusicFile" />
         <CommandBinding Command="local:SequencerCommands.MusicManageSegments" Executed="CommandBinding_ExecuteMusicManageSegments"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.AddNote" Executed="CommandBinding_ExecuteAddNote"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.EditNote" Executed="CommandBinding_ExecuteEditNote"  CanExecute="CommandBinding_CanExecuteIfNote" />
+        <CommandBinding Command="local:SequencerCommands.DeleteNote" Executed="CommandBinding_ExecuteDeleteNote"  CanExecute="CommandBinding_CanExecuteIfNote" />
         <CommandBinding Command="local:SequencerCommands.PlayPause" Executed="CommandBinding_ExecutePlayPause"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomIn" Executed="CommandBinding_ExecuteZoomIn"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomOut" Executed="CommandBinding_ExecuteZoomOut"  CanExecute="CommandBinding_CanExecuteAlways" />
@@ -227,6 +230,8 @@
                                    IsLoading="{Binding Playback.IsLoading, Mode=OneWay}">
                 <local:WaveformControl.ContextMenu>
                     <ContextMenu>
+                        <MenuItem Header="Add marker" Command="local:SequencerCommands.AddNote" />
+                        <Separator/>
                         <MenuItem Header="_Load music file ..." Command="local:SequencerCommands.MusicLoadFile" />
                         <MenuItem Header="Clear music file" Command="local:SequencerCommands.MusicClearFile" />
                         <Separator/>
@@ -331,6 +336,17 @@
                 </Line>
             </Canvas>
 
+
+            <!-- Aligned with entire area above waveform, only used for click handlers. -->
+            <Canvas Name="notesCanvasClickableArea" Grid.Column="2" Background="Transparent"
+                    MouseUp="notesCanvasClickableArea_MouseUp">
+                <Canvas.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add marker" Command="local:SequencerCommands.AddNote" />
+                    </ContextMenu>
+                </Canvas.ContextMenu>
+            </Canvas>
+            <!-- Slightly shifted downwards, but invisible to mouse events other than clicking on the notes themselves. -->
             <Canvas Name="notesCanvas"
                     Grid.Column="2" Margin="0,0,0,-8"
                     ClipToBounds="True">
@@ -352,6 +368,12 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:NoteViewModel}">
                             <Grid Height="30" ToolTip="{Binding Description}">
+                                <Grid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header=" _Edit ..." Command="local:SequencerCommands.EditNote" CommandParameter="{Binding}" FontWeight="Bold"/>
+                                        <MenuItem Header=" _Delete" Command="local:SequencerCommands.DeleteNote" CommandParameter="{Binding}"/>
+                                    </ContextMenu>
+                                </Grid.ContextMenu>
                                 <TextBlock Margin="-8,0,0,16" Padding="3,2"
                                            VerticalAlignment="Bottom"
                                            Foreground="#FF005B3E" Background="#FFACCBC2"

@@ -51,6 +51,10 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand MusicClearFile = Make();
         public static readonly RoutedCommand MusicManageSegments = Make();
 
+        public static readonly RoutedCommand AddNote = Make(new InputGestureCollection { new KeyGesture(Key.F8) });
+        public static readonly RoutedCommand EditNote = Make();
+        public static readonly RoutedCommand DeleteNote = Make();
+
         public static readonly RoutedCommand PlayPause = Make(new InputGestureCollection { new KeyGesture(Key.Space) });
         public static readonly RoutedCommand ZoomIn = Make(new InputGestureCollection { new KeyGesture(Key.Add, ModifierKeys.Control), new KeyGesture(Key.OemPlus, ModifierKeys.Control) });
         public static readonly RoutedCommand ZoomOut = Make(new InputGestureCollection { new KeyGesture(Key.Subtract, ModifierKeys.Control), new KeyGesture(Key.OemMinus, ModifierKeys.Control) });
@@ -120,6 +124,11 @@ namespace GlowSequencer.View
             ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
             e.CanExecute = (sequencer.SelectedBlocks.Any()
                             && props.TrackAffiliation.Any(aff => aff.CanModify && !aff.AffiliationState.GetValueOrDefault(false)));
+        }
+
+        private void CommandBinding_CanExecuteIfNote(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = (e.Parameter is NoteViewModel);
         }
 
         private void CommandBinding_CanExecuteConvertToType(object sender, CanExecuteRoutedEventArgs e)
@@ -577,6 +586,24 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteMusicManageSegments(object sender, ExecutedRoutedEventArgs e)
         {
             Mastermind.OpenMusicSegmentsWindow();
+        }
+
+        private void CommandBinding_ExecuteAddNote(object sender, ExecutedRoutedEventArgs e)
+        {
+            sequencer.Notes.AddNoteAtCursor();
+        }
+
+        private void CommandBinding_ExecuteEditNote(object sender, ExecutedRoutedEventArgs e)
+        {
+            NoteViewModel noteVm = (NoteViewModel)e.Parameter;
+            // TODO implement note editing
+            MessageBox.Show($"now editing note ${noteVm.Label} at ${noteVm.TimeSeconds}");
+        }
+
+        private void CommandBinding_ExecuteDeleteNote(object sender, ExecutedRoutedEventArgs e)
+        {
+            NoteViewModel noteVm = (NoteViewModel)e.Parameter;
+            sequencer.Notes.DeleteNote(noteVm);
         }
 
         private void CommandBinding_ExecutePlayPause(object sender, ExecutedRoutedEventArgs e)
