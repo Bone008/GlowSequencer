@@ -4,6 +4,19 @@
 
 Changelog
 
+v1.7.0 (2018-06-10):
+- Added ability to add labeled markers to the timeline
+ * Click to set cursor to marker position
+ * Double click to modify label and description
+ * Right click to drag
+ * Find list of all markers in menu bar in order to quickly navigate to them
+- Added "Bright mode" utility to facilitate rehearsals in bright environments
+- Added help dialog to explain important shortcuts
+- Allow realtime visualization to be turned off for smoother playback
+- Allow dragging over checkboxes to more quickly assign multiple tracks to a block
+- Allow selecting all blocks that are assigned to a music segment
+- Other usability improvements and bugfixes
+
 v1.6.0 (2017-12-26):
 - Added "Cut blocks at cursor" command
 - Added option to start internal music after transfer
