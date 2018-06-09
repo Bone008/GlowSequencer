@@ -52,6 +52,7 @@
         <CommandBinding Command="local:SequencerCommands.AddNote" Executed="CommandBinding_ExecuteAddNote"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.EditNote" Executed="CommandBinding_ExecuteEditNote"  CanExecute="CommandBinding_CanExecuteIfNote" />
         <CommandBinding Command="local:SequencerCommands.DeleteNote" Executed="CommandBinding_ExecuteDeleteNote"  CanExecute="CommandBinding_CanExecuteIfNote" />
+        <CommandBinding Command="local:SequencerCommands.NavigateToNote" Executed="CommandBinding_ExecuteNavigateToNote"  CanExecute="CommandBinding_CanExecuteIfNote" />
         <CommandBinding Command="local:SequencerCommands.PlayPause" Executed="CommandBinding_ExecutePlayPause"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomIn" Executed="CommandBinding_ExecuteZoomIn"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomOut" Executed="CommandBinding_ExecuteZoomOut"  CanExecute="CommandBinding_CanExecuteAlways" />
@@ -142,6 +143,27 @@
                     <MenuItem Header="_Fade out inactive blocks" IsCheckable="True" IsChecked="{Binding FadeAwayOtherBlocks}"/>
                 </MenuItem>
                 <MenuItem Header="_Manage segments ..." Command="local:SequencerCommands.MusicManageSegments"/>
+            </MenuItem>
+            <MenuItem Header="M_arker" Name="markerMenuItem">
+                <MenuItem.Resources>
+                    <CollectionViewSource x:Key="notesCollection" Source="{Binding Notes.NotesSorted}"/>
+                </MenuItem.Resources>
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Header" Value="{Binding LabelOrFormattedTime}"/>
+                        <Setter Property="Command" Value="local:SequencerCommands.NavigateToNote"/>
+                        <Setter Property="CommandParameter" Value="{Binding}"/>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+                <MenuItem.ItemsSource>
+                    <CompositeCollection>
+                        <MenuItem Header="_Add marker" Command="local:SequencerCommands.AddNote"/>
+                        <Separator/>
+                        <!-- Note that for some retarded reason, CollectionContainer has no DataContext, so we have to use this workaround. -->
+                        <!-- Also see https://stackoverflow.com/a/19271605. -->
+                        <CollectionContainer Collection="{Binding Source={StaticResource notesCollection}}"/>
+                    </CompositeCollection>
+                </MenuItem.ItemsSource>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_Help" Command="ApplicationCommands.Help"/>

@@ -12,30 +12,31 @@ namespace GlowSequencer.Util
 {
     public class TimeSpanToStringConverter : IValueConverter
     {
+        /// <summary>Programmatic interface to formatting functionality.</summary>
+        public static string Convert(TimeSpan ts, bool compactMode = false)
+        {
+            string sign = "";
+            if (ts < TimeSpan.Zero)
+            {
+                ts = ts.Negate();
+                sign = "-";
+            }
+
+            if (compactMode)
+                return sign + (ts.TotalMinutes >= 1 ? Math.Floor(ts.TotalMinutes) + ":" : "") + (ts.Seconds + (ts.Milliseconds / 1000.0)).ToString("0.###", CultureInfo.InvariantCulture);
+            else
+                return sign + Math.Floor(ts.TotalMinutes).ToString("00") + ":" + ts.ToString("ss\\.fff");
+        }
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (value == null)
                 return null;
-
-            if (value is TimeSpan)
+            if (value is TimeSpan ts)
             {
-                TimeSpan ts = (TimeSpan)value;
-
-                string sign = "";
-                if (ts < TimeSpan.Zero)
-                {
-                    ts = ts.Negate();
-                    sign = "-";
-                }
-
                 bool compactMode = (parameter != null && bool.Parse(parameter.ToString()));
-
-                if (compactMode)
-                    return sign + (ts.TotalMinutes >= 1 ? Math.Floor(ts.TotalMinutes) + ":" : "") + (ts.Seconds + (ts.Milliseconds / 1000.0)).ToString("0.###", CultureInfo.InvariantCulture);
-                else
-                    return sign + Math.Floor(ts.TotalMinutes).ToString("00") + ":" + ts.ToString("ss\\.fff");
+                return Convert(ts, compactMode);
             }
-
             throw new InvalidOperationException("Unsupported type: " + value.GetType().Name);
         }
 

@@ -12,12 +12,17 @@ namespace GlowSequencer.ViewModel
     {
         private readonly SequencerViewModel sequencer;
 
+        // Note that the unsorted variant needs to be used by the main timeline visualization,
+        // otherwise the item collection gets refreshed during dragging, resulting in broken
+        // mouse capture and the DataContext of notes being set to {DisconnectedItem}.
         public ReadOnlyContinuousCollection<NoteViewModel> Notes { get; private set; }
+        public ReadOnlyContinuousCollection<NoteViewModel> NotesSorted { get; private set; }
 
         public NotesViewModel(SequencerViewModel sequencer)
         {
             this.sequencer = sequencer;
             Notes = sequencer.GetModel().Notes.Select(note => new NoteViewModel(sequencer, note));
+            NotesSorted = Notes.OrderBy(note => note.TimeSeconds);
         }
 
         public void AddNoteAtCursor()

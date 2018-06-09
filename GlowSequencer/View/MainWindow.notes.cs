@@ -79,8 +79,7 @@ namespace GlowSequencer.View
                 // when changing the scroll position leads to the mouse no longer being over the note
                 // and the MouseUp of the waveform changing the cursor position again.
                 var noteVm = (sender as FrameworkElement)?.DataContext as NoteViewModel;
-                sequencer.CursorPosition = noteVm.TimeSeconds;
-                ScrollCursorIntoView(ScrollIntoViewMode.Edge);
+                SequencerCommands.NavigateToNote.Execute(noteVm, sender as IInputElement);
             }
             else if (noteIsDragging && e.ChangedButton == MouseButton.Right)
             {

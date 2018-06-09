@@ -55,6 +55,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand AddNote = Make(new InputGestureCollection { new KeyGesture(Key.F8) });
         public static readonly RoutedCommand EditNote = Make();
         public static readonly RoutedCommand DeleteNote = Make();
+        public static readonly RoutedCommand NavigateToNote = Make();
 
         public static readonly RoutedCommand PlayPause = Make(new InputGestureCollection { new KeyGesture(Key.Space) });
         public static readonly RoutedCommand ZoomIn = Make(new InputGestureCollection { new KeyGesture(Key.Add, ModifierKeys.Control), new KeyGesture(Key.OemPlus, ModifierKeys.Control) });
@@ -614,7 +615,13 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteAddNote(object sender, ExecutedRoutedEventArgs e)
         {
-            sequencer.Notes.AddNoteAtCursor();
+            var existingNoteVm = sequencer.Notes.Notes.FirstOrDefault(
+                    noteVm => Math.Abs(noteVm.TimeSeconds - sequencer.CursorPosition) < Model.Block.MIN_DURATION_TECHNICAL_LIMIT * 0.5f);
+
+            if (existingNoteVm != null)
+                SequencerCommands.EditNote.Execute(existingNoteVm, sender as IInputElement);
+            else
+                sequencer.Notes.AddNoteAtCursor();
         }
 
         private void CommandBinding_ExecuteEditNote(object sender, ExecutedRoutedEventArgs e)
@@ -630,6 +637,13 @@ namespace GlowSequencer.View
         {
             NoteViewModel noteVm = (NoteViewModel)e.Parameter;
             sequencer.Notes.DeleteNote(noteVm);
+        }
+
+        private void CommandBinding_ExecuteNavigateToNote(object sender, ExecutedRoutedEventArgs e)
+        {
+            NoteViewModel noteVm = (NoteViewModel)e.Parameter;
+            sequencer.CursorPosition = noteVm.TimeSeconds;
+            ScrollCursorIntoView(ScrollIntoViewMode.Center);
         }
 
         private void CommandBinding_ExecutePlayPause(object sender, ExecutedRoutedEventArgs e)
