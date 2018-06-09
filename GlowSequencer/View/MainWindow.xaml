@@ -352,7 +352,8 @@
             <Canvas Name="notesCanvas"
                     Grid.Column="2" Margin="0,0,0,-7"
                     ClipToBounds="True">
-                <ItemsControl ItemsSource="{Binding Notes.Notes}"
+                <ItemsControl Name="notesContainer"
+                              ItemsSource="{Binding Notes.Notes}"
                               Canvas.Left="{Binding ElementName=trackBlocksScroller, Path=HorizontalOffset, Converter={StaticResource conv_Invert}}"
                               Canvas.Bottom="0"
                               Width="{Binding TimelineWidth}" Height="30">
@@ -365,7 +366,9 @@
                         <Style TargetType="ContentPresenter">
                             <Setter Property="Canvas.Left" Value="{Binding DisplayOffset}"/>
                             <Setter Property="ClipToBounds" Value="False"/>
+                            <EventSetter Event="QueryCursor" Handler="Note_QueryCursor"/>
                             <EventSetter Event="MouseDown" Handler="Note_MouseDown"/>
+                            <EventSetter Event="MouseMove" Handler="Note_MouseMove"/>
                             <EventSetter Event="MouseUp" Handler="Note_MouseUp"/>
                         </Style>
                     </ItemsControl.ItemContainerStyle>

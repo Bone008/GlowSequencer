@@ -40,6 +40,7 @@ namespace GlowSequencer.View
         }
 
         private const int SELECTION_DRAG_INITIAL_THRESHOLD = 10;
+        private const int NOTE_DRAG_INITIAL_THRESHOLD = 10;
         private const int DRAG_INITIAL_THRESHOLD = 10;
         private const int DRAG_START_END_PIXEL_WINDOW = 6;
         private const int DRAG_START_END_PIXEL_WINDOW_TOUCH = 12;
@@ -59,6 +60,11 @@ namespace GlowSequencer.View
         private bool dragNeedsToOvercomeThreshold = false;
         private int dragTrackBaseline = -1;
         private List<DraggedBlockData> draggedBlocks = null;
+
+        private bool noteIsDragging = false;
+        private Point noteDragStart = new Point();
+        private bool noteDragNeedsToOvercomeThreshold = false;
+        private float noteDragInitialTime = 0;
 
 
         public MainWindow()
@@ -156,6 +162,8 @@ namespace GlowSequencer.View
                 return;
 
             FrameworkElement control = (FrameworkElement)sender;
+            // Get to the actual list item, because for some reason capturing the mouse on the ContentPresenter
+            // wrapper (ItemContainer) messes up the reported coordinates during MouseMove.
             FrameworkElement controlBlock = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
             BlockViewModel block = (control.DataContext as BlockViewModel);
 
@@ -221,8 +229,8 @@ namespace GlowSequencer.View
                 FrameworkElement controlBlock = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
                 //BlockViewModel block = (BlockViewModel)control.DataContext;
 
-                // suppress context menu
-                if (!dragStart.Equals(e.GetPosition(timeline)))
+                // Suppres context menu after drag.
+                if (!dragNeedsToOvercomeThreshold)
                     e.Handled = true;
 
                 // this would be the place to record the undo/redo action (1 for all blocks)
@@ -873,13 +881,52 @@ namespace GlowSequencer.View
             }
         }
 
+        private void Note_QueryCursor(object sender, QueryCursorEventArgs e)
+        {
+            if (noteIsDragging)
+                e.Cursor = Cursors.SizeAll;
+        }
 
         private void Note_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            var noteVm = (NoteViewModel)((FrameworkElement)sender).DataContext;
+
+            // Double-click to edit.
             if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
             {
-                var noteVm = (sender as FrameworkElement)?.DataContext as NoteViewModel;
                 SequencerCommands.EditNote.Execute(noteVm, sender as UIElement);
+            }
+            // Dragging.
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+                // Get to the actual list item, because for some reason capturing the mouse on the ContentPresenter
+                // wrapper (ItemContainer) messes up the reported coordinates during MouseMove.
+                var controlBlock = (FrameworkElement)VisualTreeHelper.GetChild((FrameworkElement)sender, 0);
+                controlBlock.CaptureMouse();
+
+                noteIsDragging = true;
+                noteDragStart = e.GetPosition(notesContainer);
+                noteDragNeedsToOvercomeThreshold = true;
+                noteDragInitialTime = noteVm.TimeSeconds;
+            }
+        }
+
+        private void Note_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (noteIsDragging)
+            {
+                Vector delta = e.GetPosition(notesContainer) - noteDragStart;
+                if (noteDragNeedsToOvercomeThreshold)
+                {
+                    if (Math.Abs(delta.X) < NOTE_DRAG_INITIAL_THRESHOLD)
+                        return;
+                    else
+                        noteDragNeedsToOvercomeThreshold = false;
+                }
+                
+                float deltaT = (float)(delta.X / sequencer.TimePixelScale);
+                var noteVm = (NoteViewModel)((FrameworkElement)sender).DataContext;
+                noteVm.TimeSeconds = SnapValue(noteDragInitialTime + deltaT);
             }
         }
 
@@ -893,6 +940,18 @@ namespace GlowSequencer.View
                 var noteVm = (sender as FrameworkElement)?.DataContext as NoteViewModel;
                 sequencer.CursorPosition = noteVm.TimeSeconds;
                 ScrollCursorIntoView(ScrollIntoViewMode.Edge);
+            }
+            else if (noteIsDragging && e.ChangedButton == MouseButton.Right)
+            {
+                // Suppress context menu after drag.
+                if (!noteDragNeedsToOvercomeThreshold)
+                    e.Handled = true;
+
+                var controlBlock = (FrameworkElement)VisualTreeHelper.GetChild((FrameworkElement)sender, 0);
+                controlBlock.ReleaseMouseCapture();
+
+                noteIsDragging = false;
+                noteDragStart = new Point();
             }
         }
     }
