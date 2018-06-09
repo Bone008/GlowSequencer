@@ -28,6 +28,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand ShowTransferWindow = Make(new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
 
         public static readonly RoutedCommand ReplaceColor = Make(new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
+        public static readonly RoutedCommand BrightMode = Make();
 
         public static readonly RoutedCommand InsertBlock = Make();
         public static readonly RoutedCommand ConvertToType = Make();
@@ -287,6 +288,28 @@ namespace GlowSequencer.View
             var win = new ReplaceColorWindow(replaceColorVm);
             win.Owner = this;
             win.ShowDialog();
+        }
+
+        private void CommandBinding_ExecuteBrightMode(object sender, ExecutedRoutedEventArgs e)
+        {
+            var brightModeVm = new BrightModeViewModel(sequencer);
+
+            var result = MessageBox.Show(
+                "Bright mode increases the brightness of all dark colors to allow rehearsing in bright environments. "
+                + "Do not forget to undo the changes in the program or to save them to a separate file!"
+                + Environment.NewLine + Environment.NewLine
+                + (brightModeVm.AffectsOnlySelection
+                    ? $"Only the {StringUtil.Pluralize(brightModeVm.AffectedBlocks.Count(), "selected block")} will be affected."
+                    : "All blocks in the sequence will be affected."),
+                "Bright mode",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information
+            );
+
+            if(result == MessageBoxResult.OK)
+            {
+                brightModeVm.Execute();
+            }
         }
 
         private void CommandBinding_ExecuteSelectAll(object sender, ExecutedRoutedEventArgs e)

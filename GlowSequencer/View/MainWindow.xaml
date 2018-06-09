@@ -22,6 +22,7 @@
         <CommandBinding Command="ApplicationCommands.Undo" Executed="CommandBinding_ExecuteUndo" CanExecute="CommandBinding_CanExecuteUndo" />
         <CommandBinding Command="ApplicationCommands.Redo" Executed="CommandBinding_ExecuteRedo" CanExecute="CommandBinding_CanExecuteRedo" />
         <CommandBinding Command="local:SequencerCommands.ReplaceColor" Executed="CommandBinding_ExecuteReplaceColor"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.BrightMode" Executed="CommandBinding_ExecuteBrightMode"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="ApplicationCommands.SelectAll" Executed="CommandBinding_ExecuteSelectAll"  CanExecute="CommandBinding_CanExecuteAlways" />
 
         <CommandBinding Command="ApplicationCommands.Cut" Executed="CommandBinding_ExecuteCut"  CanExecute="CommandBinding_CanExecuteIfSelected" />
@@ -90,6 +91,7 @@
                 <MenuItem Header="_Redo" Command="ApplicationCommands.Redo" />
                 <Separator />
                 <MenuItem Header="Replace _color ..." Command="local:SequencerCommands.ReplaceColor" />
+                <MenuItem Header="_Bright mode ..." Command="local:SequencerCommands.BrightMode" />
                 <Separator />
                 <MenuItem Header="_Select all" Command="ApplicationCommands.SelectAll" />
             </MenuItem>
