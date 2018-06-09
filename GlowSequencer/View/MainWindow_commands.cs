@@ -621,13 +621,9 @@ namespace GlowSequencer.View
         {
             NoteViewModel noteVm = (NoteViewModel)e.Parameter;
 
-            var win = new PromptWindow("Enter marker name");
+            var win = new EditNoteWindow(noteVm);
             win.Owner = this;
-            win.PromptText = noteVm.Label;
-            if(win.ShowDialog() == true)
-            {
-                noteVm.Label = win.PromptText;
-            }
+            win.Show();
         }
 
         private void CommandBinding_ExecuteDeleteNote(object sender, ExecutedRoutedEventArgs e)

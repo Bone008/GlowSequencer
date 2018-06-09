@@ -1,0 +1,28 @@
+﻿<Window x:Class="GlowSequencer.View.EditNoteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
+        Title="Edit marker" Width="450" SizeToContent="Height"
+        
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance vm:NoteViewModel}" Icon="/GlowSequencer;component/Resources/icon.ico" ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+
+    <StackPanel Margin="5">
+        <DockPanel Margin="0,2">
+            <Label DockPanel.Dock="Left" Style="{StaticResource s_FormLabelNarrow}">Label:</Label>
+            <TextBox Name="labelTextBox" Text="{Binding Label, UpdateSourceTrigger=PropertyChanged, NotifyOnTargetUpdated=True}" TargetUpdated="labelTextBox_TargetUpdated" />
+        </DockPanel>
+        <DockPanel Margin="0,2">
+            <Label DockPanel.Dock="Left" Style="{StaticResource s_FormLabelNarrow}">Description:</Label>
+            <TextBlock DockPanel.Dock="Bottom" TextWrapping="Wrap" Foreground="#757575" Margin="0,2,0,0">
+                The description is displayed as a tooltip when placing the mouse over the marker.
+            </TextBlock>
+            <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MinHeight="120" AcceptsReturn="True" VerticalContentAlignment="Top" />
+        </DockPanel>
+        <Button Margin="0,2" HorizontalAlignment="Right"
+                Width="70" Click="Close_Click" IsDefault="True" IsCancel="True">Close</Button>
+    </StackPanel>
+    
+</Window>

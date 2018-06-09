@@ -371,7 +371,7 @@
                     </ItemsControl.ItemContainerStyle>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:NoteViewModel}">
-                            <Grid Height="30" ToolTip="{Binding Description}">
+                            <Grid Height="30" ToolTip="{Binding Description}" ToolTipService.ShowDuration="60000">
                                 <Grid.ContextMenu>
                                     <ContextMenu>
                                         <MenuItem Header=" _Edit ..." Command="local:SequencerCommands.EditNote" CommandParameter="{Binding}" FontWeight="Bold"/>
