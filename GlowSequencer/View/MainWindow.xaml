@@ -158,7 +158,7 @@
                 <MenuItem.ItemsSource>
                     <CompositeCollection>
                         <MenuItem Header="_Add marker" Command="local:SequencerCommands.AddNote"/>
-                        <Separator/>
+                        <Separator Visibility="{Binding Notes.HasNotes, Converter={StaticResource conv_BoolToVisibility}}"/>
                         <!-- Note that for some retarded reason, CollectionContainer has no DataContext, so we have to use this workaround. -->
                         <!-- Also see https://stackoverflow.com/a/19271605. -->
                         <CollectionContainer Collection="{Binding Source={StaticResource notesCollection}}"/>

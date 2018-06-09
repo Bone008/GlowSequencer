@@ -18,11 +18,15 @@ namespace GlowSequencer.ViewModel
         public ReadOnlyContinuousCollection<NoteViewModel> Notes { get; private set; }
         public ReadOnlyContinuousCollection<NoteViewModel> NotesSorted { get; private set; }
 
+        public bool HasNotes => Notes.Count > 0;
+
         public NotesViewModel(SequencerViewModel sequencer)
         {
             this.sequencer = sequencer;
             Notes = sequencer.GetModel().Notes.Select(note => new NoteViewModel(sequencer, note));
             NotesSorted = Notes.OrderBy(note => note.TimeSeconds);
+
+            ForwardCollectionEvents(Notes, nameof(HasNotes));
         }
 
         public void AddNoteAtCursor()
