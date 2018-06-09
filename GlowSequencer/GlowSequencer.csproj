@@ -109,6 +109,7 @@
     <Compile Include="ViewModel\NoteViewModel.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
     <Compile Include="ViewModel\VisualizedTrackViewModel.cs" />
+    <Compile Include="View\MainWindow.notes.cs" />
     <Compile Include="View\PoppedOutVisualizationWindow.xaml.cs">
       <DependentUpon>PoppedOutVisualizationWindow.xaml</DependentUpon>
     </Compile>
@@ -118,10 +119,10 @@
     <Compile Include="View\EditNoteWindow.xaml.cs">
       <DependentUpon>EditNoteWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\VisualizationControl.xaml.cs">
+    <Compile Include="View\Elements\VisualizationControl.xaml.cs">
       <DependentUpon>VisualizationControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\WaveformVisual.cs" />
+    <Compile Include="View\Elements\WaveformVisual.cs" />
     <Compile Include="CompatibilityHooks.cs" />
     <Compile Include="FileSerializer.cs" />
     <Compile Include="Mastermind.cs" />
@@ -155,8 +156,8 @@
     <Compile Include="View\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\MusicSegmentsWindow_commands.cs" />
-    <Compile Include="View\MainWindow_commands.cs" />
+    <Compile Include="View\MusicSegmentsWindow.commands.cs" />
+    <Compile Include="View\MainWindow.commands.cs" />
     <Compile Include="Model\RampBlock.cs" />
     <Compile Include="Model\ColorBlock.cs" />
     <Compile Include="Model\GloColor.cs" />
@@ -185,15 +186,15 @@
     <Compile Include="View\ReplaceColorWindow.xaml.cs">
       <DependentUpon>ReplaceColorWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\TimelineGrid.cs" />
-    <Compile Include="View\TimeUnitEditControl.xaml.cs">
+    <Compile Include="View\Elements\TimelineGrid.cs" />
+    <Compile Include="View\Elements\TimeUnitEditControl.xaml.cs">
       <DependentUpon>TimeUnitEditControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\TransferViewModel.cs" />
     <Compile Include="View\TransferWindow.xaml.cs">
       <DependentUpon>TransferWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\WaveformControl.xaml.cs">
+    <Compile Include="View\Elements\WaveformControl.xaml.cs">
       <DependentUpon>WaveformControl.xaml</DependentUpon>
     </Compile>
     <Page Include="View\AboutWindow.xaml">
@@ -240,7 +241,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\TimeUnitEditControl.xaml">
+    <Page Include="View\Elements\TimeUnitEditControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -248,11 +249,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\VisualizationControl.xaml">
+    <Page Include="View\Elements\VisualizationControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\WaveformControl.xaml">
+    <Page Include="View\Elements\WaveformControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
