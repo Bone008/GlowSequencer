@@ -21,6 +21,7 @@
         <CommandBinding Command="local:MusicSegmentCommands.SetAsDefault" CanExecute="CommandBinding_CanExecuteIfNotDefault" Executed="CommandBinding_ExecuteSetAsDefault" />
         <CommandBinding Command="local:MusicSegmentCommands.MoveSegmentByTime" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteMoveSegmentByTime" />
         <CommandBinding Command="local:MusicSegmentCommands.SetOriginToCursor" CanExecute="CommandBinding_CanExecuteIfNotReadOnly" Executed="CommandBinding_ExecuteSetOriginToCursor" />
+        <CommandBinding Command="local:MusicSegmentCommands.SelectReferringBlocks" CanExecute="CommandBinding_CanExecuteIfReferringBlocks" Executed="CommandBinding_ExecuteSelectReferringBlocks" />
     </Window.CommandBindings>
 
     <Grid>
@@ -89,12 +90,17 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2">
                     <Label Style="{StaticResource s_FormLabel}" />
-                    <Button Content="Move by ..." Width="80" Command="local:MusicSegmentCommands.MoveSegmentByTime" CommandParameter="{Binding}" />
-                    <Button Content="Set to cursor" Width="80" Command="local:MusicSegmentCommands.SetOriginToCursor" CommandParameter="{Binding}" Margin="5,0,0,0" />
+                    <Button Content="Move by ..." Width="80" Command="local:MusicSegmentCommands.MoveSegmentByTime" CommandParameter="{Binding}"
+                            ToolTip="Changes the time origin by a relative offset."/>
+                    <Button Content="Set to cursor" Width="80" Command="local:MusicSegmentCommands.SetOriginToCursor" CommandParameter="{Binding}" Margin="5,0,0,0"
+                            ToolTip="Sets the time origin to the current cursor position."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,2">
                     <Label Style="{StaticResource s_FormLabel}" Content="Referring blocks:"/>
-                    <TextBlock Text="{Binding ReferringBlocksDummies.Count}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding ReferringBlocksDummies.Count}" MinWidth="80" VerticalAlignment="Center" />
+                    <Button Content="Select" Width="80" Command="local:MusicSegmentCommands.SelectReferringBlocks" CommandParameter="{Binding}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"
+                            ToolTip="Selects all blocks that are assigned to this music segment."/>
                 </StackPanel>
             </StackPanel>
 

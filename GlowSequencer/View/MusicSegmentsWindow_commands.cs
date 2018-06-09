@@ -17,6 +17,7 @@ namespace GlowSequencer.View
         public static readonly RoutedUICommand SetAsDefault = new RoutedUICommand("", "SetAsDefault", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Alt) });
         public static readonly RoutedUICommand MoveSegmentByTime = new RoutedUICommand("", "MoveSegmentByTime", typeof(SequencerCommands));
         public static readonly RoutedUICommand SetOriginToCursor = new RoutedUICommand("", "SetOriginToCursor", typeof(SequencerCommands));
+        public static readonly RoutedUICommand SelectReferringBlocks = new RoutedUICommand("", "SelectReferringBlocks", typeof(SequencerCommands));
     }
 
     public partial class MusicSegmentsWindow
@@ -28,20 +29,18 @@ namespace GlowSequencer.View
 
         private void CommandBinding_CanExecuteIfNotReadOnly(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (e.Parameter == null)
-                return;
-
-            e.CanExecute = !((MusicSegmentViewModel)e.Parameter).IsReadOnly;
+            e.CanExecute = (e.Parameter is MusicSegmentViewModel segment && !segment.IsReadOnly);
         }
 
         private void CommandBinding_CanExecuteIfNotDefault(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (e.Parameter == null)
-                return;
-
-            e.CanExecute = !((MusicSegmentViewModel)e.Parameter).IsDefault;
+            e.CanExecute = (e.Parameter is MusicSegmentViewModel segment && segment.IsDefault);
         }
 
+        private void CommandBinding_CanExecuteIfReferringBlocks(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = (e.Parameter is MusicSegmentViewModel segment && segment.ReferringBlocksDummies.Any());
+        }
 
         private void CommandBinding_ExecuteAddSegment(object sender, ExecutedRoutedEventArgs e)
         {
@@ -97,6 +96,16 @@ namespace GlowSequencer.View
                 throw new ArgumentException("invalid parameter");
 
             segment.TimeOrigin = TimeSpan.FromSeconds(sequencer.CursorPosition);
+        }
+
+        private void CommandBinding_ExecuteSelectReferringBlocks(object sender, ExecutedRoutedEventArgs e)
+        {
+            MusicSegmentViewModel segment = e.Parameter as MusicSegmentViewModel;
+            if (segment == null)
+                throw new ArgumentException("invalid parameter");
+
+            var blocks = sequencer.AllBlocks.Where(block => block.SegmentContext == segment);
+            sequencer.SelectBlocks(blocks, CompositionMode.None);
         }
 
     }
