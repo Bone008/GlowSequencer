@@ -650,6 +650,11 @@ namespace GlowSequencer.View
             ChangeZoom(-10);
         }
 
+        private void CommandBinding_ExecuteHelp(object sender, ExecutedRoutedEventArgs e)
+        {
+            Mastermind.OpenHelpWindow();
+        }
+
         private void CommandBinding_ExecuteAbout(object sender, ExecutedRoutedEventArgs e)
         {
             Mastermind.OpenAboutWindow();

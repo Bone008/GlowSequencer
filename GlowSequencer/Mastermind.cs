@@ -11,6 +11,7 @@ namespace GlowSequencer
     public static class Mastermind
     {
         private static MusicSegmentsWindow winMusicSegments = null;
+        private static HelpWindow winHelp = null;
         private static AboutWindow winAbout = null;
         private static TransferWindow winTransfer = null;
         private static PoppedOutSelectionDataWindow winPoppedOutSelectionData = null;
@@ -41,6 +42,11 @@ namespace GlowSequencer
         public static void OpenMusicSegmentsWindow()
         {
             OpenWindow(ref winMusicSegments, () => winMusicSegments = null);
+        }
+
+        public static void OpenHelpWindow()
+        {
+            OpenWindow(ref winHelp, () => winHelp = null);
         }
 
         public static void OpenAboutWindow()

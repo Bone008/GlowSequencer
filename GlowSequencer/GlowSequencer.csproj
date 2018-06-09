@@ -109,6 +109,9 @@
     <Compile Include="ViewModel\NoteViewModel.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
     <Compile Include="ViewModel\VisualizedTrackViewModel.cs" />
+    <Compile Include="View\HelpWindow.xaml.cs">
+      <DependentUpon>HelpWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\MainWindow.notes.cs" />
     <Compile Include="View\PoppedOutVisualizationWindow.xaml.cs">
       <DependentUpon>PoppedOutVisualizationWindow.xaml</DependentUpon>
@@ -197,6 +200,10 @@
     <Compile Include="View\Elements\WaveformControl.xaml.cs">
       <DependentUpon>WaveformControl.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\HelpWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="View\AboutWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

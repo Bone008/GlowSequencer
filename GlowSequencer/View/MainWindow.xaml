@@ -55,6 +55,7 @@
         <CommandBinding Command="local:SequencerCommands.PlayPause" Executed="CommandBinding_ExecutePlayPause"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomIn" Executed="CommandBinding_ExecuteZoomIn"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ZoomOut" Executed="CommandBinding_ExecuteZoomOut"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="ApplicationCommands.Help" Executed="CommandBinding_ExecuteHelp"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.About" Executed="CommandBinding_ExecuteAbout"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.SplitAtCursor" Executed="CommandBinding_ExecuteSplitAtCursor"  CanExecute="CommandBinding_CanExecuteIfSelected" />
     </Window.CommandBindings>
@@ -143,6 +144,7 @@
                 <MenuItem Header="_Manage segments ..." Command="local:SequencerCommands.MusicManageSegments"/>
             </MenuItem>
             <MenuItem Header="_Help">
+                <MenuItem Header="_Help" Command="ApplicationCommands.Help"/>
                 <MenuItem Header="_About" Command="local:SequencerCommands.About"/>
             </MenuItem>
         </Menu>
