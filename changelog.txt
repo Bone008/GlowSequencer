@@ -4,6 +4,9 @@
 
 Changelog
 
+v1.7.1 (2018-07-02):
+- Bugfix: When editing music segments, the "Set as default" button was incorrectly disabled
+
 v1.7.0 (2018-06-10):
 - Added ability to add labeled markers to the timeline
  * Click to set cursor to marker position
