@@ -34,7 +34,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_CanExecuteIfNotDefault(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = (e.Parameter is MusicSegmentViewModel segment && segment.IsDefault);
+            e.CanExecute = (e.Parameter is MusicSegmentViewModel segment && !segment.IsDefault);
         }
 
         private void CommandBinding_CanExecuteIfReferringBlocks(object sender, CanExecuteRoutedEventArgs e)
