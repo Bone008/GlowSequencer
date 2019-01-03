@@ -113,6 +113,15 @@ namespace GlowSequencer.View
 
         private void timelineBlock_QueryCursor(object sender, QueryCursorEventArgs e)
         {
+            FrameworkElement control = (FrameworkElement)sender;
+            BlockViewModel block = (BlockViewModel)control.DataContext;
+
+            if (sequencer.IsPipetteActive)
+            {
+                HandlePipetteQueryCursor(block, e);
+                return;
+            }
+
             switch (dragMode)
             {
                 case BlockDragMode.Block:
@@ -124,9 +133,6 @@ namespace GlowSequencer.View
                     break;
 
                 case BlockDragMode.None:
-                    FrameworkElement control = (FrameworkElement)sender;
-                    BlockViewModel block = (BlockViewModel)control.DataContext;
-
                     FrameworkElement controlBlock = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
                     var localMouse = e.GetPosition(controlBlock);
 
@@ -161,6 +167,12 @@ namespace GlowSequencer.View
             // wrapper (ItemContainer) messes up the reported coordinates during MouseMove.
             FrameworkElement controlBlock = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
             BlockViewModel block = (control.DataContext as BlockViewModel);
+
+            if (sequencer.IsPipetteActive)
+            {
+                HandlePipetteClick(block, controlBlock, e);
+                return;
+            }
 
             var localMouse = e.GetPosition(controlBlock);
 
@@ -258,6 +270,10 @@ namespace GlowSequencer.View
 
         private void timelineBlock_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
+            // Handle pipette as normal click event.
+            if (sequencer.IsPipetteActive)
+                return;
+
             FrameworkElement control = (FrameworkElement)sender;
             FrameworkElement controlBlock = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
             BlockViewModel block = (control.DataContext as BlockViewModel);
@@ -487,6 +503,8 @@ namespace GlowSequencer.View
         private void timeline_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
+                return;
+            if (sequencer.IsPipetteActive)
                 return;
 
             // If the click happened on an empty part of the timeline and we are not delta selecting, select nothing.
@@ -756,6 +774,43 @@ namespace GlowSequencer.View
 
             MessageBox.Show(binding.ResolvedSourcePropertyName + " = " + binding.ResolvedSource);
 #endif
+        }
+
+        private void HandlePipetteQueryCursor(BlockViewModel block, QueryCursorEventArgs e)
+        {
+            if (block is ColorBlockViewModel || block is RampBlockViewModel)
+            {
+                e.Cursor = Cursors.Cross;
+            }
+            else
+            {
+                e.Cursor = Cursors.No;
+            }
+        }
+
+        // Pipette feature.
+        private void HandlePipetteClick(BlockViewModel block, FrameworkElement controlBlock, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (e.ChangedButton != MouseButton.Left) return;
+
+            Color color;
+            if (block is ColorBlockViewModel colorBlock)
+            {
+                color = colorBlock.Color;
+            }
+            else if (block is RampBlockViewModel rampBlock)
+            {
+                Point p = e.GetPosition(controlBlock);
+                color = (p.X < controlBlock.ActualWidth / 2 ? rampBlock.StartColor : rampBlock.EndColor);
+            }
+            else
+            {
+                return; // Unsupported block type
+            }
+
+            sequencer.ApplyPipetteColor(color);
+            sequencer.PipetteTarget = null;
         }
 
         // support for dropping in files

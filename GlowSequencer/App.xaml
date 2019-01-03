@@ -248,6 +248,10 @@
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Color:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <xctk:ColorPicker SelectedColor="{Binding Color}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
+                            <view:PipetteButton
+                                TargetColor="{Binding Color}"
+                                ActivationContext="{Binding Source={StaticResource vm_Main}, Path=CurrentDocument.PipetteTarget}">
+                            </view:PipetteButton>
                         </StackPanel>
                     </StackPanel>
                 </DataTemplate>
@@ -257,10 +261,18 @@
                         <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="Start color:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <xctk:ColorPicker SelectedColor="{Binding StartColor}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
+                            <view:PipetteButton
+                                TargetColor="{Binding StartColor}"
+                                ActivationContext="{Binding Source={StaticResource vm_Main}, Path=CurrentDocument.PipetteTarget}">
+                            </view:PipetteButton>
                         </StackPanel>
                         <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="End color:" Style="{StaticResource s_FormLabelNarrow}"/>
                             <xctk:ColorPicker SelectedColor="{Binding EndColor}" Width="120" VerticalAlignment="Center" ContextMenu="{StaticResource contextMenu_ReplaceThisColor}" />
+                            <view:PipetteButton
+                                TargetColor="{Binding EndColor}"
+                                ActivationContext="{Binding Source={StaticResource vm_Main}, Path=CurrentDocument.PipetteTarget}">
+                            </view:PipetteButton>
                         </StackPanel>
                         <StackPanel Style="{StaticResource s_FormRow}">
                             <Label Content="" Style="{StaticResource s_FormLabelNarrow}"/>
@@ -394,35 +406,41 @@
         <Image x:Key="image_icon_play" x:Shared="False" Source="Resources/icon_play.png" />
         <Image x:Key="image_icon_zoom_in" x:Shared="False" Source="Resources/icon_zoom_in.png" />
         <Image x:Key="image_icon_zoom_out" x:Shared="False" Source="Resources/icon_zoom_out.png" />
+        <Image x:Key="image_icon_pipette" x:Shared="False" Source="Resources/icon_pipette.png" />
 
-        <Style TargetType="Button" x:Key="s_IconButtonCut" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonCut" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Cut blocks at cursor (C)" />
             <Setter Property="Content" Value="{StaticResource image_icon_cut}" />
         </Style>
-        <Style TargetType="Button" x:Key="s_IconButtonLock" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonLock" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Lock" />
             <!-- defining the image inline here does not work for multiple buttons, so we use an unshared reference, see: http://stackoverflow.com/a/6356936 -->
             <Setter Property="Content" Value="{StaticResource image_icon_lock}" />
         </Style>
-        <Style TargetType="Button" x:Key="s_IconButtonLockOpen" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonLockOpen" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Unlock" />
             <Setter Property="Content" Value="{StaticResource image_icon_lock_open}" />
         </Style>
-        <Style TargetType="Button" x:Key="s_IconButtonPause" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonPause" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Pause (Space)" />
             <Setter Property="Content" Value="{StaticResource image_icon_pause}" />
         </Style>
-        <Style TargetType="Button" x:Key="s_IconButtonPlay" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonPlay" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Play (Space)" />
             <Setter Property="Content" Value="{StaticResource image_icon_play}" />
         </Style>
-        <Style TargetType="Button" x:Key="s_IconButtonZoomIn" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonZoomIn" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Zoom in (Ctrl +)" />
             <Setter Property="Content" Value="{StaticResource image_icon_zoom_in}" />
         </Style>
-        <Style TargetType="Button" x:Key="s_IconButtonZoomOut" BasedOn="{StaticResource s_IconButton}">
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonZoomOut" BasedOn="{StaticResource s_IconButton}">
             <Setter Property="ToolTip" Value="Zoom out (Ctrl -)" />
             <Setter Property="Content" Value="{StaticResource image_icon_zoom_out}" />
+        </Style>
+        <Style TargetType="ButtonBase" x:Key="s_IconButtonPipette" BasedOn="{StaticResource s_IconButton}">
+            <Setter Property="Height" Value="22" />
+            <Setter Property="ToolTip" Value="Pick color" />
+            <Setter Property="Content" Value="{StaticResource image_icon_pipette}" />
         </Style>
 
     </Application.Resources>

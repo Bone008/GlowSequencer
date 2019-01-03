@@ -105,10 +105,14 @@
     <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="Util\StringUtil.cs" />
     <Compile Include="ViewModel\BrightModeViewModel.cs" />
+    <Compile Include="ViewModel\IPipetteColorTarget.cs" />
     <Compile Include="ViewModel\NotesViewModel.cs" />
     <Compile Include="ViewModel\NoteViewModel.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
     <Compile Include="ViewModel\VisualizedTrackViewModel.cs" />
+    <Compile Include="View\Elements\PipetteButton.xaml.cs">
+      <DependentUpon>PipetteButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\HelpWindow.xaml.cs">
       <DependentUpon>HelpWindow.xaml</DependentUpon>
     </Compile>
@@ -200,6 +204,10 @@
     <Compile Include="View\Elements\WaveformControl.xaml.cs">
       <DependentUpon>WaveformControl.xaml</DependentUpon>
     </Compile>
+    <Page Include="View\Elements\PipetteButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\HelpWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -331,6 +339,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\icon_cut.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icon_pipette.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

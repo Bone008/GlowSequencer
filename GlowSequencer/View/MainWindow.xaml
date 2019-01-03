@@ -59,12 +59,14 @@
         <CommandBinding Command="ApplicationCommands.Help" Executed="CommandBinding_ExecuteHelp"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.About" Executed="CommandBinding_ExecuteAbout"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.SplitAtCursor" Executed="CommandBinding_ExecuteSplitAtCursor"  CanExecute="CommandBinding_CanExecuteIfSelected" />
+        <CommandBinding Command="local:SequencerCommands.CancelPipette" Executed="CommandBinding_ExecuteCancelPipette"  CanExecute="CommandBinding_CanExecuteIfPipette" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="I" Modifiers="Control" Command="local:SequencerCommands.InsertBlock" CommandParameter="color" />
         <KeyBinding Key="I" Modifiers="Control+Shift" Command="local:SequencerCommands.InsertBlock" CommandParameter="ramp" />
         <KeyBinding Key="C" Modifiers="Control+Shift" Command="local:SequencerCommands.ConvertToType" />
         <KeyBinding Key="C" Command="local:SequencerCommands.SplitAtCursor" />
+        <KeyBinding Key="Esc" Command="local:SequencerCommands.CancelPipette" />
     </Window.InputBindings>
 
     <Grid DataContext="{Binding CurrentDocument}">

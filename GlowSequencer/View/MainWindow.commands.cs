@@ -60,6 +60,7 @@ namespace GlowSequencer.View
         public static readonly RoutedCommand PlayPause = Make(new InputGestureCollection { new KeyGesture(Key.Space) });
         public static readonly RoutedCommand ZoomIn = Make(new InputGestureCollection { new KeyGesture(Key.Add, ModifierKeys.Control), new KeyGesture(Key.OemPlus, ModifierKeys.Control) });
         public static readonly RoutedCommand ZoomOut = Make(new InputGestureCollection { new KeyGesture(Key.Subtract, ModifierKeys.Control), new KeyGesture(Key.OemMinus, ModifierKeys.Control) });
+        public static readonly RoutedCommand CancelPipette = Make();
 
         public static readonly RoutedCommand About = Make();
     }
@@ -146,6 +147,11 @@ namespace GlowSequencer.View
         private void CommandBinding_CanExecuteIfMusicFile(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = sequencer.Playback.MusicFileName != null;
+        }
+
+        private void CommandBinding_CanExecuteIfPipette(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = sequencer.IsPipetteActive;
         }
 
 
@@ -307,7 +313,7 @@ namespace GlowSequencer.View
                 MessageBoxImage.Information
             );
 
-            if(result == MessageBoxResult.OK)
+            if (result == MessageBoxResult.OK)
             {
                 brightModeVm.Execute();
             }
@@ -662,6 +668,11 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteZoomOut(object sender, ExecutedRoutedEventArgs e)
         {
             ChangeZoom(-10);
+        }
+
+        private void CommandBinding_ExecuteCancelPipette(object sender, ExecutedRoutedEventArgs e)
+        {
+            sequencer.PipetteTarget = null;
         }
 
         private void CommandBinding_ExecuteHelp(object sender, ExecutedRoutedEventArgs e)

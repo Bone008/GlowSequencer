@@ -28,6 +28,7 @@ namespace GlowSequencer.ViewModel
         private bool _adjustBlocksWithSegmentChanges = true;
         private bool _enableSmartInsert = true;
         private TrackViewModel _selectedTrack = null;
+        private IPipetteColorTarget _pipetteTarget = null;
 
         private float _cursorPosition = 0;
         private float _timePixelScale = 100;
@@ -51,6 +52,10 @@ namespace GlowSequencer.ViewModel
 
         public TrackViewModel SelectedTrack { get { return _selectedTrack; } set { SetProperty(ref _selectedTrack, value); } }
         public ObservableCollection<BlockViewModel> SelectedBlocks { get; private set; }
+
+        /// <summary>The currently active target of the pipette, or null if it is inactive.</summary>
+        public IPipetteColorTarget PipetteTarget { get { return _pipetteTarget; } set { SetProperty(ref _pipetteTarget, value); } }
+        public bool IsPipetteActive { get { return PipetteTarget != null; } }
 
         public float CursorPosition { get { return _cursorPosition; } set { SetProperty(ref _cursorPosition, Math.Max(0, value)); } }
         public TimeUnit CursorPositionComplex { get { return TimeUnit.WrapAbsolute(_cursorPosition, _activeMusicSegment.GetModel(), v => CursorPosition = v); } }
@@ -146,6 +151,7 @@ namespace GlowSequencer.ViewModel
                 Notify(nameof(TimelineLength));
             };
 
+            ForwardPropertyEvents(nameof(PipetteTarget), this, nameof(IsPipetteActive));
             ForwardPropertyEvents(nameof(CursorPosition), this,
                 nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport), nameof(CursorPositionComplex));
             ForwardPropertyEvents(nameof(TimePixelScale), this,
@@ -169,6 +175,9 @@ namespace GlowSequencer.ViewModel
                 foreach (var b in AllBlocks)
                     b.OnTracksCollectionChanged();
             };
+
+            // Disable pipette whenever the selection is modified.
+            SelectedBlocks.CollectionChanged += (_, __) => PipetteTarget = null;
         }
 
         // Called when another document is opened.
@@ -573,6 +582,11 @@ namespace GlowSequencer.ViewModel
             }
         }
 
+        public void ApplyPipetteColor(Color color)
+        {
+            if (!IsPipetteActive) throw new InvalidOperationException("Pipette is not active.");
+            PipetteTarget.TargetColor = color;
+        }
 
         public void SelectRelativeTrack(int delta)
         {
