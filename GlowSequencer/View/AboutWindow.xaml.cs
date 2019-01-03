@@ -26,6 +26,12 @@ namespace GlowSequencer.View
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             versionText.Text = "v" + version.ToString();
+
+            var copyAttribute = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyCopyrightAttribute>();
+            if(copyAttribute != null)
+            {
+                copyrightText.Text = copyAttribute.Copyright;
+            }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)

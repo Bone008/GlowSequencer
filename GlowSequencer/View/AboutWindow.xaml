@@ -14,7 +14,7 @@
         <TextBlock Grid.Column="1" LineStackingStrategy="BlockLineHeight" LineHeight="28">
             <Run FontSize="20" FontWeight="Bold">Glow Sequencer</Run><LineBreak/>
             <Run x:Name="versionText" Text="unknown version"/><LineBreak/>
-            <Run>Copyright &#169; 2017 Lukas Bonauer</Run>
+            <Run x:Name="copyrightText"></Run>
         </TextBlock>
     </Grid>
 </Window>

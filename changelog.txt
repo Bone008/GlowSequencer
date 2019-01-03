@@ -4,6 +4,12 @@
 
 Changelog
 
+v1.8.0 (2019-01-03):
+- Added pipette feature to pick colors from other blocks.
+- Add sequence file name to auto-generated glo files.
+- Display cursor and view position in global time in status bar instead of local time.
+- Fix focus issue when clicking on timeline header or markers.
+
 v1.7.1 (2018-07-02):
 - Bugfix: When editing music segments, the "Set as default" button was incorrectly disabled
 
