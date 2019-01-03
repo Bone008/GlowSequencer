@@ -18,7 +18,7 @@ namespace GlowSequencer.View
         private Point noteDragStart = new Point();
         private bool noteDragNeedsToOvercomeThreshold = false;
         private float noteDragInitialTime = 0;
-        
+
         // Also move cursor when clicking on header section of timeline, equivalent to clicking on waveform.
         private void notesCanvasClickableArea_MouseUp(object sender, MouseButtonEventArgs e) => waveform_MouseUp(sender, e);
 
@@ -50,6 +50,8 @@ namespace GlowSequencer.View
                 noteDragNeedsToOvercomeThreshold = true;
                 noteDragInitialTime = noteVm.TimeSeconds;
             }
+
+            timeline.Focus();
         }
 
         private void Note_MouseMove(object sender, MouseEventArgs e)

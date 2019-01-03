@@ -491,6 +491,7 @@ namespace GlowSequencer.View
             if (e.ChangedButton != MouseButton.Left && e.ChangedButton != MouseButton.Right)
                 return;
             sequencer.CursorPosition = SnapValue((float)e.GetPosition(timeline).X / sequencer.TimePixelScale);
+            timeline.Focus();
         }
 
         private void timeline_PreviewMouseDown(object sender, MouseButtonEventArgs e)
