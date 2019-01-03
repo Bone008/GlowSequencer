@@ -58,7 +58,6 @@ namespace GlowSequencer.ViewModel
         public bool IsPipetteActive { get { return PipetteTarget != null; } }
 
         public float CursorPosition { get { return _cursorPosition; } set { SetProperty(ref _cursorPosition, Math.Max(0, value)); } }
-        public TimeUnit CursorPositionComplex { get { return TimeUnit.WrapAbsolute(_cursorPosition, _activeMusicSegment.GetModel(), v => CursorPosition = v); } }
 
         public double CursorPixelPosition { get { return _cursorPosition * TimePixelScale; } set { CursorPosition = (float)(value / TimePixelScale); } }
         public double CursorPixelPositionOnViewport => CursorPixelPosition - _viewportLeftOffsetPx;
@@ -69,8 +68,6 @@ namespace GlowSequencer.ViewModel
 
         public float CurrentViewLeftPositionTime => (float)_viewportLeftOffsetPx / TimePixelScale;
         public float CurrentViewRightPositionTime => (float)(_viewportLeftOffsetPx + _viewportWidthPx) / TimePixelScale;
-        public TimeUnit CurrentViewLeftPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewLeftPositionTime, _activeMusicSegment.GetModel()); } }
-        public TimeUnit CurrentViewRightPositionComplex { get { return TimeUnit.WrapAbsolute(CurrentViewRightPositionTime, _activeMusicSegment.GetModel()); } }
 
         /// <summary>Duration of the entire timeline in seconds.</summary>
         public float TimelineLength => Math.Max(Playback.MusicDuration, AllBlocks.Max(b => (float?)b.EndTimeOccupied).GetValueOrDefault(0));
@@ -153,14 +150,12 @@ namespace GlowSequencer.ViewModel
 
             ForwardPropertyEvents(nameof(PipetteTarget), this, nameof(IsPipetteActive));
             ForwardPropertyEvents(nameof(CursorPosition), this,
-                nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport), nameof(CursorPositionComplex));
+                nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport));
             ForwardPropertyEvents(nameof(TimePixelScale), this,
                 nameof(CursorPixelPosition), nameof(CursorPixelPositionOnViewport),
                 nameof(CurrentViewLeftPositionTime), nameof(CurrentViewRightPositionTime),
-                nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex),
                 nameof(TimelineWidth), nameof(GridInterval));
             ForwardPropertyEvents(nameof(ActiveMusicSegment), this,
-                nameof(CursorPositionComplex), nameof(CurrentViewLeftPositionComplex), nameof(CurrentViewRightPositionComplex),
                 nameof(GridInterval));
 
             ForwardPropertyEvents(nameof(Playback.MusicDuration), Playback, nameof(TimelineLength));
@@ -208,8 +203,6 @@ namespace GlowSequencer.ViewModel
             Notify(nameof(TimelineWidth));
             Notify(nameof(CurrentViewLeftPositionTime));
             Notify(nameof(CurrentViewRightPositionTime));
-            Notify(nameof(CurrentViewLeftPositionComplex));
-            Notify(nameof(CurrentViewRightPositionComplex));
             Notify(nameof(CursorPixelPositionOnViewport));
         }
 

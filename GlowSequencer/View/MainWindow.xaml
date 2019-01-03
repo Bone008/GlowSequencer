@@ -498,41 +498,17 @@
                 </TextBlock>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <StackPanel.Resources>
-                        <DataTemplate x:Key="unitStatusBarDisplay" DataType="{x:Type vm:TimeUnit}">
-                            <Grid Background="#FFDEDEDE" Width="150">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="11*" />
-                                    <ColumnDefinition Width="7*" />
-                                    <ColumnDefinition Width="6*" />
-                                </Grid.ColumnDefinitions>
-                                <Border BorderThickness="0,0,1,0" BorderBrush="Gray" Padding="0,0,3,0">
-                                    <Button Background="Transparent" Template="{StaticResource ContentOnlyTemplate}" MouseDoubleClick="statusBarTimeValue_MouseDoubleClick">
-                                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Binding Seconds, Mode=OneWay, StringFormat='0.000 s'}" />
-                                    </Button>
-                                </Border>
-                                <Button Background="Transparent" Grid.Column="1" Template="{StaticResource ContentOnlyTemplate}" MouseDoubleClick="statusBarTimeValue_MouseDoubleClick">
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                           >
-                                    <!-- Visibility="{Binding HasMusicData, Converter={StaticResource conv_BoolToVisibility}}" -->
-                                        <Run Text="{Binding Bars, Mode=OneWay}"/>
-                                        <Run Text="b" />
-                                    </TextBlock>
-                                </Button>
-                                <Button Background="Transparent" Grid.Column="2" Template="{StaticResource ContentOnlyTemplate}" MouseDoubleClick="statusBarTimeValue_MouseDoubleClick">
-                                    <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"
-                                    Text="{Binding Beats, Mode=OneWay, StringFormat='0.##'}" />
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </StackPanel.Resources>
                     <Label>View</Label>
-                    <ContentControl Content="{Binding CurrentViewLeftPositionComplex}" ContentTemplate="{StaticResource unitStatusBarDisplay}" ToolTip="Left edge of view" />
-                    <Label>-</Label>
-                    <ContentControl Content="{Binding CurrentViewRightPositionComplex}" ContentTemplate="{StaticResource unitStatusBarDisplay}" ToolTip="Right edge of view" />
+                    <Label Background="#FFDEDEDE" Width="140" HorizontalContentAlignment="Right">
+                        <TextBlock>
+                            <Run Text="{Binding CurrentViewLeftPositionTime, Converter={StaticResource conv_TimeSpanToString}, Mode=OneWay}"/>
+                            <Run>-</Run>
+                            <Run Text="{Binding CurrentViewRightPositionTime, Converter={StaticResource conv_TimeSpanToString},Mode=OneWay}"/>
+                        </TextBlock>
+                    </Label>
                     <Label Width="100" HorizontalContentAlignment="Right">Cursor</Label>
-                    <ContentControl Content="{Binding CursorPositionComplex}" ContentTemplate="{StaticResource unitStatusBarDisplay}" ToolTip="Position of cursor" />
+                    <Label Background="#FFDEDEDE" Width="70" HorizontalContentAlignment="Right"
+                           Content="{Binding CursorPosition, Converter={StaticResource conv_TimeSpanToString}}"/>
                 </StackPanel>
             </Grid>
         </Border>

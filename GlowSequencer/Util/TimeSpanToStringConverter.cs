@@ -10,6 +10,7 @@ using System.Windows.Media;
 
 namespace GlowSequencer.Util
 {
+    /// <summary>Formats TimeSpan objects (or seconds) as a string, separating minutes from seconds.</summary>
     public class TimeSpanToStringConverter : IValueConverter
     {
         /// <summary>Programmatic interface to formatting functionality.</summary>
@@ -32,6 +33,13 @@ namespace GlowSequencer.Util
         {
             if (value == null)
                 return null;
+
+            // Also allow raw numbers.
+            if (value is float f)
+                value = TimeSpan.FromSeconds(f);
+            else if (value is double d)
+                value = TimeSpan.FromSeconds(d);
+
             if (value is TimeSpan ts)
             {
                 bool compactMode = (parameter != null && bool.Parse(parameter.ToString()));
