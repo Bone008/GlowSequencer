@@ -26,17 +26,19 @@ namespace GlowSequencer
         private readonly TransferToEquipmentSettings settings;
         private readonly IList<Track> tracks;
         private readonly PlaybackViewModel playback;
+        private readonly string documentName;
 
         // runtime state
         private Process aerotechProc = null;
         private InputSimulator inputSim = null;
         private bool success = false;
 
-        public TransferToEquipmentController(TransferToEquipmentSettings settings, IList<Track> tracks, PlaybackViewModel playback)
+        public TransferToEquipmentController(TransferToEquipmentSettings settings, IList<Track> tracks, PlaybackViewModel playback, string documentName)
         {
             this.settings = settings;
             this.tracks = tracks;
             this.playback = playback;
+            this.documentName = documentName;
         }
 
         public async Task RunTransferAsync(IProgress<float> progress, IProgress<string> log, CancellationToken cancel)
@@ -53,11 +55,17 @@ namespace GlowSequencer
                     // clean up potential left-over files from previous runs
                     Directory.EnumerateFiles(tmpDir, ".glo").ForEach(File.Delete);
 
+                    string sanitizedDocumentName = FileSerializer.SanitizeString(Path.GetFileNameWithoutExtension(documentName));
                     for (int i = 0; i < tracks.Count; i++)
                     {
                         await Task.Run(() =>
                         {
-                            string file = Path.Combine(tmpDir, string.Format("{0:000}_{1}_{2}.glo", i + 1, FileSerializer.SanitizeString(tracks[i].Label), versionId));
+                            string file = Path.Combine(tmpDir, string.Format("{0:000}_{1}_{2}_{3}.glo",
+                                i + 1,
+                                FileSerializer.SanitizeString(tracks[i].Label),
+                                versionId,
+                                sanitizedDocumentName));
+
                             FileSerializer.ExportTrack(tracks[i], file, (float)settings.ExportStartTime.TotalSeconds);
                         }, cancel);
                         ReportProgress(progress, TaskStage.ExportFiles, i + 1, tracks.Count);

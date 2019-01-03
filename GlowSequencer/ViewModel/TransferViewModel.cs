@@ -107,7 +107,7 @@ namespace GlowSequencer.ViewModel
                     .Select(t => t.GetModel())
                     .OrderBy(t => t.GetIndex())
                     .ToList();
-            activeTransfer = new TransferToEquipmentController(persistedSettings, tracksList, main.CurrentDocument.Playback);
+            activeTransfer = new TransferToEquipmentController(persistedSettings, tracksList, main.CurrentDocument.Playback, main.DocumentName);
             transferCancel = new CancellationTokenSource();
             Notify(nameof(IsTransferIdle));
             Notify(nameof(IsTransferInProgress));
