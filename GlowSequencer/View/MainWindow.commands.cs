@@ -29,6 +29,7 @@ namespace GlowSequencer.View
 
         public static readonly RoutedCommand ReplaceColor = Make(new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
         public static readonly RoutedCommand BrightMode = Make();
+        public static readonly RoutedCommand DarkMode = Make();
 
         public static readonly RoutedCommand InsertBlock = Make();
         public static readonly RoutedCommand ConvertToType = Make();
@@ -299,7 +300,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteBrightMode(object sender, ExecutedRoutedEventArgs e)
         {
-            var brightModeVm = new BrightModeViewModel(sequencer);
+            var brightModeVm = new BrightModeViewModel(sequencer, BrightModeType.Brighten);
 
             var result = MessageBox.Show(
                 "Bright mode increases the brightness of all dark colors to allow rehearsing in bright environments. "
@@ -309,6 +310,28 @@ namespace GlowSequencer.View
                     ? $"Only the {StringUtil.Pluralize(brightModeVm.AffectedBlocks.Count(), "selected block")} will be affected."
                     : "All blocks in the sequence will be affected."),
                 "Bright mode",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information
+            );
+
+            if (result == MessageBoxResult.OK)
+            {
+                brightModeVm.Execute();
+            }
+        }
+
+        private void CommandBinding_ExecuteDarkMode(object sender, ExecutedRoutedEventArgs e)
+        {
+            var brightModeVm = new BrightModeViewModel(sequencer, BrightModeType.Darken);
+
+            var result = MessageBox.Show(
+                "Dark mode limits the maximum brightness of all colors in order to allow better filming. "
+                + "Do not forget to undo the changes in the program or to save them to a separate file!"
+                + Environment.NewLine + Environment.NewLine
+                + (brightModeVm.AffectsOnlySelection
+                    ? $"Only the {StringUtil.Pluralize(brightModeVm.AffectedBlocks.Count(), "selected block")} will be affected."
+                    : "All blocks in the sequence will be affected."),
+                "Dark mode",
                 MessageBoxButton.OKCancel,
                 MessageBoxImage.Information
             );

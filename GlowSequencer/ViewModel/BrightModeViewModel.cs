@@ -8,20 +8,30 @@ using System.Windows.Media;
 
 namespace GlowSequencer.ViewModel
 {
+    public enum BrightModeType
+    {
+        Brighten,
+        Darken
+    }
+
     // Note that this is not yet observable, because it is only used for a MessageBox so far.
     public class BrightModeViewModel
     {
-        /// <summary>Threshold of the brightest channel of a color. All darker colors will be brigthened to reach this threshold.</summary>
-        private const int BRIGHTNESS_THRESHOLD = 100;
+        /// <summary>Threshold of the brightest channel of a color. In bright mode, all darker colors will be brigthened to reach this threshold.</summary>
+        private const int TOO_DARK_THRESHOLD = 100;
+        /// <summary>Threshold of the brightest channel of a color. In dark mode, all brighter colors will be darkened to reach this threshold.</summary>
+        private const int TOO_BRIGHT_THRESHOLD = 20;
 
         private readonly SequencerViewModel sequencer;
+        private readonly BrightModeType type;
 
         public IEnumerable<BlockViewModel> AffectedBlocks => (sequencer.SelectedBlocks.Any() ? sequencer.SelectedBlocks : (IEnumerable<BlockViewModel>)sequencer.AllBlocks);
         public bool AffectsOnlySelection => sequencer.SelectedBlocks.Any();
 
-        public BrightModeViewModel(SequencerViewModel sequencer)
+        public BrightModeViewModel(SequencerViewModel sequencer, BrightModeType type)
         {
             this.sequencer = sequencer;
+            this.type = type;
         }
 
         public void Execute()
@@ -38,26 +48,31 @@ namespace GlowSequencer.ViewModel
             {
                 if (block is ColorBlockViewModel colorBlock)
                 {
-                    colorBlock.Color = BrightenColor(colorBlock.Color);
+                    colorBlock.Color = AdjustColor(colorBlock.Color);
                 }
                 else if (block is RampBlockViewModel rampBlock)
                 {
-                    rampBlock.StartColor = BrightenColor(rampBlock.StartColor);
-                    rampBlock.EndColor = BrightenColor(rampBlock.EndColor);
+                    rampBlock.StartColor = AdjustColor(rampBlock.StartColor);
+                    rampBlock.EndColor = AdjustColor(rampBlock.EndColor);
                 }
                 else if (block is GroupBlockViewModel groupBlock)
                     _ExecuteForBlocks(groupBlock.Children);
             }
         }
 
-        private Color BrightenColor(Color color)
+        private Color AdjustColor(Color color)
         {
             int brightestValue = Math.Max(color.R, Math.Max(color.G, color.B));
-            // Do not modify black or colors that are already bright enough.
-            if (brightestValue == 0 || brightestValue >= BRIGHTNESS_THRESHOLD)
+            // Do not modify black or colors that are already bright/dark enough.
+            if (brightestValue == 0)
+                return color;
+            if (type == BrightModeType.Brighten && brightestValue >= TOO_DARK_THRESHOLD)
+                return color;
+            if (type == BrightModeType.Darken && brightestValue <= TOO_BRIGHT_THRESHOLD)
                 return color;
 
-            float factor = (float)BRIGHTNESS_THRESHOLD / brightestValue;
+            int targetBrightness = (type == BrightModeType.Brighten ? TOO_DARK_THRESHOLD : TOO_BRIGHT_THRESHOLD);
+            float factor = (float)targetBrightness / brightestValue;
             return GloColor.FromRGB(
                     (int)Math.Round(color.R * factor),
                     (int)Math.Round(color.G * factor),
