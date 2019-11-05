@@ -11,6 +11,8 @@ using WindowsInput;
 using WindowsInput.Native;
 using GlowSequencer.Model;
 using GlowSequencer.ViewModel;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace GlowSequencer
 {
@@ -22,6 +24,9 @@ namespace GlowSequencer
         }
 
         private const string GLO_SUBDIR_NAME = "___tmp";
+        private const int MAX_ATTEMPTS_PER_TRACK = 5;
+        /// <summary>Approximate coordinates of the first letter in the status line of the Aerotech window.</summary>
+        private static readonly Int32Rect WINDOW_STATUS_RECT = new Int32Rect(41, 531, 7, 10);
 
         private readonly TransferToEquipmentSettings settings;
         private readonly IList<Track> tracks;
@@ -113,6 +118,23 @@ namespace GlowSequencer
                         await Task.Delay(settings.DelayBetweenKeys, cancel);
                         Press(VirtualKeyCode.RETURN);
                         await Task.Delay(settings.DelayBetweenKeys + settings.DelayForUpload, cancel);
+
+                        // Repeat transfer until status is successful.
+                        int attempts = 0;
+                        while(!ReadStatusSafely(log))
+                        {
+                            if(++attempts >= MAX_ATTEMPTS_PER_TRACK)
+                            {
+                                log.Report($"  Detected failure! Skipping after {MAX_ATTEMPTS_PER_TRACK} attempts.");
+                                break;
+                            }
+                            log.Report("  Detected failure! Retrying ...");
+                            Press(VirtualKeyCode.F8);
+                            await Task.Delay(settings.DelayBetweenKeys, cancel);
+                            Press(VirtualKeyCode.RETURN);
+                            await Task.Delay(settings.DelayBetweenKeys + settings.DelayForUpload, cancel);
+                        }
+
                         Press(VirtualKeyCode.DOWN);
                         await Task.Delay(settings.DelayBetweenKeys, cancel);
 
@@ -239,10 +261,58 @@ namespace GlowSequencer
         }
 
 
+        private bool ReadStatusSafely(IProgress<string> log)
+        {
+            try { return ReadStatus(); }
+            catch(Exception e) {
+                Console.Error.WriteLine(e);
+                log.Report("Failed to read pixels from window! Assuming success.");
+                return true;
+            }
+        }
+
+        private bool ReadStatus()
+        {
+            if (aerotechProc.HasExited)
+                throw new InvalidOperationException("Process no longer available.");
+            IntPtr hdc = GetDC(aerotechProc.MainWindowHandle);
+
+            // Read all pixels in the hardcoded status rectangle.
+            var ys = Enumerable.Range(WINDOW_STATUS_RECT.Y, WINDOW_STATUS_RECT.Height);
+            var xs = Enumerable.Range(WINDOW_STATUS_RECT.X, WINDOW_STATUS_RECT.Width);
+            var statusSamples = ys.SelectMany(y => xs.Select(x => GetPixelColor(hdc, x, y))).ToList();
+            ReleaseDC(aerotechProc.MainWindowHandle, hdc);
+
+            // Return false if there are any red-looking pixels in the rectangle.
+            return !statusSamples.Any(c => c.R > c.G + 10 && c.R > c.B + 10);
+        }
+
+        private System.Windows.Media.Color GetPixelColor(IntPtr hdc, int x, int y)
+        {
+            uint c = GetPixel(hdc, x, y);
+            return System.Windows.Media.Color.FromRgb(
+                (byte)(c & 0x000000FF),
+                (byte)((c & 0x0000FF00) >> 8),
+                (byte)((c & 0x00FF0000) >> 16));
+        }
+
+
 
 
         // Activate an application window.
-        [System.Runtime.InteropServices.DllImport("USER32.DLL")]
+        [DllImport("user32.DLL")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        // Acquire device context.
+        [DllImport("user32.dll")]
+        static extern IntPtr GetDC(IntPtr hwnd);
+
+        // Release device context.
+        [DllImport("user32.dll")]
+        static extern Int32 ReleaseDC(IntPtr hwnd, IntPtr hdc);
+
+        // Read a pixel from a device context.
+        [DllImport("gdi32.dll")]
+        static extern uint GetPixel(IntPtr hdc, int nXPos, int nYPos);
     }
 }
