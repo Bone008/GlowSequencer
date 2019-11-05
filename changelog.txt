@@ -4,6 +4,10 @@
 
 Changelog
 
+v1.8.1 (2019-11-05):
+- Added failure detection & retry logic to automatic transfers.
+- Added "Dark mode" utility to facilitate filming rehearsals.
+
 v1.8.0 (2019-01-03):
 - Added pipette feature to pick colors from other blocks.
 - Add sequence file name to auto-generated glo files.
