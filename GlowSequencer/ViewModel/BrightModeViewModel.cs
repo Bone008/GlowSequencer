@@ -18,9 +18,9 @@ namespace GlowSequencer.ViewModel
     public class BrightModeViewModel
     {
         /// <summary>Threshold of the brightest channel of a color. In bright mode, all darker colors will be brigthened to reach this threshold.</summary>
-        private const int TOO_DARK_THRESHOLD = 100;
+        private const int TOO_DARK_THRESHOLD = 20;
         /// <summary>Threshold of the brightest channel of a color. In dark mode, all brighter colors will be darkened to reach this threshold.</summary>
-        private const int TOO_BRIGHT_THRESHOLD = 20;
+        private const int TOO_BRIGHT_THRESHOLD = 10;
 
         private readonly SequencerViewModel sequencer;
         private readonly BrightModeType type;
