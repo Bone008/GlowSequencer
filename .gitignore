@@ -5,3 +5,5 @@ packages/
 *.vsp
 *.vspx
 *.suo
+
+*.idea/
