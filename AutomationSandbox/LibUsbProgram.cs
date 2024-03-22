@@ -13,17 +13,25 @@ namespace AutomationSandbox
     {
         static void Main(string[] args)
         {
+            IClubConnection clubConnection = new ClubConnectionUtility();
+            List<ConnectedDevice> clubs = clubConnection.ListConnectedClubs();
+            foreach (var club in clubs)
+            {
+                Console.WriteLine($"Id: {club.deviceId}, name: {club.name}");
+            }
+
+            return;
             Console.WriteLine("All devices:");
             UsbDevice.AllDevices.ToList().ForEach(usbRegistry =>
             {
-                /*foreach (var p in usbRegistry.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any()))
-                    Console.WriteLine(p.Name + " = " + p.GetValue(usbRegistry));
-
+                //This somehow disables opening the device later
+                // foreach (var p in usbRegistry.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any()))
+                //     Console.WriteLine(p.Name + " = " + p.GetValue(usbRegistry));
+                //
+                
                 Console.WriteLine("props:");
                 foreach (var x in usbRegistry.DeviceProperties)
-                    Console.WriteLine("  " + x.Key + " = " + x.Value);*/
-
-
+                    Console.WriteLine("  " + x.Key + " = " + x.Value);
                 
 
                 UsbDevice device;
@@ -35,17 +43,19 @@ namespace AutomationSandbox
 
                 bool success;
 
-                LibUsbDotNet.Main.UsbSetupPacket packet = new LibUsbDotNet.Main.UsbSetupPacket(66, 209, 0, 0, 0);
+                LibUsbDotNet.Main.UsbSetupPacket packet = new LibUsbDotNet.Main.UsbSetupPacket(0x42, 0xd1, 0, 0, 0);
                 int lengthTransferred;
-                success = device.ControlTransfer(ref packet, null, 0, out lengthTransferred);
-                Console.WriteLine("ctl transfer: " + success);
+                //success = device.ControlTransfer(ref packet, null, 0, out lengthTransferred);
+                //Console.WriteLine("ctl transfer: " + success);
 
                 Thread.Sleep(2000);
 
-                Console.WriteLine("Trying to write sth ...");
+                //Console.WriteLine("Trying to write sth ...");
 
-                UsbEndpointWriter writer = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk);
-                transferSomething(writer, 0);
+                //UsbEndpointWriter writer = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk);
+                //transferSomething(writer, 0);
+                var info = device.Info;
+                Console.WriteLine($"Info: \n{info.ToString()}");
 
 
                 success = device.Close();

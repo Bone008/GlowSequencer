@@ -52,7 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveWindowProgram.cs" />
+    <Compile Include="ClubConnectionUtility.cs" />
+    <Compile Include="CommunicationUtility.cs" />
     <Compile Include="ComProgram.cs" />
+    <Compile Include="IClubConnection.cs" />
     <Compile Include="LibUsbProgram.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
