@@ -11,7 +11,7 @@ namespace AutomationSandbox
         public struct TransferHeader
         {
             public byte command;
-            public byte returnLength;
+            public byte dataLength;
             public byte addressLe0; // LSB
             public byte addressLe1; // MSB
             public byte unknown1;//0x00
@@ -33,21 +33,21 @@ namespace AutomationSandbox
             public byte[] AsBuffer {
             get
             {
-                byte[] buffer = new byte[] { command, returnLength, addressLe0, addressLe1, unknown1, unknown2 };
+                byte[] buffer = new byte[] { command, dataLength, addressLe0, addressLe1, unknown1, unknown2 };
                 return buffer;
             }}
         }
-        public static TransferHeader? CreateHeader(byte[] headerData)
+        public static OperationResult<TransferHeader> CreateHeader(byte[] headerData)
         {
             if (headerData.Length < 4)
             {
-                return null;
+                return OperationResult<TransferHeader>.Fail("Header data is too short!");
             }
 
             TransferHeader header = new TransferHeader()
             {
                 command = headerData[0],
-                returnLength = headerData[1],
+                dataLength = headerData[1],
                 addressLe0 = headerData[2],
                 addressLe1 = headerData[3],
                 unknown1 = 0x00,
@@ -56,55 +56,128 @@ namespace AutomationSandbox
 
             if (headerData.Length == 4)
             {
-                return header;
+                return OperationResult<TransferHeader>.Success(header);
             }
 
             if (headerData.Length == 6)
             {
                 header.unknown1 = headerData[4];
                 header.unknown2 = headerData[5];
-                return header;
+                return OperationResult<TransferHeader>.Success(header);
             }
 
-            return null;
+            return OperationResult<TransferHeader>.Fail("Header data length does not match!");
         }
 
-        public static byte[] ReadContinuously(UsbDevice device, TransferHeader header, int amount)
+        public static OperationResult<byte[]> ReadContinuously(UsbDevice device, TransferHeader header, int amount)
         {
             int startAddress = header.Address;
-            byte[] result = new byte[header.returnLength * amount];
+            byte[] result = new byte[header.dataLength * amount];
             for (int i = 0; i < amount; i++)
             {
-                header.Address = (ushort)(startAddress + (i * header.returnLength));
+                header.Address = (ushort)(startAddress + (i * header.dataLength));
                 byte[] headerBuffer = header.AsBuffer;
-                byte[] readBuffer = WriteReadBulk(device, headerBuffer, header.returnLength+6);
-                Array.Copy(readBuffer, 6, result, (i* header.returnLength), header.returnLength);
+                if (WriteReadBulk(device, headerBuffer, header.dataLength+6).IsFail(out OperationResult<byte[]> readResult))
+                {
+                    return OperationResult<byte[]>.Fail($"Continuous Read failed in block {i}", readResult.ErrorMessage)!;
+                }
+                byte[] readBuffer = readResult.Data!;
+                Array.Copy(readBuffer, 6, result, (i* header.dataLength), header.dataLength);
             }
 
-            return result;
+            return OperationResult<byte[]>.Success(result);
         }
 
-        private static byte[] WriteReadBulk(UsbDevice device, byte[] writeBuffer, int readBufferSize)
+        public static OperationResult WriteContinuously(UsbDevice device, TransferHeader header, byte[] data, int amount, byte[] expectedReturn)
         {
-            WriteBulk(device, writeBuffer);
-            return ReadBulk(device, readBufferSize);
+            //pad data to match header.dataLength * amount
+            if (data.Length < header.dataLength * amount)
+            {
+                byte[] newData = new byte[header.dataLength * amount];
+                Array.Copy(data, newData, data.Length);
+                data = newData;
+            }
+            
+            int startAddress = header.Address;
+            for (int i = 0; i < amount; i++)
+            {
+                header.Address = (ushort)(startAddress + (i * header.dataLength));
+                byte[] headerBuffer = header.AsBuffer;
+                byte[] writeBuffer = new byte[headerBuffer.Length + header.dataLength];
+                Array.Copy(headerBuffer, writeBuffer, headerBuffer.Length);
+                Array.Copy(data, (i*header.dataLength), writeBuffer, headerBuffer.Length, header.dataLength);
+                Console.WriteLine($"Writing: {BitConverter.ToString(writeBuffer)}");
+                if (WriteReadBulk(device, writeBuffer, expectedReturn.Length).IsFail(out OperationResult<byte[]> writeResult))
+                {
+                    return OperationResult.Fail($"Continuous Write failed in block {i}", writeResult.ErrorMessage);
+                }
+                byte[] readBuffer = writeResult.Data!;
+                if (expectedReturn.Length > 0)
+                {
+                    for (int j = 0; j < expectedReturn.Length; j++)
+                    {
+                        if (readBuffer[j] != expectedReturn[j])
+                        {
+                            return OperationResult.Fail($"Expected return value not found! Expected: {BitConverter.ToString(expectedReturn)}, found: {BitConverter.ToString(readBuffer)}");
+                        }
+                    }
+                }
+            }
+
+            return OperationResult.Success();
         }
         
-        private static void WriteBulk(UsbDevice device, byte[] buffer)
+        public static OperationResult<byte[]?> WriteReadBulk(UsbDevice device, byte[] writeBuffer, int readBufferSize)
         {
+            if(WriteBulk(device, writeBuffer).IsFail(out OperationResult writeResult))
+            {
+                return OperationResult<byte[]>.Fail(writeResult.ErrorMessage);
+            }
             
+            if(ReadBulk(device, readBufferSize).IsFail(out OperationResult<byte[]> readResult))
+            {
+                return OperationResult<byte[]>.Fail(readResult.ErrorMessage);
+            }
+            
+            return OperationResult<byte[]>.Success(readResult.Data!)!;
+        }
+        
+        private static OperationResult WriteBulk(UsbDevice device, byte[] buffer)
+        {
+            if (buffer.Length == 0)
+            {
+                return OperationResult.Fail("Buffer is empty!");
+            }
             ErrorCode errorCode = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk)
                 .Write(buffer, 1000, out int transferLength);
-            Console.WriteLine($"write bulk {buffer.ToString()} resulted in {errorCode.ToString()}");
+            if (errorCode == ErrorCode.Success)
+            {
+                return OperationResult.Success();
+            }
+            return OperationResult.Fail($"write bulk {BitConverter.ToString(buffer)} resulted in {errorCode.ToString()}");
         }
 
-        private static byte[] ReadBulk(UsbDevice device, int readBufferSize)
+        private static OperationResult<byte[]?> ReadBulk(UsbDevice device, int readBufferSize)
         {
             byte[] buffer = new byte[readBufferSize];
             ErrorCode errorCode = device.OpenEndpointReader(ReadEndpointID.Ep01, readBufferSize, EndpointType.Bulk)
                 .Read(buffer, 1000, out int transferLength);
-            Console.WriteLine($"read bulk: {buffer.ToString()} with code {errorCode.ToString()}");
-            return buffer;
+            if (errorCode == ErrorCode.Success)
+            {
+                return OperationResult<byte[]>.Success(buffer)!;
+            }
+            return OperationResult<byte[]>.Fail($"read bulk: {BitConverter.ToString(buffer)} with code {errorCode.ToString()}");
+        }
+
+        public static OperationResult WriteControl(UsbDevice device)
+        {
+            UsbSetupPacket packet = new UsbSetupPacket(0x42, 0xd1, 0, 0, 0);
+            bool success = device.ControlTransfer(ref packet, null, 0, out _);
+            if (success)
+            {
+                return OperationResult.Success();
+            }
+            return OperationResult.Fail($"Control transfer failed for {packet.ToString()}!");
         }
     }
 }

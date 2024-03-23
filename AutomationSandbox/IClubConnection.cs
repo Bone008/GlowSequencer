@@ -9,6 +9,7 @@ namespace AutomationSandbox
         public string connectedPortId; //unique id for the usb port (more testing needed with hubs)
         public string name;
         public string groupName;
+        public string programName;
     }
     
     public interface IClubConnection
@@ -24,23 +25,23 @@ namespace AutomationSandbox
         /// Opens all connected club devices and retrieves the names and group_names
         /// </summary>
         /// <returns></returns>
-        List<ConnectedDevice> ListConnectedClubs();
+        OperationResult<List<ConnectedDevice>?> ListConnectedClubs();
 
-        ConnectedDevice GetConnectedClubByPortId(string connectedPortId);
+        OperationResult<ConnectedDevice> GetConnectedClubByPortId(string connectedPortId);
         
-        string ReadName(string connectedPortId);
-        void WriteName(string connectedPortId, string name);
+        OperationResult<string> ReadName(string connectedPortId);
+        OperationResult WriteName(string connectedPortId, string name);
 
-        string ReadGroupName(string connectedPortId);
-        void WriteGroupName(string connectedPortId, string groupName);
+        OperationResult<string> ReadGroupName(string connectedPortId);
+        OperationResult WriteGroupName(string connectedPortId, string groupName);
 
-        string ReadProgramName(string connectedPortId);
-        void WriteProgramName(string connectedPortId, string programName);
-        byte[] ReadProgram(string connectedPortId);
-        void WriteProgram(string connectedPortId, byte[] programData);
+        OperationResult<string> ReadProgramName(string connectedPortId);
+        OperationResult WriteProgramName(string connectedPortId, string programName);
+        OperationResult<byte[]> ReadProgram(string connectedPortId);
+        OperationResult WriteProgram(string connectedPortId, byte[] programData);
 
-        void Start(string connectedPortId);
-        void Stop(string connectedPortId);
-        void SetColor(string connectedPortId, byte r, byte g, byte b);
+        OperationResult Start(string connectedPortId);
+        OperationResult Stop(string connectedPortId);
+        OperationResult SetColor(string connectedPortId, byte r, byte g, byte b);
     }
 }
