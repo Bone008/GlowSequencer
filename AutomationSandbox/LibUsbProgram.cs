@@ -1,17 +1,13 @@
-﻿using LibUsbDotNet;
-using LibUsbDotNet.Main;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using GlowSequencer.Model;
-using LibUsbDotNet.DeviceNotify;
 
 namespace AutomationSandbox
 {
     class LibUsbProgram
     {
-        public static IDeviceNotifier UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
         static void Main(string[] args)
         {
             IClubConnection clubConnection = new ClubConnectionUtility();
@@ -299,64 +295,6 @@ namespace AutomationSandbox
             {
                 Console.WriteLine("Failed to stop: " + stopOr.ErrorMessage);
             }
-        }
-        
-
-        private static void transferSomething(UsbEndpointWriter writer, int dat)
-        {
-            //doBulkTransferSend(writer, 99, 255, -1);
-
-            byte[] buf = new byte[32];
-
-            // command
-            buf[0] = 99;
-            // payload
-            buf[1] = (byte)((0xff0000 & dat) >> 16);
-            buf[2] = (byte)((0xff00 & dat) >> 8);
-            buf[3] = (byte)(dat & 0xff);
-
-            sendBuffer(writer, buf);
-
-            // TODO doBulkTransferReceive(0, false);
-        }
-
-        private static ErrorCode doBulkTransferSend(UsbEndpointWriter writer, int command, int dat2_8bit, int dat3_24bit)
-        {
-            byte[] buf = new byte[32];
-
-            // command
-            buf[0] = (byte)(command & 0xff);
-
-            // payload
-            if (dat2_8bit != 255)
-                buf[1] = (byte)(dat2_8bit & 0xff);
-            if (dat3_24bit != -1)
-            {
-                buf[2] = (byte)(dat3_24bit & 0xff);
-                buf[3] = (byte)(dat3_24bit >> 8 & 0xff);
-                buf[4] = (byte)(dat3_24bit >> 16 & 0xff);
-                buf[5] = 0;
-            }
-
-            return sendBuffer(writer, buf);
-        }
-
-        private static ErrorCode sendBuffer(UsbEndpointWriter writer, byte[] buf)
-        {
-            int transferLength;
-            return writer.Write(buf, 1000, out transferLength);
-        }
-        
-        private static void OnDeviceNotifyEvent(object sender, DeviceNotifyEventArgs e)
-        {
-            // A Device system-level event has occured
-
-            //Console.SetCursorPosition(0,Console.CursorTop);
-
-            Console.WriteLine("Device event:" + e.ToString()); // Dump the event info to output.
-
-            Console.WriteLine();
-            Console.Write("[Press any key to exit]");
         }
     }
 }
