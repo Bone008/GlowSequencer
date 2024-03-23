@@ -8,107 +8,117 @@ namespace AutomationSandbox
 {
     public class ClubConnectionUtility: IClubConnection
     {
-        public List<ConnectedDevice> ListConnectedClubs()
-        {
-            List<string> ids = GetConnectedClubs();
-            Console.WriteLine($"found {ids.Count} clubs");
-            List<ConnectedDevice> connectedDevices = new List<ConnectedDevice>();
-            foreach (string id in ids)
-            {
-                UsbDevice device = OpenDevice(id);
-                Console.WriteLine($"Reading device: {id}");
-                connectedDevices.Add(new ConnectedDevice()
-                {
-                    deviceId = id,
-                    name = ReadNameFromDevice(device),
-                    groupName = "not implemented"//ReadGroupNameFromDevice(device),
-                });
-                device.Close();
-                Console.WriteLine($"Closed device: {id}");
-            }
-
-            return connectedDevices;
-        }
-
-        public string ReadName(string deviceId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteName(string deviceId, string name)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public string ReadGroupName(string deviceId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteGroupName(string deviceId, string groupName)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public string ReadProgramName(string deviceId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteProgramName(string deviceId, string programName)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public byte[] ReadProgram(string deviceId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void WriteProgram(string deviceId, byte[] programData)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Start(string deviceId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Stop(string deviceId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void SetColor(string deviceId, byte r, byte g, byte b)
-        {
-            throw new System.NotImplementedException();
-        }
-        
-        
-        
-
-        private List<string> GetConnectedClubs()
+        public List<string> GetConnectedPortIds()
         {
             return UsbDevice.AllDevices.ToList()
                 .Where(x => x.DeviceProperties["DeviceDesc"].ToString() == "Glo-Ultimate")
                 .Select(y => y.DeviceProperties["DeviceID"].ToString()).ToList();
         }
+        
+        public List<ConnectedDevice> ListConnectedClubs()
+        {
+            List<string> connectedPortIds = GetConnectedPortIds();
+            Console.WriteLine($"found {connectedPortIds.Count} clubs");
+            List<ConnectedDevice> connectedDevices = new List<ConnectedDevice>();
+            foreach (string connectedPortId in connectedPortIds)
+            {
+                connectedDevices.Add(GetConnectedClubByPortId(connectedPortId));
+            }
 
-        private UsbDevice OpenDevice(string deviceId)
+            return connectedDevices;
+        }
+
+        public ConnectedDevice GetConnectedClubByPortId(string connectedPortId)
+        {
+            UsbDevice device = OpenDevice(connectedPortId);
+            Console.WriteLine($"Reading device: {connectedPortId}");
+            ConnectedDevice connectedDevice = new ConnectedDevice()
+            {
+                connectedPortId = connectedPortId,
+                name = ReadNameFromDevice(device),
+                groupName = "not implemented"//ReadGroupNameFromDevice(device),
+            };
+            device.Close();
+            Console.WriteLine($"Closed device: {connectedPortId}");
+            return connectedDevice;
+        }
+
+        public string ReadName(string connectedPortId)
+        {
+            UsbDevice device = OpenDevice(connectedPortId);
+            string name = ReadNameFromDevice(device);
+            device.Close();
+            return name;
+        }
+
+        public void WriteName(string connectedPortId, string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string ReadGroupName(string connectedPortId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void WriteGroupName(string connectedPortId, string groupName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string ReadProgramName(string connectedPortId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void WriteProgramName(string connectedPortId, string programName)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public byte[] ReadProgram(string connectedPortId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void WriteProgram(string connectedPortId, byte[] programData)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Start(string connectedPortId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Stop(string connectedPortId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SetColor(string connectedPortId, byte r, byte g, byte b)
+        {
+            throw new System.NotImplementedException();
+        }
+        
+        
+        
+
+
+        private UsbDevice OpenDevice(string connectedPortId)
         {
             UsbRegistry usbRegistry = UsbDevice.AllDevices
-                .ToList().FirstOrDefault(x => x.DeviceProperties["DeviceID"].ToString() == deviceId);
+                .ToList().FirstOrDefault(x => x.DeviceProperties["DeviceID"].ToString() == connectedPortId);
             if (usbRegistry == null)
             {
-                //Console.WriteLine($"Unable to find device with id {deviceId}!");
+                //Console.WriteLine($"Unable to find device with id {connectedPortId}!");
                 return null;
             }
             
             UsbDevice device;
             if(!usbRegistry.Open(out device))
             {
-               //Console.WriteLine($"Unable to open device with id {deviceId}!");
+               //Console.WriteLine($"Unable to open device with id {connectedPortId}!");
                 return null;
             }
 

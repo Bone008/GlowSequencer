@@ -17,7 +17,7 @@ namespace AutomationSandbox
             List<ConnectedDevice> clubs = clubConnection.ListConnectedClubs();
             foreach (var club in clubs)
             {
-                Console.WriteLine($"Id: {club.deviceId}, name: {club.name}");
+                Console.WriteLine($"ConnectedPortId: {club.connectedPortId}, name: {club.name}, group_name: {club.groupName}");
             }
 
             return;
