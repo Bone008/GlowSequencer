@@ -61,11 +61,18 @@
     <Compile Include="LibUsbProgram.cs" />
     <Compile Include="OperationResult.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProgramConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GlowSequencer\GlowSequencer.csproj">
+      <Project>{7876f282-ebc8-412f-8967-7b918177701a}</Project>
+      <Name>GlowSequencer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

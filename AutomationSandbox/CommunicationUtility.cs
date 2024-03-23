@@ -1,6 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿//#define SIMULATE_RW
+
+using System;
+using System.Collections.Generic;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 
@@ -87,6 +88,31 @@ namespace AutomationSandbox
 
             return OperationResult<byte[]>.Success(result);
         }
+        
+        public static IEnumerable<byte[]> ReadContinuouslyEnumerable(UsbDevice device, TransferHeader header)
+        {
+            int startAddress = header.Address;
+            int i = 0;
+            for (int j = 0; j < 65536/header.dataLength; j++)
+            {
+                header.Address = (ushort)(startAddress + (i * header.dataLength));
+                byte[] headerBuffer = header.AsBuffer;
+        
+                var writeReadResult = WriteReadBulk(device, headerBuffer, header.dataLength + 6);
+                if (writeReadResult.IsFail(out OperationResult<byte[]?> readResult))
+                {
+                    throw new Exception($"Continuous Read failed in block {i}. Error: {readResult.ErrorMessage}");
+                }
+
+                byte[] readBuffer = readResult.Data!;
+                byte[] chunk = new byte[header.dataLength];
+                Array.Copy(readBuffer, 6, chunk, 0, header.dataLength);
+
+                yield return chunk;
+                i++;
+            }
+        }
+
 
         public static OperationResult WriteContinuously(UsbDevice device, TransferHeader header, byte[] data, int amount, byte[] expectedReturn)
         {
@@ -107,7 +133,7 @@ namespace AutomationSandbox
                 Array.Copy(headerBuffer, writeBuffer, headerBuffer.Length);
                 Array.Copy(data, (i*header.dataLength), writeBuffer, headerBuffer.Length, header.dataLength);
                 Console.WriteLine($"Writing: {BitConverter.ToString(writeBuffer)}");
-                if (WriteReadBulk(device, writeBuffer, expectedReturn.Length).IsFail(out OperationResult<byte[]> writeResult))
+                if (WriteReadBulk(device, writeBuffer, expectedReturn.Length).IsFail(out OperationResult<byte[]?> writeResult))
                 {
                     return OperationResult.Fail($"Continuous Write failed in block {i}", writeResult.ErrorMessage);
                 }
@@ -134,12 +160,19 @@ namespace AutomationSandbox
                 return OperationResult<byte[]>.Fail(writeResult.ErrorMessage);
             }
             
-            if(ReadBulk(device, readBufferSize).IsFail(out OperationResult<byte[]> readResult))
+            if(ReadBulk(device, readBufferSize).IsFail(out OperationResult<byte[]?> readResult))
             {
                 return OperationResult<byte[]>.Fail(readResult.ErrorMessage);
             }
-            
+#if SIMULATE_RW
+            byte[] simulatedResultBuffer = new byte[readBufferSize];
+            //copy writeBuffer to simulate read - pad or truncate if necessary
+            Array.Copy(writeBuffer, simulatedResultBuffer, Math.Min(writeBuffer.Length, readBufferSize));
+            Console.WriteLine($"write_read bulk sim result: {BitConverter.ToString(simulatedResultBuffer)}");
+            return OperationResult<byte[]>.Success(simulatedResultBuffer)!;
+#else
             return OperationResult<byte[]>.Success(readResult.Data!)!;
+#endif
         }
         
         private static OperationResult WriteBulk(UsbDevice device, byte[] buffer)
@@ -148,6 +181,10 @@ namespace AutomationSandbox
             {
                 return OperationResult.Fail("Buffer is empty!");
             }
+#if SIMULATE_RW
+            Console.WriteLine($"Simulating write bulk {BitConverter.ToString(buffer)}");
+            return OperationResult.Success();
+#else 
             ErrorCode errorCode = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk)
                 .Write(buffer, 1000, out int transferLength);
             if (errorCode == ErrorCode.Success)
@@ -155,11 +192,16 @@ namespace AutomationSandbox
                 return OperationResult.Success();
             }
             return OperationResult.Fail($"write bulk {BitConverter.ToString(buffer)} resulted in {errorCode.ToString()}");
+#endif
         }
 
         private static OperationResult<byte[]?> ReadBulk(UsbDevice device, int readBufferSize)
         {
             byte[] buffer = new byte[readBufferSize];
+#if SIMULATE_RW
+            Console.WriteLine($"Simulating read bulk");
+            return OperationResult<byte[]?>.Success(buffer);
+#else
             ErrorCode errorCode = device.OpenEndpointReader(ReadEndpointID.Ep01, readBufferSize, EndpointType.Bulk)
                 .Read(buffer, 1000, out int transferLength);
             if (errorCode == ErrorCode.Success)
@@ -167,10 +209,15 @@ namespace AutomationSandbox
                 return OperationResult<byte[]>.Success(buffer)!;
             }
             return OperationResult<byte[]>.Fail($"read bulk: {BitConverter.ToString(buffer)} with code {errorCode.ToString()}");
+#endif
         }
 
         public static OperationResult WriteControl(UsbDevice device)
         {
+#if SIMULATE_RW
+            Console.WriteLine("Simulating control transfer");
+            return OperationResult.Success();
+#else
             UsbSetupPacket packet = new UsbSetupPacket(0x42, 0xd1, 0, 0, 0);
             bool success = device.ControlTransfer(ref packet, null, 0, out _);
             if (success)
@@ -178,6 +225,7 @@ namespace AutomationSandbox
                 return OperationResult.Success();
             }
             return OperationResult.Fail($"Control transfer failed for {packet.ToString()}!");
+#endif
         }
     }
 }

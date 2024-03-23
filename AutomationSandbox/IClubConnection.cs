@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Configuration;
-using System.Threading;
 
 namespace AutomationSandbox
 {
@@ -22,7 +20,7 @@ namespace AutomationSandbox
         /// <returns></returns>
         List<string> GetConnectedPortIds();
         /// <summary>
-        /// Opens all connected club devices and retrieves the names and group_names
+        /// Opens all connected club devices and retrieves the names, group_names and program_names
         /// </summary>
         /// <returns></returns>
         OperationResult<List<ConnectedDevice>?> ListConnectedClubs();
@@ -37,7 +35,8 @@ namespace AutomationSandbox
 
         OperationResult<string> ReadProgramName(string connectedPortId);
         OperationResult WriteProgramName(string connectedPortId, string programName);
-        OperationResult<byte[]> ReadProgram(string connectedPortId);
+        OperationResult<byte[]> ReadProgramAutoDetect(string connectedPortId);
+        OperationResult<byte[]> ReadProgram(string connectedPortId, int amountOfBytes);
         OperationResult WriteProgram(string connectedPortId, byte[] programData);
 
         OperationResult Start(string connectedPortId);

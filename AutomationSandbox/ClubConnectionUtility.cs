@@ -173,14 +173,55 @@ namespace AutomationSandbox
             return OperationResult.Success();
         }
 
-        public OperationResult<byte[]> ReadProgram(string connectedPortId)
+        public OperationResult<byte[]> ReadProgramAutoDetect(string connectedPortId)
         {
-            throw new System.NotImplementedException();
+            if(OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<byte[]>(out OperationResult<byte[]> result, out UsbDevice? data))
+            {
+                return result;
+            }
+            UsbDevice device = data!;
+            
+            if(ReadProgramFromDeviceAutoDetect(device).IsFailWithNewOperatingResultAndData(out result, out byte[] programData))
+            {
+                return result;
+            }
+            
+            device.Close();
+            return OperationResult<byte[]>.Success(programData);
+        }
+        
+        public OperationResult<byte[]> ReadProgram(string connectedPortId, int amountOfBytes)
+        {
+            if(OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<byte[]>(out OperationResult<byte[]> result, out UsbDevice? data))
+            {
+                return result;
+            }
+            UsbDevice device = data!;
+            
+            if(ReadProgramFromDevice(device, amountOfBytes).IsFailWithNewOperatingResultAndData(out result, out byte[] programData))
+            {
+                return result;
+            }
+            
+            device.Close();
+            return OperationResult<byte[]>.Success(programData);
         }
 
         public OperationResult WriteProgram(string connectedPortId, byte[] programData)
         {
-            throw new System.NotImplementedException();
+            if(OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
+            {
+                return result;
+            }
+            UsbDevice device = data!;
+            
+            if(WriteProgramToDevice(device, programData).IsFail(out result))
+            {
+                return result;
+            }
+            
+            device.Close();
+            return OperationResult.Success();
         }
 
         public OperationResult Start(string connectedPortId)
@@ -389,6 +430,125 @@ namespace AutomationSandbox
         private OperationResult StartProgramOnDevice(UsbDevice device)
         {
             return CommunicationUtility.WriteControl(device);
+        }
+        
+        private OperationResult<byte[]> ReadProgramFromDevice(UsbDevice device, int bytesAmount)
+        {
+            //[0x01, 0x10, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00]
+            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
+                0x01, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
+            if(orHeader.IsFailWithNewOperatingResult(out OperationResult<byte[]> result))
+            {
+                return result;
+            }
+            CommunicationUtility.TransferHeader header = orHeader.Data;
+            int amount = (int)Math.Ceiling(bytesAmount / (float) header.dataLength);
+            if(CommunicationUtility.ReadContinuously(device, header, amount).IsFailWithNewOperatingResultAndData(out result, out byte[] programData))
+            {
+                return result;
+            }
+            return OperationResult<byte[]>.Success(programData.Take(bytesAmount).ToArray());
+        }
+        
+        private OperationResult<byte[]> ReadProgramFromDeviceAutoDetect(UsbDevice device)
+        {
+            //[0x01, 0x10, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00]
+            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
+                0x01, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
+            if(orHeader.IsFailWithNewOperatingResult(out OperationResult<byte[]> result))
+            {
+                return result;
+            }
+            CommunicationUtility.TransferHeader header = orHeader.Data;
+            List<byte> retrievedData = new List<byte>();
+            bool sequenceFound = false;
+
+            IEnumerable<byte[]> dataEnumerable = CommunicationUtility.ReadContinuouslyEnumerable(device, header);
+            foreach (byte[] data in dataEnumerable)
+            {
+                int index = 0;
+                // Detect [0xff, 0xff] sequence
+                for(; index < data.Length - 1; index++)
+                {
+                    if(data[index] == 0xff && data[index + 1] == 0xff)
+                    {
+                        sequenceFound = true;
+                        break;
+                    }
+                }
+                retrievedData.AddRange(data.Take(index));
+
+                if(sequenceFound)
+                {
+                    retrievedData.AddRange(new byte[]{0xff,0xff});
+                    break;
+                }
+            }
+
+            if(sequenceFound)
+            {
+                Console.WriteLine("Sequence [0xff, 0xff] found, stopped processing.");
+            }
+            else
+            {
+                Console.WriteLine("Sequence [0xff, 0xff] not found in the data.");
+            }
+            
+            return OperationResult<byte[]>.Success(retrievedData.ToArray());
+        }
+
+        private OperationResult WriteProgramToDevice(UsbDevice device, byte[] programData)
+        {
+            //[0x02, 0x10, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00, ...programData...]
+            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
+                0x02, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
+            if(orHeader.IsFail(out OperationResult result))
+            {
+                return result;
+            }
+            CommunicationUtility.TransferHeader header = orHeader.Data;
+            
+            //[0x03, 0x01, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00]
+            OperationResult<CommunicationUtility.TransferHeader> orInBetweenHeader = CommunicationUtility.CreateHeader(new byte[]{
+                0x03, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
+            if(orHeader.IsFail(out result))
+            {
+                return result;
+            }
+            CommunicationUtility.TransferHeader InBetweenHeader = orInBetweenHeader.Data;
+            
+            //split the programData into chunks of 4*16 bytes
+            int transmissionDataLength = header.dataLength;
+            int consecutiveTransmissions = 4;
+            int chunkSize = consecutiveTransmissions*transmissionDataLength;
+            int amount = (int)Math.Ceiling(programData.Length / (float) chunkSize);
+            for (int i = 0; i < amount; i++)
+            {
+                //in-between transmission (every 4*16 bytes) - reason unknown but necessary
+                InBetweenHeader.Address = header.Address;
+                if(CommunicationUtility.WriteReadBulk(device, InBetweenHeader.AsBuffer, 1).IsFailWithNewOperatingResultAndData(out result, out byte[]? returnData))
+                {
+                    return result;
+                }
+                if(returnData![0] != 0x03)
+                {
+                    return OperationResult.Fail($"In-between transmission failed. Expected 0x03, got {returnData[0]}");
+                }
+                
+                //program transmission
+                byte[] chunk = programData.Skip(i * chunkSize).Take(chunkSize).ToArray();
+                int transmissionAmount = (int)Math.Ceiling(chunk.Length / (float) transmissionDataLength);
+                if(CommunicationUtility.WriteContinuously(device, header, chunk, transmissionAmount, new byte[]{0x02}).IsFail(out result))
+                {
+                    return result;
+                }
+                header.Address += (ushort)chunkSize;
+            }
+            return OperationResult.Success();
         }
     }
 }

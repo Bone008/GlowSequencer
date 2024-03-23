@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using GlowSequencer.Model;
 using LibUsbDotNet.DeviceNotify;
 
 namespace AutomationSandbox
@@ -31,70 +32,84 @@ namespace AutomationSandbox
             //TestWriteAndReadName(clubConnection, clubs, "Testing new Name 4");
             //TestWriteAndReadGroupName(clubConnection, clubs, "AA");
             //TestWriteAndReadProgramName(clubConnection, clubs, "TestProgram Name 2");
-            TestStartAndStop(clubConnection, clubs);
-            TestSetColorAndStop(clubConnection, clubs);
+            //TestStartAndStop(clubConnection, clubs);
+            //TestSetColorAndStop(clubConnection, clubs);
 
-            return;
-            // Hook the device notifier event
-            UsbDeviceNotifier.Enabled = true;
-            UsbDeviceNotifier.OnDeviceNotify += OnDeviceNotifyEvent;
-
-            Console.WriteLine("Listening for device events...");
-            //Console.ReadKey(true);
-            while (!Console.KeyAvailable)
-            {
-                Thread.Sleep(10);
-            }
+            //byte[] programBytes = TestGeneratingProgram();
+            //TestWriteAndReadProgram(clubConnection, clubs, programBytes);
+            //clubConnection.Start(clubs[0].connectedPortId);
+            //TestAutoReadProgram(clubConnection, clubs);
             
-            UsbDeviceNotifier.Enabled = false;  // Disable the device notifier
-
-            // Unhook the device notifier event
-            UsbDeviceNotifier.OnDeviceNotify -= OnDeviceNotifyEvent;
-            return;
-            Console.WriteLine("All devices:");
-            UsbDevice.AllDevices.ToList().ForEach(usbRegistry =>
-            {
-                //This somehow disables opening the device later
-                // foreach (var p in usbRegistry.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any()))
-                //     Console.WriteLine(p.Name + " = " + p.GetValue(usbRegistry));
-                //
-                
-                Console.WriteLine("props:");
-                foreach (var x in usbRegistry.DeviceProperties)
-                    Console.WriteLine("  " + x.Key + " = " + x.Value);
-                
-
-                UsbDevice device;
-                if(!usbRegistry.Open(out device))
-                {
-                    Console.WriteLine("Unable to open device!");
-                    return;
-                }
-
-                bool success;
-
-                LibUsbDotNet.Main.UsbSetupPacket packet = new LibUsbDotNet.Main.UsbSetupPacket(0x42, 0xd1, 0, 0, 0);
-                int lengthTransferred;
-                //success = device.ControlTransfer(ref packet, null, 0, out lengthTransferred);
-                //Console.WriteLine("ctl transfer: " + success);
-
-                Thread.Sleep(2000);
-
-                //Console.WriteLine("Trying to write sth ...");
-
-                //UsbEndpointWriter writer = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk);
-                //transferSomething(writer, 0);
-                var info = device.Info;
-                Console.WriteLine($"Info: \n{info.ToString()}");
-
-
-                success = device.Close();
-                Console.WriteLine("close: " + success);
-            });
             Console.WriteLine("Done!");
-            Console.ReadKey(true);
+            //Console.ReadKey(true);
         }
 
+        private static byte[] TestGeneratingProgram()
+        {
+            GloLoopCommand loopCommand = new GloLoopCommand(2);
+            loopCommand.Commands.AddRange(new GloCommand[]
+            {
+                new GloColorCommand(GloColor.FromRGB(20,0,0)),
+                new GloDelayCommand(100),
+                new GloColorCommand(GloColor.FromRGB(0,20,0)),
+                new GloDelayCommand(100),
+                new GloColorCommand(GloColor.FromRGB(0,0,20)),
+                new GloDelayCommand(100),
+            });
+            
+            GloCommandContainer program = new GloCommandContainer("Program", "END");
+            program.Commands.AddRange(new GloCommand[]
+            {
+                new GloColorCommand(GloColor.FromRGB(20,0,0)),
+                new GloDelayCommand(100),
+                new GloColorCommand(GloColor.FromRGB(0,20,0)),
+                new GloDelayCommand(1000),
+                new GloRampCommand(GloColor.FromRGB(0,0,20),100),
+                new GloRampCommand(GloColor.Black, 1000),
+                loopCommand,
+                new GloRampCommand(GloColor.FromRGB(20,20,0),1000),
+                new GloRampCommand(GloColor.FromRGB(0,20,20),1000),
+                new GloRampCommand(GloColor.FromRGB(20,0,20),1000),
+                new GloDelayCommand(2000),
+            });
+            byte[] programBytes = ProgramConverter.ConvertToBytes(program);
+            Console.WriteLine($"Program bytes: {BitConverter.ToString(programBytes)}");
+            return programBytes;
+        }
+
+        
+        private static void TestWriteAndReadProgram(IClubConnection clubConnection, List<ConnectedDevice> clubs, byte[] programBytes)
+        {
+            OperationResult writeProgramOr = clubConnection.WriteProgram(clubs[0].connectedPortId, programBytes);
+            if (writeProgramOr.IsSuccess)
+            {
+                Console.WriteLine("Written Program!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to write program: " + writeProgramOr.ErrorMessage);
+            }
+
+            OperationResult<byte[]> readProgramOr = clubConnection.ReadProgram(clubs[0].connectedPortId, programBytes.Length);
+            if (readProgramOr.IsSuccess)
+            {
+                Console.WriteLine($"Read Program: {BitConverter.ToString(readProgramOr.Data)}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read program: " + readProgramOr.ErrorMessage);
+            }
+            byte[] readProgram = readProgramOr.Data!;
+            if (!programBytes.SequenceEqual(readProgram))
+            {
+                Console.WriteLine($"Program does not match the read program - Program: <{BitConverter.ToString(programBytes)}> != <{BitConverter.ToString(readProgram)}>");
+            }
+            else
+            {
+                Console.WriteLine("Program matches the read program!");
+            }
+        }
+        
         private static void TestWriteAndReadName(IClubConnection clubConnection, List<ConnectedDevice> clubs, string name = "TestName Longer")
         {
             OperationResult writeNameOr = clubConnection.WriteName(clubs[0].connectedPortId, name);
@@ -224,6 +239,19 @@ namespace AutomationSandbox
             else
             {
                 Console.WriteLine("ProgramName matches the read program name!");
+            }
+        }
+        
+        private static void TestAutoReadProgram(IClubConnection clubConnection, List<ConnectedDevice> clubs)
+        {
+            OperationResult<byte[]> readProgramOr = clubConnection.ReadProgramAutoDetect(clubs[0].connectedPortId);
+            if (readProgramOr.IsSuccess)
+            {
+                Console.WriteLine($"Read Program: {BitConverter.ToString(readProgramOr.Data)}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read program: " + readProgramOr.ErrorMessage);
             }
         }
         
