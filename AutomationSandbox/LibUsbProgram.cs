@@ -26,22 +26,31 @@ namespace AutomationSandbox
                 return;
             }
 
-            //TestWriteAndReadName(clubConnection, clubs, "Testing new Name 4");
-            //TestWriteAndReadGroupName(clubConnection, clubs, "AA");
-            //TestWriteAndReadProgramName(clubConnection, clubs, "TestProgram Name 2");
-            //TestStartAndStop(clubConnection, clubs);
-            //TestSetColorAndStop(clubConnection, clubs);
+            try
+            {
+                //TestWriteAndReadName(clubConnection, clubs, "Testing new Name 4");
+                //TestWriteAndReadGroupName(clubConnection, clubs, "AA");
+                //TestWriteAndReadProgramName(clubConnection, clubs, "TestProgram Name 2");
+                //TestStartAndStop(clubConnection, clubs);
+                //TestSetColorAndStop(clubConnection, clubs);
 
-            //byte[] programBytes = TestGeneratingProgram();
-            //TestWriteAndReadProgram(clubConnection, clubs, programBytes);
-            //clubConnection.Start(clubs[0].connectedPortId);
-            //TestAutoReadProgram(clubConnection, clubs);
+                //byte[] programBytes = TestGeneratingProgram();
+                //TestWriteAndReadProgram(clubConnection, clubs, programBytes);
+                //TestAutoReadProgram(clubConnection, clubs);
+                //clubConnection.Start(clubs[0].connectedPortId);
 
-            //byte[] programBytes = TestGeneratingLongProgram();
-            //foreach (ConnectedDevice club in clubs)
-            //{
-            //   Task.Run(() => TestTransmit(club, clubConnection, programBytes));
-            //}
+                //byte[] programBytes = TestGeneratingLongProgram();
+                //TestWriteAndReadProgram(clubConnection, clubs, programBytes);
+                //foreach (ConnectedDevice club in clubs)
+                //{
+                //   Task.Run(() => TestTransmit(club, clubConnection, programBytes));
+                //}
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
 
             Console.WriteLine("Done!");
@@ -53,6 +62,7 @@ namespace AutomationSandbox
             clubConnection.WriteProgram(club.connectedPortId, programBytes);
             clubConnection.WriteName(club.connectedPortId, "LongProgram");
             clubConnection.Start(club.connectedPortId);
+            Console.WriteLine("===============================");
         }
 
         private static byte[] TestGeneratingProgram()
@@ -106,7 +116,7 @@ namespace AutomationSandbox
             {
                 Console.WriteLine("Program matches the read program!");                
             }
-
+            Console.WriteLine("===============================");
         }
 
         private static void TestWriteAndReadName(IClubConnection clubConnection, List<ConnectedDevice> clubs,
@@ -126,6 +136,7 @@ namespace AutomationSandbox
             {
                 Console.WriteLine("Name matches the read name!");
             }
+            Console.WriteLine("===============================");
         }
 
         private static void TestWriteAndReadGroupName(IClubConnection clubConnection, List<ConnectedDevice> clubs,
@@ -146,6 +157,7 @@ namespace AutomationSandbox
             {
                 Console.WriteLine("GroupName matches the read group name!");
             }
+            Console.WriteLine("===============================");
         }
 
         private static void TestWriteAndReadProgramName(IClubConnection clubConnection, List<ConnectedDevice> clubs,
@@ -166,12 +178,14 @@ namespace AutomationSandbox
             {
                 Console.WriteLine("ProgramName matches the read program name!");
             }
+            Console.WriteLine("===============================");
         }
 
         private static void TestAutoReadProgram(IClubConnection clubConnection, List<ConnectedDevice> clubs)
         {
             byte[] readProgram = clubConnection.ReadProgramAutoDetect(clubs[0].connectedPortId);
             Console.WriteLine($"Read Program: {BitConverter.ToString(readProgram)}");
+            Console.WriteLine("===============================");
         }
 
         private static void TestStartAndStop(IClubConnection clubConnection, List<ConnectedDevice> clubs)
@@ -181,6 +195,7 @@ namespace AutomationSandbox
             Thread.Sleep(2000);
             clubConnection.Stop(clubs[0].connectedPortId);
             Console.WriteLine("Stopped!");
+            Console.WriteLine("===============================");
         }
 
         private static void TestSetColorAndStop(IClubConnection clubConnection, List<ConnectedDevice> clubs)
@@ -190,6 +205,7 @@ namespace AutomationSandbox
             Thread.Sleep(2000);
             clubConnection.Stop(clubs[0].connectedPortId);
             Console.WriteLine("Stopped!");
+            Console.WriteLine("===============================");
         }
 
 

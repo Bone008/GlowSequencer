@@ -262,21 +262,7 @@ namespace GlowSequencer.Usb
 
         public void Stop(string connectedPortId)
         {
-            UsbDevice device = null;
-            try
-            {
-                device = OpenDevice(connectedPortId);
-                SetColor(connectedPortId, 0x00, 0x00, 0x00);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            finally
-            {
-                device?.Close();
-            }
+            SetColor(connectedPortId, 0x00, 0x00, 0x00);
         }
 
         public void SetColor(string connectedPortId, byte r, byte g, byte b)
@@ -471,6 +457,7 @@ namespace GlowSequencer.Usb
             for (int i = 0; i < amount; i++)
             {
                 //in-between transmission (every 4*16 bytes) - reason unknown but necessary
+                inBetweenHeader.Address = header.Address;
                 byte[] returnData = CommunicationUtility.WriteReadBulk(device, inBetweenHeader.AsBuffer, 1);
                 if (returnData[0] != 0x03)
                 {

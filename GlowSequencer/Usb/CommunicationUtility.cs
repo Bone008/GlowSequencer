@@ -137,7 +137,7 @@ namespace GlowSequencer.Usb
                 byte[] writeBuffer = new byte[headerBuffer.Length + header.dataLength];
                 Array.Copy(headerBuffer, writeBuffer, headerBuffer.Length);
                 Array.Copy(data, (i * header.dataLength), writeBuffer, headerBuffer.Length, header.dataLength);
-                Console.WriteLine($"Writing: {BitConverter.ToString(writeBuffer)}");
+                //Console.WriteLine($"Writing: {BitConverter.ToString(writeBuffer)}");
                 byte[] readBuffer = WriteReadBulk(device, writeBuffer, expectedReturn.Length);
                 
                 if (expectedReturn.Length > 0)
@@ -156,11 +156,12 @@ namespace GlowSequencer.Usb
         public static byte[] WriteReadBulk(UsbDevice device, byte[] writeBuffer, int readBufferSize)
         {
 #if SIMULATE_RW
+            Console.WriteLine($"WriteReadBulk sim: {BitConverter.ToString(writeBuffer)}");
             byte[] simulatedResultBuffer = new byte[readBufferSize];
             //copy writeBuffer to simulate read - pad or truncate if necessary
             Array.Copy(writeBuffer, simulatedResultBuffer, Math.Min(writeBuffer.Length, readBufferSize));
             Console.WriteLine($"write_read bulk sim result: {BitConverter.ToString(simulatedResultBuffer)}");
-            return OperationResult<byte[]>.Success(simulatedResultBuffer)!;
+            return simulatedResultBuffer;
 #else
             WriteBulk(device, writeBuffer);
             var result = ReadBulk(device, readBufferSize);
@@ -176,8 +177,9 @@ namespace GlowSequencer.Usb
             }
 #if SIMULATE_RW
             Console.WriteLine($"Simulating write bulk {BitConverter.ToString(buffer)}");
-            return OperationResult.Success();
-#else 
+            return;
+#else
+            Console.WriteLine($"Writing bulk {BitConverter.ToString(buffer)}");
             ErrorCode errorCode = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk)
                 .Write(buffer, 1000, out int transferLength);
             if (errorCode == ErrorCode.Success)
@@ -193,10 +195,11 @@ namespace GlowSequencer.Usb
             byte[] buffer = new byte[readBufferSize];
 #if SIMULATE_RW
             Console.WriteLine($"Simulating read bulk");
-            return OperationResult<byte[]?>.Success(buffer);
+            return buffer;
 #else
             ErrorCode errorCode = device.OpenEndpointReader(ReadEndpointID.Ep01, readBufferSize, EndpointType.Bulk)
                 .Read(buffer, 1000, out int transferLength);
+            Console.WriteLine($"Read bulk {BitConverter.ToString(buffer)}");
             if (errorCode == ErrorCode.Success)
             {
                 return buffer;
@@ -209,7 +212,7 @@ namespace GlowSequencer.Usb
         {
 #if SIMULATE_RW
             Console.WriteLine("Simulating control transfer");
-            return OperationResult.Success();
+            return;
 #else
             UsbSetupPacket packet = new UsbSetupPacket(0x42, 0xd1, 0, 0, 0);
             bool success = device.ControlTransfer(ref packet, null, 0, out _);
