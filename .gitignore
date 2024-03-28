@@ -7,3 +7,6 @@ packages/
 *.suo
 
 *.idea/
+
+.vs/
+*.DotSettings.user
