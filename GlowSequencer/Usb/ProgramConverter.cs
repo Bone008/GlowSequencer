@@ -9,15 +9,21 @@ namespace GlowSequencer.Usb
         public static byte[] ConvertToBytes(GloCommand gloCommand)
         {
             List<byte> bytes = new List<byte>();
+            AddAsBytes(bytes, gloCommand);
+            return bytes.ToArray();
+        }
+
+        private static void AddAsBytes(List<byte> bytes, GloCommand gloCommand)
+        {
             if (gloCommand is GloCommandContainer gloCommandContainer)
             {
                 if (gloCommandContainer is GloLoopCommand loopCommand)
                 {
-                    bytes.AddRange(LoopCommandAsBytes(loopCommand));
+                    AddLoopCommandAsBytes(bytes, loopCommand);
                 }
                 else if (gloCommandContainer.TerminatorName == "END")
                 {
-                    bytes.AddRange(MainContainerAsBytes(gloCommandContainer));
+                    AddMainContainerAsBytes(bytes, gloCommandContainer);
                 }
                 else
                 {
@@ -26,39 +32,34 @@ namespace GlowSequencer.Usb
             }
             else if (gloCommand is GloDelayCommand delayCommand)
             {
-                bytes.AddRange(DelayCommandAsBytes(delayCommand));
+                AddDelayCommandAsBytes(bytes, delayCommand);
             }
             else if (gloCommand is GloColorCommand colorCommand)
             {
-                bytes.AddRange(ColorCommandAsBytes(colorCommand));
+                AddColorCommandAsBytes(bytes, colorCommand);
             }
             else if (gloCommand is GloRampCommand rampCommand)
             {
-                bytes.AddRange(RampCommandAsBytes(rampCommand));
+                AddRampCommandAsBytes(bytes, rampCommand);
             }
             else
             {
                 throw new ArgumentException("Unsupported command type", nameof(gloCommand));
             }
-
-            return bytes.ToArray();
         }
 
-        private static List<byte> MainContainerAsBytes(GloCommandContainer container)
+        private static void AddMainContainerAsBytes(List<byte> bytes, GloCommandContainer container)
         {
-            List<byte> bytes = new List<byte>();
             foreach (var subCommand in container.Commands)
             {
-                bytes.AddRange(ConvertToBytes(subCommand));
+                AddAsBytes(bytes, subCommand);
             }
             bytes.Add(0xff);//END
             bytes.Add(0xff);//Adding an additional end to make reading the program from the device easier
-            return bytes;
         }
 
-        private static List<byte> LoopCommandAsBytes(GloLoopCommand loopCommand)
+        private static void AddLoopCommandAsBytes(List<byte> bytes, GloLoopCommand loopCommand)
         {
-            List<byte> bytes = new List<byte>();
             bytes.Add(0x03); // loop command start
             if (loopCommand.Repetitions is < 0 or > 255)
             {
@@ -67,15 +68,13 @@ namespace GlowSequencer.Usb
             bytes.Add((byte)loopCommand.Repetitions);
             foreach (var subCommand in loopCommand.Commands)
             {
-                bytes.AddRange(ConvertToBytes(subCommand));
+                AddAsBytes(bytes, subCommand);
             }
             bytes.Add(0x05);// loop command end
-            return bytes;
         }
 
-        private static List<byte> DelayCommandAsBytes(GloDelayCommand delayCommand)
+        private static void AddDelayCommandAsBytes(List<byte> bytes, GloDelayCommand delayCommand)
         {
-            List<byte> bytes = new List<byte>();
             if (delayCommand.DelayTicks is >= 0 and <= 255)
             {
                 bytes.Add(0x02); // delay command short
@@ -90,23 +89,18 @@ namespace GlowSequencer.Usb
             {
                 throw new ArgumentOutOfRangeException(nameof(delayCommand.DelayTicks), "Delay ticks must be in range [0, 65535]");
             }
-            return bytes;
         }
 
-        private static List<byte> ColorCommandAsBytes(GloColorCommand colorCommand)
+        private static void AddColorCommandAsBytes(List<byte> bytes, GloColorCommand colorCommand)
         {
-            List<byte> bytes = new List<byte>();
             bytes.Add(0x01); // color command
             bytes.Add((byte)colorCommand.Color.r);
             bytes.Add((byte)colorCommand.Color.g);
             bytes.Add((byte)colorCommand.Color.b);
-            return bytes;
         }
 
-        private static List<byte> RampCommandAsBytes(GloRampCommand rampCommand)
+        private static void AddRampCommandAsBytes(List<byte> bytes, GloRampCommand rampCommand)
         {
-            //Ramp (short): [0x0c, r, g, b, time] Ramp (long): [0x0d, r, g, b, time 2 bytes L.E.] 
-            List<byte> bytes = new List<byte>();
             if (rampCommand.DurationTicks is >= 0 and <= 255)
             {
                 bytes.Add(0x0c); // ramp command short
@@ -127,7 +121,6 @@ namespace GlowSequencer.Usb
             {
                 throw new ArgumentOutOfRangeException(nameof(rampCommand.DurationTicks), "Time must be in range [0, 65535]");
             }
-            return bytes;
         }
 
 

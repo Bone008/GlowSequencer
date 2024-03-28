@@ -7,7 +7,7 @@ using LibUsbDotNet.Main;
 
 namespace GlowSequencer.Usb
 {
-    public class CommunicationUtility
+    public static class CommunicationUtility
     {
         public struct TransferHeader
         {
