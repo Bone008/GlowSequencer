@@ -28,6 +28,11 @@ namespace AutomationSandbox
             operationResult = this;
             return !IsSuccess;
         }
+        
+        public override string ToString()
+        {
+            return IsSuccess ? "Success" : ErrorMessage;
+        }
     }
 
     public class OperationResult<T> : OperationResult

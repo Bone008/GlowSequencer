@@ -26,6 +26,10 @@ namespace AutomationSandbox
                 }
                 set
                 {
+                    if(command == 0x02 && value < 16384)
+                    {
+                        throw new Exception("Address must be greater than 0x0040 (16384) for command 0x02");
+                    }
                     addressLe0 = (byte)(value & 0xFF); 
                     addressLe1 = (byte)((value >> 8) & 0xFF); 
                 }

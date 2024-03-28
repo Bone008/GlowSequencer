@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using GlowSequencer.Model;
 
 namespace AutomationSandbox
@@ -36,10 +37,24 @@ namespace AutomationSandbox
             //clubConnection.Start(clubs[0].connectedPortId);
             //TestAutoReadProgram(clubConnection, clubs);
             
-            Console.WriteLine("Done!");
-            //Console.ReadKey(true);
-        }
+            //byte[] programBytes = TestGeneratingLongProgram();
+            //foreach (ConnectedDevice club in clubs)
+            //{
+            //   Task.Run(() => TestTransmit(club, clubConnection, programBytes));
+            //}
 
+            
+            Console.WriteLine("Done!");
+            Console.ReadKey(true);
+        }
+        
+        private static void TestTransmit(ConnectedDevice club, IClubConnection clubConnection, byte[] programBytes)
+        {
+            Console.WriteLine(clubConnection.WriteProgram(club.connectedPortId, programBytes).ToString());
+            Console.WriteLine(clubConnection.WriteName(club.connectedPortId, "LongProgram").ToString());
+            clubConnection.Start(club.connectedPortId);
+        }
+        
         private static byte[] TestGeneratingProgram()
         {
             GloLoopCommand loopCommand = new GloLoopCommand(2);
@@ -295,6 +310,19 @@ namespace AutomationSandbox
             {
                 Console.WriteLine("Failed to stop: " + stopOr.ErrorMessage);
             }
+        }
+
+        private static byte[] TestGeneratingLongProgram()
+        {
+            GloCommandContainer program = new GloCommandContainer("Program", "END");
+            program.Commands.Add(new GloColorCommand(GloColor.White));
+            //This lead to overflow and writing before the program offset address
+            // int m = (63897 - 4 - 2) / 2;
+            // for (int i = 0; i < m; i++)
+            // {
+            //     program.Commands.Add(new GloDelayCommand(1));;
+            // }
+            return ProgramConverter.ConvertToBytes(program);
         }
     }
 }
