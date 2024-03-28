@@ -34,10 +34,9 @@ namespace GlowSequencer
             EventManager.RegisterClassHandler(typeof(Window), Window.PreviewMouseUpEvent, new MouseButtonEventHandler(OnPreviewMouseUp));
             Application.Current.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 
-            if (e.Args.Length > 0)
+            string fileToLoad = e.Args.SkipWhile(arg => arg.StartsWith("--")).FirstOrDefault();
+            if (fileToLoad != null)
             {
-                string fileToLoad = e.Args[0];
-
                 var main = (ViewModel.MainViewModel)Resources["vm_Main"];
                 main.OpenDocument(fileToLoad);
             }
@@ -65,13 +64,13 @@ namespace GlowSequencer
             //UIElement placementTarget = ((ContextMenu)sender).PlacementTarget;
             //FocusManager.SetFocusedElement(placementTarget, placementTarget);
         }
-        
+
         private void OnPreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
                 draggingTargetState = null;
         }
-        
+
         // Tracks dragging over checkboxes. Null means that no dragging is currently active.
         private bool? draggingTargetState = null;
 
@@ -84,7 +83,7 @@ namespace GlowSequencer
             {
                 checkbox.IsChecked = draggingTargetState;
             }
-            else if(e.LeftButton == MouseButtonState.Released)
+            else if (e.LeftButton == MouseButtonState.Released)
             {
                 // This is a hacky improvement because the global OnPreviewMouseUp does not catch mouse releases
                 // if they happen outside of a window. So we reset the dragging state here as well.

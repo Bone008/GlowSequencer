@@ -107,9 +107,11 @@
     <Compile Include="Audio\WaveformGenerator.cs" />
     <Compile Include="Audio\WaveOutHelper.cs" />
     <Compile Include="Model\Note.cs" />
+    <Compile Include="TransferDirectlyController.cs" />
     <Compile Include="Usb\ClubConnectionUtility.cs" />
     <Compile Include="Usb\CommunicationUtility.cs" />
     <Compile Include="Usb\IClubConnection.cs" />
+    <Compile Include="Usb\FakeClubConnection.cs" />
     <Compile Include="Usb\ProgramConverter.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="Util\StringUtil.cs" />
@@ -208,6 +210,7 @@
       <DependentUpon>TimeUnitEditControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\TransferViewModel.cs" />
+    <Compile Include="View\TransferDirectlyWindow.commands.cs" />
     <Compile Include="View\TransferDirectlyWindow.xaml.cs">
       <DependentUpon>TransferDirectlyWindow.xaml</DependentUpon>
     </Compile>

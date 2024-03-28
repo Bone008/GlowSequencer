@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace GlowSequencer.View
 {
-    public class MusicSegmentCommands
+    public static class MusicSegmentCommands
     {
         public static readonly RoutedUICommand AddSegment = new RoutedUICommand("", "AddSegment", typeof(SequencerCommands));
         public static readonly RoutedUICommand DeleteSegment = new RoutedUICommand("", "DeleteSegment", typeof(SequencerCommands), new InputGestureCollection { new KeyGesture(Key.Delete) });
