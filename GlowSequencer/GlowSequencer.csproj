@@ -108,6 +108,7 @@
     <Compile Include="ViewModel\IPipetteColorTarget.cs" />
     <Compile Include="ViewModel\NotesViewModel.cs" />
     <Compile Include="ViewModel\NoteViewModel.cs" />
+    <Compile Include="ViewModel\TransferDirectlyViewModel.cs" />
     <Compile Include="ViewModel\VisualizationViewModel.cs" />
     <Compile Include="ViewModel\VisualizedTrackViewModel.cs" />
     <Compile Include="View\Elements\PipetteButton.xaml.cs">
@@ -198,6 +199,9 @@
       <DependentUpon>TimeUnitEditControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\TransferViewModel.cs" />
+    <Compile Include="View\TransferDirectlyWindow.xaml.cs">
+      <DependentUpon>TransferDirectlyWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\TransferWindow.xaml.cs">
       <DependentUpon>TransferWindow.xaml</DependentUpon>
     </Compile>
@@ -257,6 +261,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Elements\TimeUnitEditControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\TransferDirectlyWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

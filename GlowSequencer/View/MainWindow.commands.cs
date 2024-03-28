@@ -25,7 +25,8 @@ namespace GlowSequencer.View
         }
 
         public static readonly RoutedCommand ExportGlo = Make(new InputGestureCollection { new KeyGesture(Key.E, ModifierKeys.Control) });
-        public static readonly RoutedCommand ShowTransferWindow = Make(new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
+        public static readonly RoutedCommand ShowTransferWindow = Make();
+        public static readonly RoutedCommand ShowTransferDirectlyWindow = Make(new InputGestureCollection { new KeyGesture(Key.Enter, ModifierKeys.Control) });
 
         public static readonly RoutedCommand ReplaceColor = Make(new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
         public static readonly RoutedCommand BrightMode = Make();
@@ -266,6 +267,11 @@ namespace GlowSequencer.View
         private void CommandBinding_ExecuteShowTransferWindow(object sender, ExecutedRoutedEventArgs e)
         {
             Mastermind.OpenTransferWindow(main);
+        }
+
+        private void CommandBinding_ExecuteShowTransferDirectlyWindow(object sender, ExecutedRoutedEventArgs e)
+        {
+            Mastermind.OpenTransferDirectlyWindow(main);
         }
 
 
