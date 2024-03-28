@@ -1,7 +1,14 @@
-﻿#nullable enable
+﻿using System;
+
+#nullable enable
 
 namespace GlowSequencer.Usb
 {
+    public class UsbOperationException : Exception
+    {
+        public UsbOperationException(string message) : base(message) { }
+    }
+
     public class OperationResult
     {
         public bool IsSuccess { get; protected set; }
@@ -17,6 +24,9 @@ namespace GlowSequencer.Usb
 
         public static OperationResult Success() => new OperationResult(true, string.Empty);
 
+        // Convenience accessor
+        public static OperationResult<T> Success<T>(T data) => OperationResult<T>.Success(data);
+
         public static OperationResult Fail(string message, string innerMessage)
         {
             return new OperationResult(false, message + "\n\t" + innerMessage);
@@ -27,6 +37,12 @@ namespace GlowSequencer.Usb
         {
             operationResult = this;
             return !IsSuccess;
+        }
+
+        public void Unwrap()
+        {
+            if (!IsSuccess)
+                throw new UsbOperationException(ErrorMessage);
         }
     }
 
@@ -84,6 +100,13 @@ namespace GlowSequencer.Usb
             operationResult = OperationResult<T2>.Fail(ErrorMessage)!;
             data = Data!;
             return !IsSuccess;
+        }
+
+        public new T Unwrap()
+        {
+            if (!IsSuccess)
+                throw new UsbOperationException(ErrorMessage);
+            return Data!;
         }
 
     }
