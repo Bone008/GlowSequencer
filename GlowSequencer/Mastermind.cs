@@ -14,6 +14,7 @@ namespace GlowSequencer
         private static HelpWindow winHelp = null;
         private static AboutWindow winAbout = null;
         private static TransferWindow winTransfer = null;
+        private static TransferDirectlyWindow winTransferDirectly = null;
         private static PoppedOutSelectionDataWindow winPoppedOutSelectionData = null;
         private static PoppedOutVisualizationWindow winPoppedOutVisualization = null;
 
@@ -57,6 +58,11 @@ namespace GlowSequencer
         public static void OpenTransferWindow(ViewModel.MainViewModel main)
         {
             OpenWindow(ref winTransfer, () => new TransferWindow(main), () => winTransfer = null);
+        }
+
+        public static void OpenTransferDirectlyWindow(ViewModel.MainViewModel main)
+        {
+            OpenWindow(ref winTransferDirectly, () => new TransferDirectlyWindow(main), () => winTransferDirectly = null);
         }
 
         public static void OpenPoppedOutSelectionPropertiesWindow(double innerWidth, double innerHeight, Action<PoppedOutSelectionDataWindow> closeHandler)

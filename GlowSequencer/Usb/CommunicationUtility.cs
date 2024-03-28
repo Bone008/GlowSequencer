@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 
-namespace AutomationSandbox
+#nullable enable
+
+namespace GlowSequencer.Usb
 {
-    public class CommunicationUtility
+    public static class CommunicationUtility
     {
         public struct TransferHeader
         {
@@ -17,7 +19,7 @@ namespace AutomationSandbox
             public byte addressLe1; // MSB
             public byte unknown1;//0x00
             public byte unknown2;//0x00
-            
+
             public ushort Address
             {
                 get
@@ -31,16 +33,18 @@ namespace AutomationSandbox
                         throw new Exception("Address must be greater than 0x0040 (16384) for command 0x02");
                     }
                     addressLe0 = (byte)(value & 0xFF); 
-                    addressLe1 = (byte)((value >> 8) & 0xFF); 
+                    addressLe1 = (byte)((value >> 8) & 0xFF);
                 }
             }
 
-            public byte[] AsBuffer {
-            get
+            public byte[] AsBuffer
             {
-                byte[] buffer = new byte[] { command, dataLength, addressLe0, addressLe1, unknown1, unknown2 };
-                return buffer;
-            }}
+                get
+                {
+                    byte[] buffer = new byte[] { command, dataLength, addressLe0, addressLe1, unknown1, unknown2 };
+                    return buffer;
+                }
+            }
         }
         public static OperationResult<TransferHeader> CreateHeader(byte[] headerData)
         {
@@ -82,26 +86,26 @@ namespace AutomationSandbox
             {
                 header.Address = (ushort)(startAddress + (i * header.dataLength));
                 byte[] headerBuffer = header.AsBuffer;
-                if (WriteReadBulk(device, headerBuffer, header.dataLength+6).IsFail(out OperationResult<byte[]> readResult))
+                if (WriteReadBulk(device, headerBuffer, header.dataLength + 6).IsFail(out OperationResult<byte[]?> readResult))
                 {
                     return OperationResult<byte[]>.Fail($"Continuous Read failed in block {i}", readResult.ErrorMessage)!;
                 }
                 byte[] readBuffer = readResult.Data!;
-                Array.Copy(readBuffer, 6, result, (i* header.dataLength), header.dataLength);
+                Array.Copy(readBuffer, 6, result, (i * header.dataLength), header.dataLength);
             }
 
             return OperationResult<byte[]>.Success(result);
         }
-        
+
         public static IEnumerable<byte[]> ReadContinuouslyEnumerable(UsbDevice device, TransferHeader header)
         {
             int startAddress = header.Address;
             int i = 0;
-            for (int j = 0; j < 65536/header.dataLength; j++)
+            for (int j = 0; j < 65536 / header.dataLength; j++)
             {
                 header.Address = (ushort)(startAddress + (i * header.dataLength));
                 byte[] headerBuffer = header.AsBuffer;
-        
+
                 var writeReadResult = WriteReadBulk(device, headerBuffer, header.dataLength + 6);
                 if (writeReadResult.IsFail(out OperationResult<byte[]?> readResult))
                 {
@@ -127,7 +131,7 @@ namespace AutomationSandbox
                 Array.Copy(data, newData, data.Length);
                 data = newData;
             }
-            
+
             int startAddress = header.Address;
             for (int i = 0; i < amount; i++)
             {
@@ -135,7 +139,7 @@ namespace AutomationSandbox
                 byte[] headerBuffer = header.AsBuffer;
                 byte[] writeBuffer = new byte[headerBuffer.Length + header.dataLength];
                 Array.Copy(headerBuffer, writeBuffer, headerBuffer.Length);
-                Array.Copy(data, (i*header.dataLength), writeBuffer, headerBuffer.Length, header.dataLength);
+                Array.Copy(data, (i * header.dataLength), writeBuffer, headerBuffer.Length, header.dataLength);
                 Console.WriteLine($"Writing: {BitConverter.ToString(writeBuffer)}");
                 if (WriteReadBulk(device, writeBuffer, expectedReturn.Length).IsFail(out OperationResult<byte[]?> writeResult))
                 {
@@ -156,15 +160,15 @@ namespace AutomationSandbox
 
             return OperationResult.Success();
         }
-        
+
         public static OperationResult<byte[]?> WriteReadBulk(UsbDevice device, byte[] writeBuffer, int readBufferSize)
         {
-            if(WriteBulk(device, writeBuffer).IsFail(out OperationResult writeResult))
+            if (WriteBulk(device, writeBuffer).IsFail(out OperationResult writeResult))
             {
                 return OperationResult<byte[]>.Fail(writeResult.ErrorMessage);
             }
-            
-            if(ReadBulk(device, readBufferSize).IsFail(out OperationResult<byte[]?> readResult))
+
+            if (ReadBulk(device, readBufferSize).IsFail(out OperationResult<byte[]?> readResult))
             {
                 return OperationResult<byte[]>.Fail(readResult.ErrorMessage);
             }
@@ -178,7 +182,7 @@ namespace AutomationSandbox
             return OperationResult<byte[]>.Success(readResult.Data!)!;
 #endif
         }
-        
+
         private static OperationResult WriteBulk(UsbDevice device, byte[] buffer)
         {
             if (buffer.Length == 0)

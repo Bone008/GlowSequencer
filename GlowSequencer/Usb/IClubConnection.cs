@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace AutomationSandbox
+#nullable enable
+
+namespace GlowSequencer.Usb
 {
     public struct ConnectedDevice
     {
@@ -9,7 +11,7 @@ namespace AutomationSandbox
         public string groupName;
         public string programName;
     }
-    
+
     public interface IClubConnection
     {
         /// <summary>
@@ -26,7 +28,7 @@ namespace AutomationSandbox
         OperationResult<List<ConnectedDevice>?> ListConnectedClubs();
 
         OperationResult<ConnectedDevice> GetConnectedClubByPortId(string connectedPortId);
-        
+
         OperationResult<string> ReadName(string connectedPortId);
         OperationResult WriteName(string connectedPortId, string name);
 

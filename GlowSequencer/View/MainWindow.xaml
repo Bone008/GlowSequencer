@@ -17,7 +17,8 @@
         <CommandBinding Command="ApplicationCommands.Save" Executed="CommandBinding_ExecuteSave"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="ApplicationCommands.SaveAs" Executed="CommandBinding_ExecuteSaveAs"  CanExecute="CommandBinding_CanExecuteAlways" />
         <CommandBinding Command="local:SequencerCommands.ExportGlo" Executed="CommandBinding_ExecuteExportGlo"  CanExecute="CommandBinding_CanExecuteAlways" />
-        <CommandBinding Command="local:SequencerCommands.ShowTransferWindow" Executed="CommandBinding_ExecuteShowTransferWindow"  CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.ShowTransferWindow" Executed="CommandBinding_ExecuteShowTransferWindow" CanExecute="CommandBinding_CanExecuteAlways" />
+        <CommandBinding Command="local:SequencerCommands.ShowTransferDirectlyWindow" Executed="CommandBinding_ExecuteShowTransferDirectlyWindow" CanExecute="CommandBinding_CanExecuteAlways" />
 
         <CommandBinding Command="ApplicationCommands.Undo" Executed="CommandBinding_ExecuteUndo" CanExecute="CommandBinding_CanExecuteUndo" />
         <CommandBinding Command="ApplicationCommands.Redo" Executed="CommandBinding_ExecuteRedo" CanExecute="CommandBinding_CanExecuteRedo" />
@@ -87,7 +88,8 @@
                 <MenuItem Header="S_ave session as ..." Command="ApplicationCommands.SaveAs"/>
                 <Separator />
                 <MenuItem Header="_Export *.glo files ..." Command="local:SequencerCommands.ExportGlo"/>
-                <MenuItem Header="_Transfer to equipment ..." Command="local:SequencerCommands.ShowTransferWindow"/>
+                <MenuItem Header="_Transfer directly ..." Command="local:SequencerCommands.ShowTransferDirectlyWindow"/>
+                <MenuItem Header="_Transfer using Aerotech ..." Command="local:SequencerCommands.ShowTransferWindow"/>
                 <Separator />
                 <MenuItem Header="E_xit" Command="ApplicationCommands.Close"/>
             </MenuItem>

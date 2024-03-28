@@ -20,7 +20,7 @@
         <util:InvertedValueConverter x:Key="conv_Invert" />
         <util:MoreVibrantColorConverter x:Key="conv_MoreVibrantColor" />
 
-        <Thickness x:Key="thickness_VerticalScrollBarRight" Right="{StaticResource {x:Static SystemParameters.VerticalScrollBarWidthKey}}"/>
+        <Thickness x:Key="thickness_VerticalScrollBarRight" Right="{StaticResource {x:Static SystemParameters.VerticalScrollBarWidth}}"/>
 
         <!-- Global style for color pickers -->
         <Style TargetType="xctk:ColorPicker">
