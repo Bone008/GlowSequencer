@@ -1,4 +1,4 @@
-﻿using LibUsbDotNet;
+﻿#nullable enable
 
 namespace GlowSequencer.Usb
 {

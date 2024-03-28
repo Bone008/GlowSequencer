@@ -4,6 +4,8 @@ using System.Linq;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 
+#nullable enable
+
 namespace GlowSequencer.Usb
 {
     public class ClubConnectionUtility : IClubConnection

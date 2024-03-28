@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using GlowSequencer.Model;
 
+#nullable enable
+
 namespace GlowSequencer.Usb
 {
     public class ProgramConverter

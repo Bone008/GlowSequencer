@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 
+#nullable enable
+
 namespace GlowSequencer.Usb
 {
     public static class CommunicationUtility
@@ -80,7 +82,7 @@ namespace GlowSequencer.Usb
             {
                 header.Address = (ushort)(startAddress + (i * header.dataLength));
                 byte[] headerBuffer = header.AsBuffer;
-                if (WriteReadBulk(device, headerBuffer, header.dataLength + 6).IsFail(out OperationResult<byte[]> readResult))
+                if (WriteReadBulk(device, headerBuffer, header.dataLength + 6).IsFail(out OperationResult<byte[]?> readResult))
                 {
                     return OperationResult<byte[]>.Fail($"Continuous Read failed in block {i}", readResult.ErrorMessage)!;
                 }
