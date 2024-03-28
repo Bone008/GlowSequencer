@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using GlowSequencer.Model;
 
-namespace AutomationSandbox;
+namespace GlowSequencer.Usb;
 
 public class ProgramConverter
 {
@@ -55,12 +55,12 @@ public class ProgramConverter
         bytes.Add(0xff);//Adding an additional end to make reading the program from the device easier
         return bytes;
     }
-    
+
     private static List<byte> LoopCommandAsBytes(GloLoopCommand loopCommand)
     {
         List<byte> bytes = new List<byte>();
         bytes.Add(0x03); // loop command start
-        if(loopCommand.Repetitions is < 0 or > 255)
+        if (loopCommand.Repetitions is < 0 or > 255)
         {
             throw new ArgumentOutOfRangeException(nameof(loopCommand.Repetitions), "Repetitions must be in range [0, 255]");
         }
@@ -72,11 +72,11 @@ public class ProgramConverter
         bytes.Add(0x05);// loop command end
         return bytes;
     }
-    
+
     private static List<byte> DelayCommandAsBytes(GloDelayCommand delayCommand)
     {
         List<byte> bytes = new List<byte>();
-        if(delayCommand.DelayTicks is >= 0 and <= 255)
+        if (delayCommand.DelayTicks is >= 0 and <= 255)
         {
             bytes.Add(0x02); // delay command short
             bytes.Add((byte)delayCommand.DelayTicks);
@@ -92,7 +92,7 @@ public class ProgramConverter
         }
         return bytes;
     }
-    
+
     private static List<byte> ColorCommandAsBytes(GloColorCommand colorCommand)
     {
         List<byte> bytes = new List<byte>();
@@ -102,12 +102,12 @@ public class ProgramConverter
         bytes.Add((byte)colorCommand.Color.b);
         return bytes;
     }
-    
+
     private static List<byte> RampCommandAsBytes(GloRampCommand rampCommand)
     {
         //Ramp (short): [0x0c, r, g, b, time] Ramp (long): [0x0d, r, g, b, time 2 bytes L.E.] 
         List<byte> bytes = new List<byte>();
-        if(rampCommand.DurationTicks is >= 0 and <= 255)
+        if (rampCommand.DurationTicks is >= 0 and <= 255)
         {
             bytes.Add(0x0c); // ramp command short
             bytes.Add((byte)rampCommand.TargetColor.r);
@@ -133,6 +133,6 @@ public class ProgramConverter
 
     private static byte[] LittleEndianShort(short number)
     {
-        return new byte[] { (byte)(number & 0xFF), (byte)((number >> 8) & 0xFF) }; 
+        return new byte[] { (byte)(number & 0xFF), (byte)((number >> 8) & 0xFF) };
     }
 }
