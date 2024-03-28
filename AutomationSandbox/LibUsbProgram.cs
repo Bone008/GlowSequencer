@@ -1,11 +1,8 @@
-﻿using LibUsbDotNet;
-using LibUsbDotNet.Main;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using GlowSequencer.Model;
 
 namespace AutomationSandbox
 {
@@ -13,91 +10,291 @@ namespace AutomationSandbox
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("All devices:");
-            UsbDevice.AllDevices.ToList().ForEach(usbRegistry =>
+            IClubConnection clubConnection = new ClubConnectionUtility();
+            if (!clubConnection.ListConnectedClubs().IsSuccessWithResult(out List<ConnectedDevice>? clubs))
             {
-                /*foreach (var p in usbRegistry.GetType().GetProperties().Where(p => !p.GetIndexParameters().Any()))
-                    Console.WriteLine(p.Name + " = " + p.GetValue(usbRegistry));
+                return;
+            }
+            foreach (var club in clubs!)
+            {
+                Console.WriteLine($"ConnectedPortId: {club.connectedPortId}, name: {club.name}, group_name: {club.groupName}, program_name: {club.programName}");
+            }
+            if (clubs.Count == 0)
+            {
+                Console.WriteLine("No connected clubs found!");
+                return;
+            }
+            
+            //TestWriteAndReadName(clubConnection, clubs, "Testing new Name 4");
+            //TestWriteAndReadGroupName(clubConnection, clubs, "AA");
+            //TestWriteAndReadProgramName(clubConnection, clubs, "TestProgram Name 2");
+            //TestStartAndStop(clubConnection, clubs);
+            //TestSetColorAndStop(clubConnection, clubs);
 
-                Console.WriteLine("props:");
-                foreach (var x in usbRegistry.DeviceProperties)
-                    Console.WriteLine("  " + x.Key + " = " + x.Value);*/
-
-
-                
-
-                UsbDevice device;
-                if(!usbRegistry.Open(out device))
-                {
-                    Console.WriteLine("Unable to open device!");
-                    return;
-                }
-
-                bool success;
-
-                LibUsbDotNet.Main.UsbSetupPacket packet = new LibUsbDotNet.Main.UsbSetupPacket(66, 209, 0, 0, 0);
-                int lengthTransferred;
-                success = device.ControlTransfer(ref packet, null, 0, out lengthTransferred);
-                Console.WriteLine("ctl transfer: " + success);
-
-                Thread.Sleep(2000);
-
-                Console.WriteLine("Trying to write sth ...");
-
-                UsbEndpointWriter writer = device.OpenEndpointWriter(WriteEndpointID.Ep01, EndpointType.Bulk);
-                transferSomething(writer, 0);
-
-
-                success = device.Close();
-                Console.WriteLine("close: " + success);
-            });
+            //byte[] programBytes = TestGeneratingProgram();
+            //TestWriteAndReadProgram(clubConnection, clubs, programBytes);
+            //clubConnection.Start(clubs[0].connectedPortId);
+            //TestAutoReadProgram(clubConnection, clubs);
+            
             Console.WriteLine("Done!");
-            Console.ReadKey(true);
+            //Console.ReadKey(true);
         }
 
-        private static void transferSomething(UsbEndpointWriter writer, int dat)
+        private static byte[] TestGeneratingProgram()
         {
-            //doBulkTransferSend(writer, 99, 255, -1);
-
-            byte[] buf = new byte[32];
-
-            // command
-            buf[0] = 99;
-            // payload
-            buf[1] = (byte)((0xff0000 & dat) >> 16);
-            buf[2] = (byte)((0xff00 & dat) >> 8);
-            buf[3] = (byte)(dat & 0xff);
-
-            sendBuffer(writer, buf);
-
-            // TODO doBulkTransferReceive(0, false);
-        }
-
-        private static ErrorCode doBulkTransferSend(UsbEndpointWriter writer, int command, int dat2_8bit, int dat3_24bit)
-        {
-            byte[] buf = new byte[32];
-
-            // command
-            buf[0] = (byte)(command & 0xff);
-
-            // payload
-            if (dat2_8bit != 255)
-                buf[1] = (byte)(dat2_8bit & 0xff);
-            if (dat3_24bit != -1)
+            GloLoopCommand loopCommand = new GloLoopCommand(2);
+            loopCommand.Commands.AddRange(new GloCommand[]
             {
-                buf[2] = (byte)(dat3_24bit & 0xff);
-                buf[3] = (byte)(dat3_24bit >> 8 & 0xff);
-                buf[4] = (byte)(dat3_24bit >> 16 & 0xff);
-                buf[5] = 0;
+                new GloColorCommand(GloColor.FromRGB(20,0,0)),
+                new GloDelayCommand(100),
+                new GloColorCommand(GloColor.FromRGB(0,20,0)),
+                new GloDelayCommand(100),
+                new GloColorCommand(GloColor.FromRGB(0,0,20)),
+                new GloDelayCommand(100),
+            });
+            
+            GloCommandContainer program = new GloCommandContainer("Program", "END");
+            program.Commands.AddRange(new GloCommand[]
+            {
+                new GloColorCommand(GloColor.FromRGB(20,0,0)),
+                new GloDelayCommand(100),
+                new GloColorCommand(GloColor.FromRGB(0,20,0)),
+                new GloDelayCommand(1000),
+                new GloRampCommand(GloColor.FromRGB(0,0,20),100),
+                new GloRampCommand(GloColor.Black, 1000),
+                loopCommand,
+                new GloRampCommand(GloColor.FromRGB(20,20,0),1000),
+                new GloRampCommand(GloColor.FromRGB(0,20,20),1000),
+                new GloRampCommand(GloColor.FromRGB(20,0,20),1000),
+                new GloDelayCommand(2000),
+            });
+            byte[] programBytes = ProgramConverter.ConvertToBytes(program);
+            Console.WriteLine($"Program bytes: {BitConverter.ToString(programBytes)}");
+            return programBytes;
+        }
+
+        
+        private static void TestWriteAndReadProgram(IClubConnection clubConnection, List<ConnectedDevice> clubs, byte[] programBytes)
+        {
+            OperationResult writeProgramOr = clubConnection.WriteProgram(clubs[0].connectedPortId, programBytes);
+            if (writeProgramOr.IsSuccess)
+            {
+                Console.WriteLine("Written Program!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to write program: " + writeProgramOr.ErrorMessage);
             }
 
-            return sendBuffer(writer, buf);
+            OperationResult<byte[]> readProgramOr = clubConnection.ReadProgram(clubs[0].connectedPortId, programBytes.Length);
+            if (readProgramOr.IsSuccess)
+            {
+                Console.WriteLine($"Read Program: {BitConverter.ToString(readProgramOr.Data)}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read program: " + readProgramOr.ErrorMessage);
+            }
+            byte[] readProgram = readProgramOr.Data!;
+            if (!programBytes.SequenceEqual(readProgram))
+            {
+                Console.WriteLine($"Program does not match the read program - Program: <{BitConverter.ToString(programBytes)}> != <{BitConverter.ToString(readProgram)}>");
+            }
+            else
+            {
+                Console.WriteLine("Program matches the read program!");
+            }
         }
-
-        private static ErrorCode sendBuffer(UsbEndpointWriter writer, byte[] buf)
+        
+        private static void TestWriteAndReadName(IClubConnection clubConnection, List<ConnectedDevice> clubs, string name = "TestName Longer")
         {
-            int transferLength;
-            return writer.Write(buf, 1000, out transferLength);
+            OperationResult writeNameOr = clubConnection.WriteName(clubs[0].connectedPortId, name);
+            if (writeNameOr.IsSuccess)
+            {
+                Console.WriteLine($"Written Name: {name}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to write name: " + name + "\n" + writeNameOr.ErrorMessage);
+            }
+
+            OperationResult<string> readNameOr = clubConnection.ReadName(clubs[0].connectedPortId);
+            if (readNameOr.IsSuccess)
+            {
+                Console.WriteLine($"Read Name: {readNameOr.Data}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read name: " + "\n" + readNameOr.ErrorMessage);
+            }
+            string readName = readNameOr.Data!;
+            if (!string.Equals(name,readName))
+            {
+                Console.WriteLine($"Debug - Name: |{name}|, ReadName: |{readName}|");
+                foreach (char c in name)
+                {
+                    Console.Write($"{(int)c} ");
+                }
+                Console.WriteLine();
+                foreach (char c in readName)
+                {
+                    Console.Write($"{(int)c} ");
+                }
+                Console.WriteLine();
+                
+                Console.WriteLine($"Name does not match the read name - Name: <{name}> != <{readName}>");
+            }
+            else
+            {
+                Console.WriteLine("Name matches the read name!");
+            }
+        }
+        
+        private static void TestWriteAndReadGroupName(IClubConnection clubConnection, List<ConnectedDevice> clubs, string groupName = "Test")
+        {
+            OperationResult writeGroupNameOr = clubConnection.WriteGroupName(clubs[0].connectedPortId, groupName);
+            if (writeGroupNameOr.IsSuccess)
+            {
+                Console.WriteLine($"Written GroupName: {groupName}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to write group name: " + groupName + "\n" + writeGroupNameOr.ErrorMessage);
+            }
+
+            OperationResult<string> readGroupNameOr = clubConnection.ReadGroupName(clubs[0].connectedPortId);
+            if (readGroupNameOr.IsSuccess)
+            {
+                Console.WriteLine($"Read GroupName: {readGroupNameOr.Data}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read group name: " + "\n" + readGroupNameOr.ErrorMessage);
+            }
+            string readGroupName = readGroupNameOr.Data!;
+            if (!string.Equals(groupName,readGroupName))
+            {
+                Console.WriteLine($"Debug - GroupName: |{groupName}|, ReadGroupName: |{readGroupName}|");
+                foreach (char c in groupName)
+                {
+                    Console.Write($"{(int)c} ");
+                }
+                Console.WriteLine();
+                foreach (char c in readGroupName)
+                {
+                    Console.Write($"{(int)c} ");
+                }
+                Console.WriteLine();
+                
+                Console.WriteLine($"GroupName does not match the read group name - GroupName: <{groupName}> != <{readGroupName}>");
+            }
+            else
+            {
+                Console.WriteLine("GroupName matches the read group name!");
+            }
+        }
+        
+        private static void TestWriteAndReadProgramName(IClubConnection clubConnection, List<ConnectedDevice> clubs, string programName = "TestProgram")
+        {
+            OperationResult writeProgramNameOr = clubConnection.WriteProgramName(clubs[0].connectedPortId, programName);
+            if (writeProgramNameOr.IsSuccess)
+            {
+                Console.WriteLine($"Written ProgramName: {programName}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to write program name: " + programName + "\n" + writeProgramNameOr.ErrorMessage);
+            }
+
+            OperationResult<string> readProgramNameOr = clubConnection.ReadProgramName(clubs[0].connectedPortId);
+            if (readProgramNameOr.IsSuccess)
+            {
+                Console.WriteLine($"Read ProgramName: {readProgramNameOr.Data}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read program name: " + "\n" + readProgramNameOr.ErrorMessage);
+            }
+            string readProgramName = readProgramNameOr.Data!;
+            if (!string.Equals(programName,readProgramName))
+            {
+                Console.WriteLine($"Debug - ProgramName: |{programName}|, ReadProgramName: |{readProgramName}|");
+                foreach (char c in programName)
+                {
+                    Console.Write($"{(int)c} ");
+                }
+                Console.WriteLine();
+                foreach (char c in readProgramName)
+                {
+                    Console.Write($"{(int)c} ");
+                }
+                Console.WriteLine();
+                
+                Console.WriteLine($"ProgramName does not match the read program name - ProgramName: <{programName}> != <{readProgramName}>");
+            }
+            else
+            {
+                Console.WriteLine("ProgramName matches the read program name!");
+            }
+        }
+        
+        private static void TestAutoReadProgram(IClubConnection clubConnection, List<ConnectedDevice> clubs)
+        {
+            OperationResult<byte[]> readProgramOr = clubConnection.ReadProgramAutoDetect(clubs[0].connectedPortId);
+            if (readProgramOr.IsSuccess)
+            {
+                Console.WriteLine($"Read Program: {BitConverter.ToString(readProgramOr.Data)}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read program: " + readProgramOr.ErrorMessage);
+            }
+        }
+        
+        private static void TestStartAndStop(IClubConnection clubConnection, List<ConnectedDevice> clubs)
+        {
+            OperationResult startOr = clubConnection.Start(clubs[0].connectedPortId);
+            if (startOr.IsSuccess)
+            {
+                Console.WriteLine("Started!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to start: " + startOr.ErrorMessage);
+            }
+            Thread.Sleep(2000);
+            OperationResult stopOr = clubConnection.Stop(clubs[0].connectedPortId);
+            if (stopOr.IsSuccess)
+            {
+                Console.WriteLine("Stopped!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to stop: " + stopOr.ErrorMessage);
+            }
+        }
+        
+        private static void TestSetColorAndStop(IClubConnection clubConnection, List<ConnectedDevice> clubs)
+        {
+            OperationResult setColorOr = clubConnection.SetColor(clubs[0].connectedPortId, 255, 0, 0);
+            if (setColorOr.IsSuccess)
+            {
+                Console.WriteLine("Color set!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to set color: " + setColorOr.ErrorMessage);
+            }
+            Thread.Sleep(2000);
+            OperationResult stopOr = clubConnection.Stop(clubs[0].connectedPortId);
+            if (stopOr.IsSuccess)
+            {
+                Console.WriteLine("Stopped!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to stop: " + stopOr.ErrorMessage);
+            }
         }
     }
 }
