@@ -139,7 +139,7 @@
                         IsEnabled="{Binding CanStartTransfer}"
                         ToolTip="{Binding CanStartTransferReason}" ToolTipService.ShowOnDisabled="True" />
 
-                <ProgressBar Height="25" Value="{Binding TransferProgress}" Maximum="100" />
+                <ProgressBar Height="25" Value="{Binding TransferProgress, Mode=OneWay}" Maximum="100" />
 
                 <Label>Log:</Label>
                 <TextBox IsReadOnly="True" Height="100" Text="{Binding LogOutput, Mode=OneWay}" VerticalContentAlignment="Top"
