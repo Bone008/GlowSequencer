@@ -8,7 +8,8 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:TransferDirectlyViewModel, IsDesignTimeCreatable=True}"
         Title="Transfer directly to equipment"
-        Width="620" Height="550"
+        Width="605" MinWidth="605"
+        Height="600"
         Icon="/GlowSequencer;component/Resources/icon.ico"
         WindowStartupLocation="CenterOwner">
   <DockPanel Margin="10">
@@ -25,12 +26,24 @@
         <Button Width="50" Click="ZeroButton_Click">Zero</Button>
       </StackPanel>
 
+      <Label>TODO: internal/external music feature</Label>
 
-      <DockPanel Margin="0,15,0,0">
-        <Button DockPanel.Dock="Right" Width="100" Height="30" Margin="10,0,0,0"
-                Content="Start" />
-        <ProgressBar Value="{Binding TransferProgress, Mode=OneWay}" Maximum="100" />
-      </DockPanel>
+
+      <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+        <Button Width="100" Height="40"
+                Content="Start (F5)" />
+        <Button Width="100" Height="40" Margin="10,0,0,0"
+                Content="Stop (F6)" />
+        <Button Width="100" Height="40" Margin="10,0,0,0"
+                Content="Identify (F7)" />
+        <Button Width="100" Height="40" Margin="10,0,0,0"
+                Content="Transfer (F10)" />
+        <Button Width="130" Height="40" Margin="10,0,0,0"
+                Content="Transfer + Start (F11)" />
+      </StackPanel>
+      <ProgressBar Height="10" Margin="0,5,0,0"
+                     Maximum="100"
+                     Value="{Binding TransferProgress, Mode=OneWay}"/>
 
       <Label>Log:</Label>
       <TextBox IsReadOnly="True" Height="100" VerticalContentAlignment="Top"
@@ -40,15 +53,18 @@
     </StackPanel>
 
     <StackPanel DockPanel.Dock="Right" Orientation="Vertical" HorizontalAlignment="Right" Margin="5,0,0,0">
-      <Button Width="60">All</Button>
-      <Button Width="60" Margin="0,5,0,0">None</Button>
+      <Button Width="60" Height="26">All</Button>
+      <Button Width="60" Height="26" Margin="0,5,0,0">None</Button>
+      <Button Width="60" Height="26" Margin="0,25,0,0">Rename ...</Button>
     </StackPanel>
 
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,5,0,0">
-      <Button Width="150" Height="30" Margin="0,0,10,0"
+      <Button Width="150" Height="26"
               Content="Auto-assign tracks" />
-      <Button Width="150" Height="30"
+      <Button Width="150" Height="26" Margin="15,0,0,0"
               Content="Save this configuration" />
+      <Button Width="150" Height="26" Margin="5,0,0,0"
+              Content="Clear saved configuration" />
     </StackPanel>
 
     <ListView ItemsSource="{Binding ConnectedDevices}" SelectionMode="Extended">
@@ -67,11 +83,11 @@
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
-          <GridViewColumn Header="Name" Width="100"
+          <GridViewColumn Header="Name" Width="110"
                           DisplayMemberBinding="{Binding Name}" />
-          <GridViewColumn Header="Stored program" Width="150"
+          <GridViewColumn Header="Stored program" Width="160"
                           DisplayMemberBinding="{Binding ProgramName}" />
-          <GridViewColumn Header="Assigned track" Width="150">
+          <GridViewColumn Header="Assigned track" Width="160">
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <ComboBox ItemsSource="{Binding Path=DataContext.AllTracks, RelativeSource={RelativeSource AncestorType=ListView}}"
