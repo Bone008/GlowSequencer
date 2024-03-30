@@ -88,5 +88,10 @@ namespace GlowSequencer.View
             if (!_syntheticSelectionChange)
                 devicesList.UnselectAll();
         }
+
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            vm.ClearLog();
+        }
     }
 }

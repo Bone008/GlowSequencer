@@ -120,6 +120,8 @@ public class FakeClubConnection : IClubConnection
     {
         Debug.WriteLine($"FCC: WriteProgram({connectedPortId}, {programData.Length} bytes)");
         System.Threading.Thread.Sleep(programData.Length);
+        if (new Random().Next(0, 3) == 0)
+            throw new UsbOperationException("Random simulated transmission failure");
     }
 
     public void WriteProgramName(string connectedPortId, string programName)

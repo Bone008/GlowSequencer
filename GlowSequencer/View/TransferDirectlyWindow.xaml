@@ -29,6 +29,9 @@
     <CommandBinding Command="local:TransferDirectlyCommands.Transfer"
                     CanExecute="CommandBinding_CanExecuteTransfer"
                     Executed="CommandBinding_ExecuteTransfer" />
+    <CommandBinding Command="local:TransferDirectlyCommands.TransferAndStart"
+                    CanExecute="CommandBinding_CanExecuteTransfer"
+                    Executed="CommandBinding_ExecuteTransferAndStart" />
   </Window.CommandBindings>
 
   <DockPanel Margin="10">
@@ -74,7 +77,11 @@
                      Maximum="100"
                      Value="{Binding TransferProgress, Mode=OneWay}"/>
 
-      <Label>Log:</Label>
+      <DockPanel>
+        <Button DockPanel.Dock="Right" VerticalAlignment="Center" Padding="5,0"
+                Click="ClearLog_Click">X</Button>
+        <Label>Log:</Label>
+      </DockPanel>
       <TextBox IsReadOnly="True" Height="100" VerticalContentAlignment="Top"
                TextWrapping="Wrap" VerticalScrollBarVisibility="Visible"
                Text="{Binding LogOutput, Mode=OneWay}"

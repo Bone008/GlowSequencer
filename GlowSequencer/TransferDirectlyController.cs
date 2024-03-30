@@ -67,15 +67,16 @@ public class TransferDirectlyController
         }
     }
 
-    public Task SendProgramsAsync(IDictionary<string, Track> tracksByPortId, TransferOptions options)
+    public Task<bool> SendProgramsAsync(IDictionary<string, Track> tracksByPortId, TransferOptions options)
     {
         return Task.Run(() => SendPrograms(tracksByPortId, options));
     }
 
-    private void SendPrograms(IDictionary<string, Track> tracksByPortId, TransferOptions options)
+    private bool SendPrograms(IDictionary<string, Track> tracksByPortId, TransferOptions options)
     {
         var sw = new Stopwatch();
         sw.Start();
+        options.log.Report("Starting transmission ...");
 
         int totalCount = tracksByPortId.Count;
         int successCount = 0;
@@ -116,7 +117,7 @@ public class TransferDirectlyController
                     deviceName = usbController.ReadName(portId);
                     usbController.WriteProgram(portId, programData);
                     usbController.WriteProgramName(portId, programName);
-                    options.log.Report($"Sent to {deviceName} the program {programName} ({programData.Length:#,###} bytes).");
+                    options.log.Report($"Sent to {deviceName} the program \"{programName}\" ({programData.Length:#,###} bytes).");
                     ReportSuccess(failures);
                     success = true;
                 }
@@ -126,7 +127,7 @@ public class TransferDirectlyController
                     failures++;
                     string retrying = failures <= options.maxRetries
                         ? $"RETRYING {failures}/{options.maxRetries}"
-                        : "FINAL";
+                        : "FAILED TOO OFTEN";
                     options.log.Report($"({retrying}) Transmission failure to {deviceName}: {e.Message}");
                 }
             } while (!success && failures <= options.maxRetries);
@@ -134,8 +135,12 @@ public class TransferDirectlyController
 
         sw.Stop();
         double duration = sw.Elapsed.TotalSeconds;
-        options.log.Report($"Transferred {successCount} of {totalCount} programs! "
-            +$"(total failures: {totalRetries}, duration: {duration:0.0} s)");
+        bool success = successCount >= totalCount;
+        string successStr = success ? "SUCCESS" : "FAILURE";
+        options.log.Report($"{successStr}: Transferred {successCount} of {totalCount} programs! "
+            +$"(total retries: {totalRetries}, duration: {duration:0.0} s)");
+
+        return success;
     }
 
     private static string GenerateRandomString(int length)

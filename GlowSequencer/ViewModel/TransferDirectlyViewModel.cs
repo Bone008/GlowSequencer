@@ -1,17 +1,13 @@
 ﻿using ContinuousLinq;
-using GlowSequencer.Model;
-using GlowSequencer.Properties;
 using GlowSequencer.Usb;
 using GlowSequencer.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace GlowSequencer.ViewModel
 {
@@ -210,7 +206,7 @@ namespace GlowSequencer.ViewModel
                 AppendLog($"{logLabel} on {StringUtil.Pluralize(selectedPorts.Count, "device")}!");
         }
 
-        public async Task SendProgramsAsync()
+        public async Task<bool> SendProgramsAsync()
         {
             // TODO: concurrency check
             if (SelectedDevices.Any(device => !device.IsConnected))
@@ -233,10 +229,12 @@ namespace GlowSequencer.ViewModel
                 progress = new Progress<float>(p => TransferProgress = p * 100),
                 log = new Progress<string>(AppendLog),
                 maxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
+                maxRetries = 3,
             };
-            await controller.SendProgramsAsync(tracksByPortId, options);
+            bool success = await controller.SendProgramsAsync(tracksByPortId, options);
 
             MergeDeviceList(await controller.RefreshDevicesAsync());
+            return success;
         }
 
         public void AutoAssignTracks()
@@ -260,6 +258,12 @@ namespace GlowSequencer.ViewModel
         public void SetStartTimeToCursor()
         {
             ExportStartTime = TimeSpan.FromSeconds(main.CurrentDocument.CursorPosition);
+        }
+
+        public void ClearLog()
+        {
+            _logOutput.Clear();
+            Notify(nameof(LogOutput));
         }
 
         private void AppendLog(string line)

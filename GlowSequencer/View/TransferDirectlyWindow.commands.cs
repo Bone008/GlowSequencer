@@ -72,5 +72,11 @@ namespace GlowSequencer.View
         {
             await vm.SendProgramsAsync();
         }
+
+        private async void CommandBinding_ExecuteTransferAndStart(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (await vm.SendProgramsAsync())
+                vm.StartDevices();
+        }
     }
 }
