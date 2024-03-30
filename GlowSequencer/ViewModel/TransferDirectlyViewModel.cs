@@ -45,7 +45,7 @@ namespace GlowSequencer.ViewModel
 
         public void SetModel(ConnectedDevice newModel)
         {
-            if (model != null && model.Value.connectedPortId != newModel.connectedPortId)
+            if (!IsPersistent && IsConnected && (model.Value.connectedPortId != newModel.connectedPortId))
                 throw new ArgumentException("Cannot change the port ID of a connected device VM.");
             if (Name != newModel.name)
                 throw new ArgumentException("Cannot change the name of a connected device VM.");
@@ -65,7 +65,8 @@ namespace GlowSequencer.ViewModel
         public bool MatchesDevice(ConnectedDevice other)
         {
             // In connected state, names are not necessarily unique, so we also need to match by portId.
-            if (model != null && (model.Value.connectedPortId != other.connectedPortId))
+            // Persisted devices are an exception, which should aggressively match by name.
+            if (!IsPersistent && IsConnected && (model.Value.connectedPortId != other.connectedPortId))
                 return false;
             // In both cases, the name must match.
             return Name == other.name;
@@ -240,6 +241,21 @@ namespace GlowSequencer.ViewModel
 
             MergeDeviceList(await controller.RefreshDevicesAsync());
             return success;
+        }
+
+        public async Task RenameDeviceAsync(ConnectedDeviceViewModel device, string newName)
+        {
+            if (!device.IsConnected)
+                return;
+            try
+            {
+                await controller.RenameDeviceAsync(device.GetModel().Value.connectedPortId, newName);
+                device.Name = newName;
+            }
+            catch (UsbOperationException e)
+            {
+                AppendLog($"ERROR renaming device: {e.Message}");
+            }
         }
 
         public void AutoAssignTracks()

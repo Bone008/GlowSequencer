@@ -50,6 +50,11 @@ public class TransferDirectlyController
         return connectedDevices;
     }
 
+    public Task RenameDeviceAsync(string portId, string newName)
+    {
+        return Task.Run(() => usbController.WriteName(portId, newName));
+    }
+
     public void StartDevices(IEnumerable<string> portIds)
     {
         // TODO: change to bulk start for better sync
@@ -138,7 +143,7 @@ public class TransferDirectlyController
         bool success = successCount >= totalCount;
         string successStr = success ? "SUCCESS" : "FAILURE";
         options.log.Report($"{successStr}: Transferred {successCount} of {totalCount} programs! "
-            +$"(total retries: {totalRetries}, duration: {duration:0.0} s)");
+            + $"(total retries: {totalRetries}, duration: {duration:0.0} s)");
 
         return success;
     }

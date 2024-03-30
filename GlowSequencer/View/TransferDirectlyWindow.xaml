@@ -111,6 +111,7 @@
       </ListView.InputBindings>
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
+          <EventSetter Event="MouseDoubleClick" Handler="devicesListItem_MouseDoubleClick" />
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
           <Style.Triggers>
             <DataTrigger Binding="{Binding IsPersistent}" Value="False">

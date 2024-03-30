@@ -78,6 +78,26 @@ namespace GlowSequencer.View
             }
         }
 
+        private async void devicesListItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var device = ((ListViewItem)sender).Content as ConnectedDeviceViewModel;
+            if (device == null)
+                return;
+            if (!device.IsConnected)
+                return;
+
+            var result = Mastermind.ShowPromptString(
+                this,
+                "Rename device",
+                device.Name,
+                str => !string.IsNullOrWhiteSpace(str));
+
+            if (result.Success)
+            {
+                await vm.RenameDeviceAsync(device, result.Value.Trim());
+            }
+        }
+
         private void selectAll_Checked(object sender, RoutedEventArgs e)
         {
             if (!_syntheticSelectionChange)
