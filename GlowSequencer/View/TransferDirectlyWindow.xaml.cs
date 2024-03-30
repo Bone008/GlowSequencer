@@ -51,8 +51,7 @@ namespace GlowSequencer.View
 
         private void CursorButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Reimplement
-            //vm.SetStartTimeToCursor();
+            vm.SetStartTimeToCursor();
         }
 
         private void ZeroButton_Click(object sender, RoutedEventArgs e)

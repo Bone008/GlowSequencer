@@ -91,6 +91,7 @@ namespace GlowSequencer.ViewModel
         private StringBuilder _logOutput = new StringBuilder();
         private bool _isRefreshingDevices = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
+        private TimeSpan _exportStartTime = TimeSpan.Zero;
 
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks => main.CurrentDocument.Tracks;
         public ObservableCollection<ConnectedDeviceViewModel> AllDevices { get; } = new();
@@ -101,7 +102,7 @@ namespace GlowSequencer.ViewModel
 
         public bool HasStoredConfiguration => false;
 
-        public TimeSpan ExportStartTime { get; set; }
+        public TimeSpan ExportStartTime { get => _exportStartTime; set => SetProperty(ref _exportStartTime, value); }
 
         public float TransferProgress { get => _transferProgress; set => SetProperty(ref _transferProgress, value); }
         public string LogOutput => _logOutput.ToString();
@@ -254,6 +255,11 @@ namespace GlowSequencer.ViewModel
                 }
                 device.AssignedTrack = track;
             }
+        }
+
+        public void SetStartTimeToCursor()
+        {
+            ExportStartTime = TimeSpan.FromSeconds(main.CurrentDocument.CursorPosition);
         }
 
         private void AppendLog(string line)
