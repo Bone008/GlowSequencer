@@ -30,7 +30,7 @@ namespace GlowSequencer.Usb
                 {
                     if(command == 0x02 && value < 16384)
                     {
-                        throw new Exception("Address must be greater than 0x0040 (16384) for command 0x02");
+                        throw new ArgumentOutOfRangeException("Address must be greater than 0x0040 (16384) for command 0x02");
                     }
                     addressLe0 = (byte)(value & 0xFF); 
                     addressLe1 = (byte)((value >> 8) & 0xFF);
@@ -50,7 +50,7 @@ namespace GlowSequencer.Usb
         {
             if (headerData.Length < 4)
             {
-                throw new Exception("Header data is too short!");
+                throw new ArgumentException("Header data is too short!");
             }
 
             TransferHeader header = new TransferHeader()
@@ -73,7 +73,7 @@ namespace GlowSequencer.Usb
                 header.unknown2 = headerData[5];
                 return header;
             }
-            throw new Exception("Header data length does not match!");
+            throw new ArgumentException("Header data length does not match!");
         }
 
         public static byte[] ReadContinuously(UsbDevice device, TransferHeader header, int amount)
@@ -100,14 +100,14 @@ namespace GlowSequencer.Usb
             {
                 header.Address = (ushort)(startAddress + (i * header.dataLength));
                 byte[] headerBuffer = header.AsBuffer;
-                byte[] readBuffer = null;
+                byte[] readBuffer;
                 try
                 {
                     readBuffer = WriteReadBulk(device, headerBuffer, header.dataLength + 6);
                 }
-                catch (Exception e)
+                catch (UsbOperationException e)
                 {
-                    throw new Exception($"Continuous Read failed in block {i} - {e.Message}");
+                    throw new UsbOperationException($"Continuous Read failed in block {i} - {e.Message}");
                 }
 ;
                 byte[] chunk = new byte[header.dataLength];
@@ -146,7 +146,7 @@ namespace GlowSequencer.Usb
                     {
                         if (readBuffer[j] != expectedReturn[j])
                         {
-                            throw new Exception($"Expected return value not found! Expected: {BitConverter.ToString(expectedReturn)}, found: {BitConverter.ToString(readBuffer)}");
+                            throw new UsbOperationException($"Expected return value not found! Expected: {BitConverter.ToString(expectedReturn)}, found: {BitConverter.ToString(readBuffer)}");
                         }
                     }
                 }
@@ -173,7 +173,7 @@ namespace GlowSequencer.Usb
         {
             if (buffer.Length == 0)
             {
-                throw new Exception("Buffer is empty!");
+                throw new ArgumentException("Buffer is empty!");
             }
 #if SIMULATE_RW
             Console.WriteLine($"Simulating write bulk {BitConverter.ToString(buffer)}");
@@ -186,7 +186,7 @@ namespace GlowSequencer.Usb
             {
                 return;
             }
-            throw new Exception($"write bulk {BitConverter.ToString(buffer)} resulted in {errorCode.ToString()}");
+            throw new UsbOperationException($"write bulk {BitConverter.ToString(buffer)} resulted in {errorCode.ToString()}");
 #endif
         }
 
@@ -204,7 +204,7 @@ namespace GlowSequencer.Usb
             {
                 return buffer;
             }
-            throw new Exception($"read bulk: {BitConverter.ToString(buffer)} with code {errorCode.ToString()}");
+            throw new UsbOperationException($"read bulk: {BitConverter.ToString(buffer)} with code {errorCode}");
 #endif
         }
 
@@ -220,7 +220,7 @@ namespace GlowSequencer.Usb
             {
                 return;
             }
-            throw new Exception($"Control transfer failed for {packet.ToString()}!");
+            throw new UsbOperationException($"Control transfer failed for {packet.ToString()}!");
 #endif
         }
     }

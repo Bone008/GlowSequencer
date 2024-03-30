@@ -291,12 +291,12 @@ namespace GlowSequencer.Usb
                     .ToList().FirstOrDefault(x => x.DeviceProperties["DeviceID"].ToString() == connectedPortId);
             if (usbRegistry == null)
             {
-                throw new Exception($"Unable to find device with id {connectedPortId}!");
+                throw new UsbOperationException($"Unable to find device with id {connectedPortId}!");
             }
 
             if (!usbRegistry.Open(out UsbDevice? device))
             {
-                throw new Exception($"Unable to open device with id {connectedPortId}!");
+                throw new UsbOperationException($"Unable to open device with id {connectedPortId}!");
             }
 
             return device!;
@@ -322,7 +322,7 @@ namespace GlowSequencer.Usb
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
             if (nameBytes.Length > 64)
             {
-                throw new Exception($"Name <{name}> is too long! Max 64 characters allowed.");
+                throw new UsbOperationException($"Name <{name}> is too long! Max 64 bytes allowed.");
             }
 
             CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 });
@@ -350,7 +350,7 @@ namespace GlowSequencer.Usb
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(groupName);
             if (nameBytes.Length > 4)
             {
-                throw new Exception($"Group name <{groupName}> is too long! Max 4 characters allowed.");
+                throw new ArgumentException($"Group name <{groupName}> is too long! Max 4 bytes allowed.");
             }
             CommunicationUtility.WriteContinuously(device, header, nameBytes, 4, new byte[] { 0x05 });
         }
@@ -377,7 +377,7 @@ namespace GlowSequencer.Usb
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(programName);
             if (nameBytes.Length > 64)
             {
-                throw new Exception($"Program name <{programName}> is too long! Max 64 characters allowed.");
+                throw new ArgumentException($"Program name <{programName}> is too long! Max 64 bytes allowed.");
             }
             CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 });
         }
@@ -461,7 +461,7 @@ namespace GlowSequencer.Usb
                 byte[] returnData = CommunicationUtility.WriteReadBulk(device, inBetweenHeader.AsBuffer, 1);
                 if (returnData[0] != 0x03)
                 {
-                    throw new Exception($"In-between transmission failed. Expected 0x03, got {returnData[0]}");
+                    throw new UsbOperationException($"In-between transmission failed. Expected 0x03, got {returnData[0]}");
                 }
 
                 byte[] chunk = programData.Skip(i * chunkSize).Take(chunkSize).ToArray();

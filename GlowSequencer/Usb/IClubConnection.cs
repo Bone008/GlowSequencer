@@ -1,9 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 #nullable enable
 
 namespace GlowSequencer.Usb
 {
+    /// <summary>
+    /// An exception that is thrown when any USB operation fails.
+    /// </summary>
+    public class UsbOperationException : Exception
+    {
+        public UsbOperationException(string message) : base(message) { }
+    }
+
     public struct ConnectedDevice
     {
         public string connectedPortId; //unique id for the usb port (more testing needed with hubs)
