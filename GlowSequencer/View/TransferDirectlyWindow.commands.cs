@@ -11,6 +11,10 @@ namespace GlowSequencer.View
     {
         public static readonly RoutedUICommand ToggleSelectAll = new RoutedUICommand(
             "", "ToggleSelectAll", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F12) });
+        public static readonly RoutedUICommand AutoAssignTracks = new RoutedUICommand(
+            "", "AutoAssignTracks", typeof(TransferDirectlyCommands));
+        public static readonly RoutedUICommand ClearAssignedTracks = new RoutedUICommand(
+            "", "ClearAssignedTracks", typeof(TransferDirectlyCommands));
 
         public static readonly RoutedUICommand Start = new RoutedUICommand(
             "", "Start", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F5) });
@@ -35,6 +39,17 @@ namespace GlowSequencer.View
         {
             selectAll.IsChecked = !selectAll.IsChecked;
             selectAll.Focus();
+        }
+
+        private void CommandBinding_ExecuteAutoAssignTracks(object sender, ExecutedRoutedEventArgs e)
+        {
+            vm.AutoAssignTracks();
+        }
+
+        private void CommandBinding_ExecuteClearAssignedTracks(object sender, ExecutedRoutedEventArgs e)
+        {
+            foreach (var device in vm.SelectedDevices)
+                device.AssignedTrack = null;
         }
 
         private void CommandBinding_ExecuteStart(object sender, ExecutedRoutedEventArgs e)

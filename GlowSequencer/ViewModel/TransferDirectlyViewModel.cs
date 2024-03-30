@@ -18,14 +18,15 @@ namespace GlowSequencer.ViewModel
     public class ConnectedDeviceViewModel : Observable
     {
         private ConnectedDevice? model;
-        private string _name; // Stored seperately from the model the persistent & disconnected case.
+        private string _name; // Stored seperately from the model for the persistent & disconnected case.
+        private TrackViewModel _assignedTrack = null;
 
         public string Name { get => _name; set => SetProperty(ref _name, value); }
         public bool IsPersistent => _name.Contains("KEEP"); // TODO: Implement
         public bool IsConnected => model != null;
         public string ProgramName => model?.programName ?? "";
 
-        public TrackViewModel AssignedTrack { get; set; }
+        public TrackViewModel AssignedTrack { get => _assignedTrack; set => SetProperty(ref _assignedTrack, value); }
 
         /// <summary>Creates a device VM based on a connected device.</summary>
         public ConnectedDeviceViewModel(ConnectedDevice model)
@@ -62,13 +63,19 @@ namespace GlowSequencer.ViewModel
             Notify(nameof(ProgramName));
         }
 
-        public bool Matches(ConnectedDevice other)
+        public bool MatchesDevice(ConnectedDevice other)
         {
             // In connected state, names are not necessarily unique, so we also need to match by portId.
             if (model != null && (model.Value.connectedPortId != other.connectedPortId))
                 return false;
             // In both cases, the name must match.
             return Name == other.name;
+        }
+
+        public bool MatchesTrackName(string trackName)
+        {
+            return trackName.IndexOf(Name, StringComparison.InvariantCultureIgnoreCase) >= 0
+                || Name.IndexOf(trackName, StringComparison.InvariantCultureIgnoreCase) >= 0;
         }
     }
 
@@ -150,7 +157,7 @@ namespace GlowSequencer.ViewModel
             // We try to preserve the view model identities as much as possible, so see if we can match.
             foreach (var deviceVM in AllDevices.ToList())
             {
-                int index = unmatchedDevices.FindIndex(deviceVM.Matches);
+                int index = unmatchedDevices.FindIndex(deviceVM.MatchesDevice);
                 if (index >= 0)
                 {
                     deviceVM.SetModel(unmatchedDevices[index]);
@@ -229,6 +236,24 @@ namespace GlowSequencer.ViewModel
             await controller.SendProgramsAsync(tracksByPortId, options);
 
             MergeDeviceList(await controller.RefreshDevicesAsync());
+        }
+
+        public void AutoAssignTracks()
+        {
+            var devices = SelectedDevices.Count > 0 ? SelectedDevices : AllDevices;
+            foreach (var device in devices)
+            {
+                if (device.AssignedTrack != null)
+                    continue;
+                
+                TrackViewModel track = AllTracks.FirstOrDefault(track => device.MatchesTrackName(track.Label));
+                if (track == null)
+                {
+                    AppendLog($"Could not find a matching track for device {device.Name}!");
+                    continue;
+                }
+                device.AssignedTrack = track;
+            }
         }
 
         private void AppendLog(string line)

@@ -16,6 +16,10 @@
   <Window.CommandBindings>
     <CommandBinding Command="local:TransferDirectlyCommands.ToggleSelectAll"
                     Executed="CommandBinding_ExecuteToggleSelectAll" />
+    <CommandBinding Command="local:TransferDirectlyCommands.AutoAssignTracks"
+                    Executed="CommandBinding_ExecuteAutoAssignTracks" />
+    <CommandBinding Command="local:TransferDirectlyCommands.ClearAssignedTracks"
+                    Executed="CommandBinding_ExecuteClearAssignedTracks" />
     <CommandBinding Command="local:TransferDirectlyCommands.Start"
                     CanExecute="CommandBinding_CanExecuteIfAnySelected"
                     Executed="CommandBinding_ExecuteStart" />
@@ -83,7 +87,8 @@
       <Button Width="150" Height="26" Margin="5,0,0,0"
               Content="Clear saved configuration" />
       <Button Width="150" Height="26" Margin="15,0,0,0"
-              Content="Auto-assign tracks" />
+              Content="Auto-assign tracks"
+              Command="local:TransferDirectlyCommands.AutoAssignTracks" />
     </StackPanel>
 
     <ListView Name="devicesList"
@@ -91,6 +96,9 @@
               ScrollViewer.VerticalScrollBarVisibility="Visible"
               ItemsSource="{Binding AllDevicesSorted}"
               SelectionChanged="devicesList_SelectionChanged">
+      <ListView.InputBindings>
+        <KeyBinding Key="Delete" Command="local:TransferDirectlyCommands.ClearAssignedTracks"/>
+      </ListView.InputBindings>
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
