@@ -1,6 +1,7 @@
 ﻿using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,6 +40,13 @@ namespace GlowSequencer.View
             timer.Start();
 
             Closed += (sender, e) => timer.Stop();
+
+
+            vm.AllDevicesSorted.CollectionChanged += (sender, e) =>
+            {
+                if (selectAll.IsChecked ?? false)
+                    devicesList.SelectAll();
+            };
         }
 
         private void CursorButton_Click(object sender, RoutedEventArgs e)
@@ -62,10 +70,13 @@ namespace GlowSequencer.View
             var items = devicesList.SelectedItems;
             vm.SelectedDevices = items.Cast<ConnectedDeviceViewModel>().ToList();
 
-            bool allSelected = devicesList.Items.Count == items.Count;
-            _syntheticSelectionChange = true;
-            selectAll.IsChecked = allSelected;
-            _syntheticSelectionChange = false;
+            // Disable "select all" when the user unselects something.
+            if (items.Count < devicesList.Items.Count)
+            {
+                _syntheticSelectionChange = true;
+                selectAll.IsChecked = false;
+                _syntheticSelectionChange = false;
+            }
         }
 
         private void selectAll_Checked(object sender, RoutedEventArgs e)

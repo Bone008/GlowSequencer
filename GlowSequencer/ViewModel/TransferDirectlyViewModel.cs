@@ -82,8 +82,11 @@ namespace GlowSequencer.ViewModel
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks => main.CurrentDocument.Tracks;
         public ObservableCollection<ConnectedDeviceViewModel> AllDevices { get; } = new();
         public ReadOnlyContinuousCollection<ConnectedDeviceViewModel> AllDevicesSorted { get; private set; }
+        public ReadOnlyContinuousCollection<ConnectedDeviceViewModel> ConnectedDevices { get; private set; }
 
         public ICollection<ConnectedDeviceViewModel> SelectedDevices { get => _selectedDevices; set => SetProperty(ref _selectedDevices, value); }
+
+        public bool HasStoredConfiguration => false;
 
         public TimeSpan ExportStartTime { get; set; }
 
@@ -91,7 +94,7 @@ namespace GlowSequencer.ViewModel
         public string LogOutput => _logOutput.ToString();
 
         [Obsolete("only for designer")]
-        public TransferDirectlyViewModel()
+        public TransferDirectlyViewModel() : this(null)
         {
             if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
             {
@@ -101,7 +104,6 @@ namespace GlowSequencer.ViewModel
                     new() { connectedPortId = "LP6", name = "Test 02", programName = "Test02.glo" },
                     new() { connectedPortId = "LP7", name = "Test 03", programName = "Test03.glo" },
                 });
-                AllDevicesSorted = AllDevices.Select(x => x);
             }
         }
 
@@ -111,6 +113,7 @@ namespace GlowSequencer.ViewModel
             controller = new TransferDirectlyController();
 
             AllDevicesSorted = AllDevices.OrderBy(device => device.Name);
+            ConnectedDevices = AllDevicesSorted.Where(device => device.IsConnected);
         }
 
         public async Task CheckRefreshDevicesAsync()
