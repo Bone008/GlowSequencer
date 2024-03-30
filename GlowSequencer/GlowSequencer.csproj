@@ -107,6 +107,7 @@
     <Compile Include="Audio\WaveformGenerator.cs" />
     <Compile Include="Audio\WaveOutHelper.cs" />
     <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\TransferSettings.cs" />
     <Compile Include="TransferDirectlyController.cs" />
     <Compile Include="Usb\ClubConnectionUtility.cs" />
     <Compile Include="Usb\CommunicationUtility.cs" />

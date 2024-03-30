@@ -651,6 +651,10 @@ namespace GlowSequencer.ViewModel
                 if (SelectedTrack == trackVM)
                     SelectedTrack = Tracks[trackVM.GetIndex() + (trackVM.GetIndex() < Tracks.Count - 1 ? 1 : -1)];
 
+                // remove from transfer settings, note that this will not be undoable,
+                // but tracking track assignments with the action manager seems a bit overkill.
+                model.TransferSettings.PurgeTrackReferences(track);
+
                 ActionManager.RecordRemove(model.Tracks, track);
                 //model.Tracks.Remove(track);
             }

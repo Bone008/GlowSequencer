@@ -39,8 +39,8 @@
       <TextBlock>
         Devices
         (<TextBlock Text="{Binding ConnectedDevices.Count}" /><!--
-        --><TextBlock Text="{Binding AllDevices.Count, StringFormat='/ {0} connected'}"
-                      Visibility="{Binding HasStoredConfiguration, Converter={StaticResource conv_BoolToVisibility}}"/>):
+        --><TextBlock Text="{Binding AllDevices.Count, StringFormat=' / {0} connected'}"
+                      Visibility="{Binding HasSavedSettings, Converter={StaticResource conv_BoolToVisibility}}"/>):
       </TextBlock>
     </Label>
 
@@ -90,9 +90,12 @@
 
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,5,0,0">
       <Button Width="150" Height="26"
-              Content="Save this configuration" />
+              Content="Save this configuration"
+              Click="SaveSettings_Click" />
       <Button Width="150" Height="26" Margin="5,0,0,0"
-              Content="Clear saved configuration" />
+              Content="Clear saved configuration"
+              IsEnabled="{Binding HasSavedSettings}"
+              Click="ClearSettings_Click" />
       <Button Width="150" Height="26" Margin="25,0,0,0"
               Content="Auto-assign tracks"
               Command="local:TransferDirectlyCommands.AutoAssignTracks" />
@@ -109,7 +112,15 @@
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-          <Setter Property="IsEnabled" Value="{Binding IsConnected}" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsPersistent}" Value="False">
+              <Setter Property="FontWeight" Value="DemiBold" />
+              <Setter Property="Foreground" Value="#333333" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsConnected}" Value="False">
+              <Setter Property="Foreground" Value="Red" />
+            </DataTrigger>
+          </Style.Triggers>
         </Style>
       </ListView.ItemContainerStyle>
       <ListView.View>
@@ -123,7 +134,7 @@
             </GridViewColumn.Header>
             <GridViewColumn.CellTemplate>
               <DataTemplate>
-                <CheckBox IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=IsSelected}" />
+                <CheckBox Focusable="False" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=IsSelected}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>

@@ -93,5 +93,15 @@ namespace GlowSequencer.View
         {
             vm.ClearLog();
         }
+
+        private void SaveSettings_Click(object sender, RoutedEventArgs e)
+        {
+            vm.SaveSettings();
+        }
+
+        private void ClearSettings_Click(object sender, RoutedEventArgs e)
+        {
+            vm.ClearSettings();
+        }
     }
 }

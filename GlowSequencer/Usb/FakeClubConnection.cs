@@ -16,6 +16,8 @@ public class FakeClubConnection : IClubConnection
 {
     private const string FILENAME = "fake_connected_clubs.txt";
 
+    private static Dictionary<string, string> s_programNameOverridesByPort = new();
+
     public FakeClubConnection()
     {
         Debug.WriteLine("FCC: Using faked usb controller!");
@@ -39,12 +41,15 @@ public class FakeClubConnection : IClubConnection
                     return (ConnectedDevice?)null;
 
                 string[] parts = line.Split(';');
+                string port = $"L{index + 1:00}";
                 return new ConnectedDevice
                 {
-                    connectedPortId = $"L{index + 1:00}",
+                    connectedPortId = port,
                     name = parts[0].Trim(),
                     groupName = "1",
-                    programName = parts.Length > 1 ? parts[1].Trim() : "",
+                    programName = s_programNameOverridesByPort.TryGetValue(port, out string programName)
+                        ? programName
+                        : (parts.Length > 1 ? parts[1].Trim() : ""),
                 };
             })
             .Where(device => device != null)
@@ -127,6 +132,7 @@ public class FakeClubConnection : IClubConnection
     public void WriteProgramName(string connectedPortId, string programName)
     {
         Debug.WriteLine($"FCC: WriteProgramName({connectedPortId}, {programName})");
+        s_programNameOverridesByPort[connectedPortId] = programName;
     }
 
 }

@@ -18,12 +18,15 @@ namespace GlowSequencer.Model
 
         public ObservableCollection<Block> Blocks { get; private set; }
         public ObservableCollection<Track> Tracks { get; private set; }
-        public ObservableCollection<Note> Notes { get; private set; } // TODO serialize this
+        public ObservableCollection<Note> Notes { get; private set; }
 
         /// <summary>Name of an audio file containing music. Should be a relative path if possible.
         /// Can be null if no in-app music is desired.</summary>
         public string MusicFileName { get { return _musicFileName; } set { SetProperty(ref _musicFileName, value); } }
         public ObservableCollection<MusicSegment> MusicSegments { get; private set; }
+
+        /// <summary>The saved configuration of the "Transfer directly" dialog, or null if none are saved.</summary>
+        public TransferSettings TransferSettings { get; set; } = null;
 
         public MusicSegment DefaultMusicSegment
         {
@@ -133,7 +136,8 @@ namespace GlowSequencer.Model
                 new XElement("default-segment", DefaultMusicSegment.GetIndex()),
                 new XElement("tracks", Tracks.Select(g => g.ToXML()).ToArray()),
                 new XElement("blocks", Blocks.Select(b => b.ToXML()).ToArray()),
-                new XElement("notes", Notes.Select(n => n.ToXML()).ToArray())
+                new XElement("notes", Notes.Select(n => n.ToXML()).ToArray()),
+                TransferSettings?.ToXML(new XElement("transfer-settings"))
             );
         }
 
@@ -162,6 +166,8 @@ namespace GlowSequencer.Model
                 t.Blocks.Add(block);
             foreach (var note in element.ElementOrEmpty("notes").Elements("note").Select(n => Note.FromXML(t, n)))
                 t.Notes.Add(note);
+
+            t.TransferSettings = TransferSettings.FromXML(t, element.Element("transfer-settings"));
 
             // TODO XML load validation
 

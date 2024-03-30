@@ -1,10 +1,12 @@
 ﻿using ContinuousLinq;
+using GlowSequencer.Model;
 using GlowSequencer.Usb;
 using GlowSequencer.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,14 +17,15 @@ namespace GlowSequencer.ViewModel
     {
         private ConnectedDevice? model;
         private string _name; // Stored seperately from the model for the persistent & disconnected case.
+        private bool _isPersistent = false;
         private TrackViewModel _assignedTrack = null;
 
         public string Name { get => _name; set => SetProperty(ref _name, value); }
-        public bool IsPersistent => _name.Contains("KEEP"); // TODO: Implement
-        public bool IsConnected => model != null;
-        public string ProgramName => model?.programName ?? "";
-
+        public bool IsPersistent { get => _isPersistent; set => SetProperty(ref _isPersistent, value); }
         public TrackViewModel AssignedTrack { get => _assignedTrack; set => SetProperty(ref _assignedTrack, value); }
+
+        public bool IsConnected => model != null;
+        public string ProgramName => model != null ? model.Value.programName : "⚠️ DISCONNECTED";
 
         /// <summary>Creates a device VM based on a connected device.</summary>
         public ConnectedDeviceViewModel(ConnectedDevice model)
@@ -96,9 +99,9 @@ namespace GlowSequencer.ViewModel
 
         public ICollection<ConnectedDeviceViewModel> SelectedDevices { get => _selectedDevices; set => SetProperty(ref _selectedDevices, value); }
 
-        public bool HasStoredConfiguration => false;
-
         public TimeSpan ExportStartTime { get => _exportStartTime; set => SetProperty(ref _exportStartTime, value); }
+
+        public bool HasSavedSettings => main.CurrentDocument.GetModel().TransferSettings != null;
 
         public float TransferProgress { get => _transferProgress; set => SetProperty(ref _transferProgress, value); }
         public string LogOutput => _logOutput.ToString();
@@ -126,6 +129,8 @@ namespace GlowSequencer.ViewModel
             ConnectedDevices = AllDevicesSorted.Where(device => device.IsConnected);
 
             ForwardPropertyEvents(nameof(main.CurrentDocument), main, nameof(AllTracks));
+            ForwardPropertyEvents(nameof(main.CurrentDocument), main, LoadSettings);
+            LoadSettings();
         }
 
         public async Task CheckRefreshDevicesAsync()
@@ -239,12 +244,11 @@ namespace GlowSequencer.ViewModel
 
         public void AutoAssignTracks()
         {
-            var devices = SelectedDevices.Count > 0 ? SelectedDevices : AllDevices;
-            foreach (var device in devices)
+            foreach (var device in AllDevices)
             {
                 if (device.AssignedTrack != null)
                     continue;
-                
+
                 TrackViewModel track = AllTracks.FirstOrDefault(track => device.MatchesTrackName(track.Label));
                 if (track == null)
                 {
@@ -253,6 +257,90 @@ namespace GlowSequencer.ViewModel
                 }
                 device.AssignedTrack = track;
             }
+        }
+
+        public void SaveSettings()
+        {
+            var settings = new TransferSettings
+            {
+                ExportStartTime = ExportStartTime,
+                // TODO: Probably don't save technical settings in the timeline but in user settings?
+                MaxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
+                MaxRetries = 3,
+                // Remember the assigned tracks. ToLookup is necessary to gracefully ignore duplicates.
+                AssignedTracksByDeviceName = AllDevices.ToLookup(
+                        dev => dev.Name,
+                        dev => dev.AssignedTrack?.GetModel()
+                    ).ToDictionary(
+                        lookup => lookup.Key,
+                        lookup => lookup.First()
+                    )
+            };
+
+            main.CurrentDocument.GetModel().TransferSettings = settings;
+            main.IsDirty = true;
+            Notify(nameof(HasSavedSettings));
+
+            // Rather than reloading settings (which would temporarily mark everything as disconnected),
+            // we just mark everything as persistent.
+            foreach (var device in AllDevices)
+                device.IsPersistent = true;
+
+            AppendLog($"Saved current configuration with {StringUtil.Pluralize(AllDevices.Count, "device")}!");
+        }
+
+        public void ClearSettings()
+        {
+            main.CurrentDocument.GetModel().TransferSettings = null;
+            main.IsDirty = true;
+            Notify(nameof(HasSavedSettings));
+
+            foreach (var device in AllDevices.ToList())
+            {
+                if (device.IsConnected)
+                {
+                    device.IsPersistent = false;
+                    device.AssignedTrack = null;
+                }
+                else
+                {
+                    AllDevices.Remove(device);
+                }
+            }
+
+            AppendLog("Cleared configuration!");
+        }
+
+        private void LoadSettings()
+        {
+            var settings = main.CurrentDocument.GetModel().TransferSettings;
+            bool emptySettings = settings == null;
+            if (emptySettings)
+            {
+                // Keep loading anyway, to discard old settings in case of document switch.
+                settings = new TransferSettings();
+            }
+
+            ExportStartTime = settings.ExportStartTime;
+
+            // Preserve connected devices.
+            List<ConnectedDevice> connectedDevices = Enumerable.Where(AllDevices,
+                device => device.IsConnected)
+                .Select(device => device.GetModel().Value).ToList();
+
+            AllDevices.Clear();
+            foreach (var kvp in settings.AssignedTracksByDeviceName)
+            {
+                AllDevices.Add(new ConnectedDeviceViewModel(kvp.Key)
+                {
+                    IsPersistent = true,
+                    AssignedTrack = AllTracks.FirstOrDefault(t => t.GetModel() == kvp.Value),
+                });
+            }
+            MergeDeviceList(connectedDevices);
+
+            if (!emptySettings)
+                AppendLog("Loaded saved configuration!");
         }
 
         public void SetStartTimeToCursor()
