@@ -17,513 +17,439 @@ namespace GlowSequencer.Usb
                 .Select(y => y.DeviceProperties["DeviceID"].ToString()).ToList();
         }
 
-        public OperationResult<List<ConnectedDevice>?> ListConnectedClubs()
+        public List<ConnectedDevice> ListConnectedClubs()
         {
             List<string> connectedPortIds = GetConnectedPortIds();
             Console.WriteLine($"found {connectedPortIds.Count} clubs");
             List<ConnectedDevice> connectedDevices = new List<ConnectedDevice>();
             foreach (string connectedPortId in connectedPortIds)
             {
-                OperationResult<ConnectedDevice> r = GetConnectedClubByPortId(connectedPortId);
-                if (!r.IsSuccess)
+                ConnectedDevice c = GetConnectedClubByPortId(connectedPortId);
+                connectedDevices.Add(c);
+            }
+
+            return connectedDevices;
+        }
+
+        public ConnectedDevice GetConnectedClubByPortId(string connectedPortId)
+        {
+            UsbDevice device = null;
+            try
+            {
+                device = OpenDevice(connectedPortId);
+                Console.WriteLine($"Reading device: {connectedPortId}");
+
+                string name = ReadNameFromDevice(device);
+                string groupName = ReadGroupNameFromDevice(device);
+                string programName = ReadProgramNameFromDevice(device);
+
+                ConnectedDevice connectedDevice = new ConnectedDevice()
                 {
-                    return OperationResult<List<ConnectedDevice>>.Fail(r.ErrorMessage);
-                }
-                connectedDevices.Add(r.Data);
+                    connectedPortId = connectedPortId,
+                    name = name,
+                    groupName = groupName,
+                    programName = programName,
+                };
+                return connectedDevice;
             }
-
-            return OperationResult<List<ConnectedDevice>?>.Success(connectedDevices);
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                device?.Close();
+            }
+            
         }
 
-        public OperationResult<ConnectedDevice> GetConnectedClubByPortId(string connectedPortId)
+        public string ReadName(string connectedPortId)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult<ConnectedDevice> result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                string name = ReadNameFromDevice(device);
+                return name;
             }
-            UsbDevice device = data!;
-
-            Console.WriteLine($"Reading device: {connectedPortId}");
-
-            if (ReadNameFromDevice(device).IsFailWithNewOperatingResultAndData(out result, out string dataName))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            if (ReadGroupNameFromDevice(device).IsFailWithNewOperatingResultAndData(out result, out string dataGroupName))
+            finally
             {
-                return result;
+                device?.Close();
             }
-
-            if (ReadProgramNameFromDevice(device).IsFailWithNewOperatingResultAndData(out result, out string programName))
-            {
-                return result;
-            }
-
-            ConnectedDevice connectedDevice = new ConnectedDevice()
-            {
-                connectedPortId = connectedPortId,
-                name = dataName,
-                groupName = dataGroupName,
-                programName = programName,
-            };
-            device.Close();
-            Console.WriteLine($"Closed device: {connectedPortId}");
-            return OperationResult<ConnectedDevice>.Success(connectedDevice);
         }
 
-        public OperationResult<string> ReadName(string connectedPortId)
+        public void WriteName(string connectedPortId, string name)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<string>(out OperationResult<string> result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                WriteNameToDevice(device, name);
             }
-            UsbDevice device = data!;
-
-            if (ReadNameFromDevice(device).IsFailWithNewOperatingResultAndData(out result, out string name))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult<string>.Success(name);
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult WriteName(string connectedPortId, string name)
+
+        public string ReadGroupName(string connectedPortId)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                string groupName = ReadGroupNameFromDevice(device);
+                return groupName;
             }
-            UsbDevice device = data!;
-
-            if (WriteNameToDevice(device, name).IsFail(out result))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult.Success();
+            finally
+            {
+                device?.Close();
+            }
         }
 
-
-        public OperationResult<string> ReadGroupName(string connectedPortId)
+        public void WriteGroupName(string connectedPortId, string groupName)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<string>(out OperationResult<string> result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                WriteGroupNameToDevice(device, groupName);
             }
-            UsbDevice device = data!;
-
-            if (ReadGroupNameFromDevice(device).IsFailWithNewOperatingResultAndData(out result, out string name))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult<string>.Success(name);
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult WriteGroupName(string connectedPortId, string groupName)
+        public string ReadProgramName(string connectedPortId)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                string programName = ReadProgramNameFromDevice(device);
+                return programName;
             }
-            UsbDevice device = data!;
-
-            if (WriteGroupNameToDevice(device, groupName).IsFail(out result))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult.Success();
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult<string> ReadProgramName(string connectedPortId)
+        public void WriteProgramName(string connectedPortId, string programName)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<string>(out OperationResult<string> result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                WriteProgramNameToDevice(device, programName);
             }
-            UsbDevice device = data!;
-
-            if (ReadProgramNameFromDevice(device).IsFailWithNewOperatingResultAndData(out result, out string name))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult<string>.Success(name);
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult WriteProgramName(string connectedPortId, string programName)
+        public byte[] ReadProgramAutoDetect(string connectedPortId)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                byte[] programData = ReadProgramFromDeviceAutoDetect(device);
+                return programData;
             }
-            UsbDevice device = data!;
-
-            if (WriteProgramNameToDevice(device, programName).IsFail(out result))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult.Success();
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult<byte[]> ReadProgramAutoDetect(string connectedPortId)
+        public byte[] ReadProgram(string connectedPortId, int amountOfBytes)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<byte[]>(out OperationResult<byte[]> result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                byte[] programData = ReadProgramFromDevice(device, amountOfBytes);
+                return programData;
             }
-            UsbDevice device = data!;
-
-            if (ReadProgramFromDeviceAutoDetect(device).IsFailWithNewOperatingResultAndData(out result, out byte[] programData))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult<byte[]>.Success(programData);
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult<byte[]> ReadProgram(string connectedPortId, int amountOfBytes)
+        public void WriteProgram(string connectedPortId, byte[] programData)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData<byte[]>(out OperationResult<byte[]> result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                WriteProgramToDevice(device, programData);
             }
-            UsbDevice device = data!;
-
-            if (ReadProgramFromDevice(device, amountOfBytes).IsFailWithNewOperatingResultAndData(out result, out byte[] programData))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult<byte[]>.Success(programData);
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult WriteProgram(string connectedPortId, byte[] programData)
+        public void Start(string connectedPortId)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
+            UsbDevice device = null;
+            try
             {
-                return result;
+                device = OpenDevice(connectedPortId);
+                StartProgramOnDevice(device);
             }
-            UsbDevice device = data!;
-
-            if (WriteProgramToDevice(device, programData).IsFail(out result))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-
-            device.Close();
-            return OperationResult.Success();
+            finally
+            {
+                device?.Close();
+            }
         }
 
-        public OperationResult Start(string connectedPortId)
+        public void Stop(string connectedPortId)
         {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
-            {
-                return result;
-            }
-            UsbDevice device = data!;
-
-            if (StartProgramOnDevice(device).IsFail(out result))
-            {
-                return result;
-            }
-
-            device.Close();
-            return OperationResult.Success();
+            SetColor(connectedPortId, 0x00, 0x00, 0x00);
         }
 
-        public OperationResult Stop(string connectedPortId)
+        public void SetColor(string connectedPortId, byte r, byte g, byte b)
         {
-            OperationResult or = SetColor(connectedPortId, 0x00, 0x00, 0x00);
-            if (!or.IsSuccess)
+            UsbDevice device = null;
+            try
             {
-                return OperationResult.Fail("Failed to stop club: " + or.ErrorMessage);
+                device = OpenDevice(connectedPortId);
+                ActivateColorOnDevice(device, r, g, b);
             }
-            return or;
-        }
-
-        public OperationResult SetColor(string connectedPortId, byte r, byte g, byte b)
-        {
-            if (OpenDevice(connectedPortId).IsFailWithNewOperatingResultAndData(out OperationResult result, out UsbDevice? data))
+            catch (Exception e)
             {
-                return result;
+                Console.WriteLine(e);
+                throw;
             }
-            UsbDevice device = data!;
-
-            if (ActivateColorOnDevice(device, r, g, b).IsFail(out result))
+            finally
             {
-                return result;
+                device?.Close();
             }
-
-            device.Close();
-            return OperationResult.Success();
         }
 
 
-        private OperationResult<UsbDevice?> OpenDevice(string connectedPortId)
+        private UsbDevice OpenDevice(string connectedPortId)
         {
             UsbRegistry? usbRegistry = UsbDevice.AllDevices
                     .ToList().FirstOrDefault(x => x.DeviceProperties["DeviceID"].ToString() == connectedPortId);
             if (usbRegistry == null)
             {
-                return OperationResult<UsbDevice>.Fail($"Unable to find device with id {connectedPortId}!");
+                throw new Exception($"Unable to find device with id {connectedPortId}!");
             }
 
             if (!usbRegistry.Open(out UsbDevice? device))
             {
-                //Console.WriteLine($"Unable to open device with id {connectedPortId}!");
-                return OperationResult<UsbDevice>.Fail($"Unable to open device with id {connectedPortId}!"); ;
+                throw new Exception($"Unable to open device with id {connectedPortId}!");
             }
 
-            return OperationResult<UsbDevice>.Success(device)!;
+            return device!;
         }
 
-        private OperationResult<string> ReadNameFromDevice(UsbDevice device)
+        private string ReadNameFromDevice(UsbDevice device)
         {
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
+            CommunicationUtility.TransferHeader header = CommunicationUtility.CreateHeader(new byte[]{
                     0x04, 0x08, 0x80, 0x00, 0x00, 0x00
                 });
-            if (orHeader.IsFailWithNewOperatingResult(out OperationResult<string> result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader header = orHeader.Data;
-
-            if (CommunicationUtility.ReadContinuously(device, header, 8).IsFailWithNewOperatingResultAndData(out result, out byte[] nameBytes))
-            {
-                return result;
-            }
+            var nameBytes = CommunicationUtility.ReadContinuously(device, header, 8);
             string name = System.Text.Encoding.UTF8.GetString(nameBytes).TrimEnd('\0'); ;
-            return OperationResult<string>.Success(name);
+            return name;
         }
 
-        private OperationResult WriteNameToDevice(UsbDevice device, string name)
+        private void WriteNameToDevice(UsbDevice device, string name)
         {
             //[0x05, 0x08, first_byte at 0x80, 0x00, 0x00, 0x00, ...8 bytes of partial name...]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
+            var header = CommunicationUtility.CreateHeader(new byte[]{
                     0x05, 0x08, 0x80, 0x00, 0x00, 0x00
                 });
-            if (orHeader.IsFail(out OperationResult result))
-            {
-                return result;
-            }
-
-            CommunicationUtility.TransferHeader header = orHeader.Data;
 
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
             if (nameBytes.Length > 64)
             {
-                return OperationResult.Fail($"Name <{name}> is too long! Max 64 characters allowed.");
+                throw new Exception($"Name <{name}> is too long! Max 64 characters allowed.");
             }
-            if (CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 }).IsFail(out result))
-            {
-                return result;
-            }
-            return OperationResult.Success();
-        }
 
-        private OperationResult<string> ReadGroupNameFromDevice(UsbDevice device)
+            CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 });
+        }
+        
+        private string ReadGroupNameFromDevice(UsbDevice device)
         {
             //[0x04, 0x04, 0x7c, 0x00, 0x00, 0x00]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x04, 0x04, 0x7c, 0x00, 0x00, 0x00
-                });
-            if (orHeader.IsFailWithNewOperatingResult(out OperationResult<string> result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x04, 0x04, 0x7c, 0x00, 0x00, 0x00
+            });
 
-            if (CommunicationUtility.ReadContinuously(device, header, 1).IsFailWithNewOperatingResultAndData(out result, out byte[] nameBytes))
-            {
-                return result;
-            }
-            string name = System.Text.Encoding.UTF8.GetString(nameBytes).TrimEnd('\0'); ;
-            return OperationResult<string>.Success(name);
+            byte[] nameBytes = CommunicationUtility.ReadContinuously(device, header, 1);
+            string name = System.Text.Encoding.UTF8.GetString(nameBytes).TrimEnd('\0');
+            return name;
         }
 
-        private OperationResult WriteGroupNameToDevice(UsbDevice device, string groupName)
+        private void WriteGroupNameToDevice(UsbDevice device, string groupName)
         {
             //[0x05, 0x04, 0x7c, 0x00, 0x00, 0x00, ...4 bytes group-name...]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x05, 0x04, 0x7c, 0x00, 0x00, 0x00
-                });
-            if (orHeader.IsFail(out OperationResult result))
-            {
-                return result;
-            }
-
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x05, 0x04, 0x7c, 0x00, 0x00, 0x00
+            });
 
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(groupName);
             if (nameBytes.Length > 4)
             {
-                return OperationResult.Fail($"Group name <{groupName}> is too long! Max 4 characters allowed.");
+                throw new Exception($"Group name <{groupName}> is too long! Max 4 characters allowed.");
             }
-            if (CommunicationUtility.WriteContinuously(device, header, nameBytes, 4, new byte[] { 0x05 }).IsFail(out result))
-            {
-                return result;
-            }
-            return OperationResult.Success();
+            CommunicationUtility.WriteContinuously(device, header, nameBytes, 4, new byte[] { 0x05 });
         }
 
-        private OperationResult<string> ReadProgramNameFromDevice(UsbDevice device)
+        private string ReadProgramNameFromDevice(UsbDevice device)
         {
             //[0x04, 0x08, first_byte at 0xc0, 0x00, 0x00, 0x00]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x04, 0x08, 0xc0, 0x00, 0x00, 0x00
-                });
-            if (orHeader.IsFailWithNewOperatingResult(out OperationResult<string> result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x04, 0x08, 0xc0, 0x00, 0x00, 0x00
+            });
 
-            if (CommunicationUtility.ReadContinuously(device, header, 8).IsFailWithNewOperatingResultAndData(out result, out byte[] nameBytes))
-            {
-                return result;
-            }
-            string name = System.Text.Encoding.UTF8.GetString(nameBytes).TrimEnd('\0'); ;
-            return OperationResult<string>.Success(name);
+            byte[] nameBytes = CommunicationUtility.ReadContinuously(device, header, 8);
+            string name = System.Text.Encoding.UTF8.GetString(nameBytes).TrimEnd('\0');
+            return name;
         }
 
-        private OperationResult WriteProgramNameToDevice(UsbDevice device, string programName)
+        private void WriteProgramNameToDevice(UsbDevice device, string programName)
         {
             //[0x05, 0x08, first_byte at 0xc0, 0x00, 0x00, 0x00, ...8 bytes of partial name...]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x05, 0x08, 0xc0, 0x00, 0x00, 0x00
-                });
-            if (orHeader.IsFail(out OperationResult result))
-            {
-                return result;
-            }
-
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x05, 0x08, 0xc0, 0x00, 0x00, 0x00
+            });
 
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(programName);
             if (nameBytes.Length > 64)
             {
-                return OperationResult.Fail($"Program name <{programName}> is too long! Max 64 characters allowed.");
+                throw new Exception($"Program name <{programName}> is too long! Max 64 characters allowed.");
             }
-            if (CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 }).IsFail(out result))
-            {
-                return result;
-            }
-            return OperationResult.Success();
+            CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 });
         }
 
-        private OperationResult ActivateColorOnDevice(UsbDevice device, byte r, byte g, byte b)
+        private void ActivateColorOnDevice(UsbDevice device, byte r, byte g, byte b)
         {
             //[0x63, red_hex, green_hex, blue_hex]
-            return CommunicationUtility.WriteReadBulk(device, new byte[] { 0x63, r, g, b }, 4);
+            CommunicationUtility.WriteReadBulk(device, new byte[] { 0x63, r, g, b }, 4);
         }
 
-        private OperationResult StartProgramOnDevice(UsbDevice device)
+        private void StartProgramOnDevice(UsbDevice device)
         {
-            return CommunicationUtility.WriteControl(device);
+            CommunicationUtility.WriteControl(device);
         }
 
-        private OperationResult<byte[]> ReadProgramFromDevice(UsbDevice device, int bytesAmount)
+        private byte[] ReadProgramFromDevice(UsbDevice device, int bytesAmount)
         {
-            //[0x01, 0x10, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x01, 0x10, 0x00, 0x40, 0x00, 0x00
-                });
-            if (orHeader.IsFailWithNewOperatingResult(out OperationResult<byte[]> result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            //[0x01, 0x10, 0x00, 0x40, 0x00, 0x00]
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x01, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
+
             int amount = (int)Math.Ceiling(bytesAmount / (float)header.dataLength);
-            if (CommunicationUtility.ReadContinuously(device, header, amount).IsFailWithNewOperatingResultAndData(out result, out byte[] programData))
-            {
-                return result;
-            }
-            return OperationResult<byte[]>.Success(programData.Take(bytesAmount).ToArray());
+            byte[] programData = CommunicationUtility.ReadContinuously(device, header, amount);
+            return programData.Take(bytesAmount).ToArray();
         }
 
-        private OperationResult<byte[]> ReadProgramFromDeviceAutoDetect(UsbDevice device)
+        private byte[] ReadProgramFromDeviceAutoDetect(UsbDevice device)
         {
-            //[0x01, 0x10, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x01, 0x10, 0x00, 0x40, 0x00, 0x00
-                });
-            if (orHeader.IsFailWithNewOperatingResult(out OperationResult<byte[]> result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            //[0x01, 0x10, 0x00, 0x40, 0x00, 0x00]
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x01, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
+
             List<byte> retrievedData = new List<byte>();
             bool sequenceFound = false;
 
             IEnumerable<byte[]> dataEnumerable = CommunicationUtility.ReadContinuouslyEnumerable(device, header);
             foreach (byte[] data in dataEnumerable)
             {
-                int index = 0;
-                // Detect [0xff, 0xff] sequence
-                for (; index < data.Length - 1; index++)
+                for (int index = 0; index < data.Length - 1; index++)
                 {
                     if (data[index] == 0xff && data[index + 1] == 0xff)
                     {
                         sequenceFound = true;
+                        retrievedData.AddRange(data.Take(index + 2)); // Include the 0xff, 0xff sequence
                         break;
                     }
                 }
-                retrievedData.AddRange(data.Take(index));
-
-                if (sequenceFound)
-                {
-                    retrievedData.AddRange(new byte[] { 0xff, 0xff });
-                    break;
-                }
+                if (sequenceFound) break;
+                else retrievedData.AddRange(data);
             }
 
-            if (sequenceFound)
-            {
-                Console.WriteLine("Sequence [0xff, 0xff] found, stopped processing.");
-            }
-            else
+            if (!sequenceFound)
             {
                 Console.WriteLine("Sequence [0xff, 0xff] not found in the data.");
             }
-
-            return OperationResult<byte[]>.Success(retrievedData.ToArray());
+            return retrievedData.ToArray();
         }
 
-        private OperationResult WriteProgramToDevice(UsbDevice device, byte[] programData)
+        private void WriteProgramToDevice(UsbDevice device, byte[] programData)
         {
-            //[0x02, 0x10, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00, ...programData...]
-            OperationResult<CommunicationUtility.TransferHeader> orHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x02, 0x10, 0x00, 0x40, 0x00, 0x00
-                });
-            if (orHeader.IsFail(out OperationResult result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader header = orHeader.Data;
+            //[0x02, 0x10, 0x00, 0x40, 0x00, 0x00]
+            var header = CommunicationUtility.CreateHeader(new byte[]{
+                0x02, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
 
             //[0x03, 0x01, 2 bytes address L.E. starting at 0x00 0x40, 0x00, 0x00]
-            OperationResult<CommunicationUtility.TransferHeader> orInBetweenHeader = CommunicationUtility.CreateHeader(new byte[]{
-                    0x03, 0x10, 0x00, 0x40, 0x00, 0x00
-                });
-            if (orHeader.IsFail(out result))
-            {
-                return result;
-            }
-            CommunicationUtility.TransferHeader InBetweenHeader = orInBetweenHeader.Data;
+            var inBetweenHeader = CommunicationUtility.CreateHeader(new byte[]{
+                0x03, 0x10, 0x00, 0x40, 0x00, 0x00
+            });
 
-            //split the programData into chunks of 4*16 bytes
             int transmissionDataLength = header.dataLength;
             int consecutiveTransmissions = 4;
             int chunkSize = consecutiveTransmissions * transmissionDataLength;
@@ -531,26 +457,18 @@ namespace GlowSequencer.Usb
             for (int i = 0; i < amount; i++)
             {
                 //in-between transmission (every 4*16 bytes) - reason unknown but necessary
-                InBetweenHeader.Address = header.Address;
-                if (CommunicationUtility.WriteReadBulk(device, InBetweenHeader.AsBuffer, 1).IsFailWithNewOperatingResultAndData(out result, out byte[]? returnData))
+                inBetweenHeader.Address = header.Address;
+                byte[] returnData = CommunicationUtility.WriteReadBulk(device, inBetweenHeader.AsBuffer, 1);
+                if (returnData[0] != 0x03)
                 {
-                    return result;
-                }
-                if (returnData![0] != 0x03)
-                {
-                    return OperationResult.Fail($"In-between transmission failed. Expected 0x03, got {returnData[0]}");
+                    throw new Exception($"In-between transmission failed. Expected 0x03, got {returnData[0]}");
                 }
 
-                //program transmission
                 byte[] chunk = programData.Skip(i * chunkSize).Take(chunkSize).ToArray();
                 int transmissionAmount = (int)Math.Ceiling(chunk.Length / (float)transmissionDataLength);
-                if (CommunicationUtility.WriteContinuously(device, header, chunk, transmissionAmount, new byte[] { 0x02 }).IsFail(out result))
-                {
-                    return result;
-                }
+                CommunicationUtility.WriteContinuously(device, header, chunk, transmissionAmount, new byte[] { 0x02 });
                 header.Address += (ushort)chunkSize;
             }
-            return OperationResult.Success();
         }
     }
 }

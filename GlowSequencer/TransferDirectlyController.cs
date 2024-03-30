@@ -33,7 +33,7 @@ public class TransferDirectlyController
     {
         // TODO: catch read errors here or not?
         List<ConnectedDevice> connectedDevices = await Task.Run(
-            () => usbController.ListConnectedClubs().Unwrap());
+            () => usbController.ListConnectedClubs());
         knownConnectedPorts = connectedDevices.Select(device => device.connectedPortId).ToHashSet();
         return connectedDevices;
     }

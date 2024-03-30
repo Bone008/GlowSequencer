@@ -112,7 +112,6 @@
     <Compile Include="Usb\CommunicationUtility.cs" />
     <Compile Include="Usb\IClubConnection.cs" />
     <Compile Include="Usb\FakeClubConnection.cs" />
-    <Compile Include="Usb\OperationResult.cs" />
     <Compile Include="Usb\ProgramConverter.cs" />
     <Compile Include="Util\NullToBoolConverter.cs" />
     <Compile Include="Util\StringUtil.cs" />

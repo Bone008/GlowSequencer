@@ -25,24 +25,24 @@ namespace GlowSequencer.Usb
         /// Opens all connected club devices and retrieves the names, group_names and program_names
         /// </summary>
         /// <returns></returns>
-        OperationResult<List<ConnectedDevice>?> ListConnectedClubs();
+        List<ConnectedDevice> ListConnectedClubs();
 
-        OperationResult<ConnectedDevice> GetConnectedClubByPortId(string connectedPortId);
+        ConnectedDevice GetConnectedClubByPortId(string connectedPortId);
 
-        OperationResult<string> ReadName(string connectedPortId);
-        OperationResult WriteName(string connectedPortId, string name);
+        string ReadName(string connectedPortId);
+        void WriteName(string connectedPortId, string name);
 
-        OperationResult<string> ReadGroupName(string connectedPortId);
-        OperationResult WriteGroupName(string connectedPortId, string groupName);
+        string ReadGroupName(string connectedPortId);
+        void WriteGroupName(string connectedPortId, string groupName);
 
-        OperationResult<string> ReadProgramName(string connectedPortId);
-        OperationResult WriteProgramName(string connectedPortId, string programName);
-        OperationResult<byte[]> ReadProgramAutoDetect(string connectedPortId);
-        OperationResult<byte[]> ReadProgram(string connectedPortId, int amountOfBytes);
-        OperationResult WriteProgram(string connectedPortId, byte[] programData);
+        string ReadProgramName(string connectedPortId);
+        void WriteProgramName(string connectedPortId, string programName);
+        byte[] ReadProgramAutoDetect(string connectedPortId);
+        byte[] ReadProgram(string connectedPortId, int amountOfBytes);
+        void WriteProgram(string connectedPortId, byte[] programData);
 
-        OperationResult Start(string connectedPortId);
-        OperationResult Stop(string connectedPortId);
-        OperationResult SetColor(string connectedPortId, byte r, byte g, byte b);
+        void Start(string connectedPortId);
+        void Stop(string connectedPortId);
+        void SetColor(string connectedPortId, byte r, byte g, byte b);
     }
 }
