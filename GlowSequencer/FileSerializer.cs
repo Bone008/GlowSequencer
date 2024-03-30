@@ -280,14 +280,22 @@ namespace GlowSequencer
             for (int i = 0; i < samples.Length; i++)
             {
                 int delay = samples[i].ticks - lastTick;
-                if (delay > 0)
+                while (delay > 0)
+                {
+                    // Never exceed the maximum delay value. Ramps will be truncated if necessary.
+                    int safeDelay = Math.Min(delay, GloCommand.MAX_TICKS);
+                    delay -= safeDelay;
+
                     if (samples[i].colBefore == lastColor)
-                        container.Commands.Add(new GloDelayCommand(delay));
+                    {
+                        container.Commands.Add(new GloDelayCommand(safeDelay));
+                    }
                     else
                     {
-                        container.Commands.Add(new GloRampCommand(samples[i].colBefore, delay));
+                        container.Commands.Add(new GloRampCommand(samples[i].colBefore, safeDelay));
                         lastColor = samples[i].colBefore;
                     }
+                }
 
                 if (samples[i].colAfter != lastColor)
                 {

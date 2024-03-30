@@ -9,6 +9,9 @@ namespace GlowSequencer.Model
 {
     public abstract class GloCommand
     {
+        /// <summary>Maximum number of ticks that can be used as an argument.</summary>
+        public const int MAX_TICKS = 65535;
+
         public string Name { get; private set; }
 
         protected GloCommand(string name)
