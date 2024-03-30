@@ -22,6 +22,9 @@
     <CommandBinding Command="local:TransferDirectlyCommands.Stop"
                     CanExecute="CommandBinding_CanExecuteIfAnySelected"
                     Executed="CommandBinding_ExecuteStop" />
+    <CommandBinding Command="local:TransferDirectlyCommands.Transfer"
+                    CanExecute="CommandBinding_CanExecuteTransfer"
+                    Executed="CommandBinding_ExecuteTransfer" />
   </Window.CommandBindings>
 
   <DockPanel Margin="10">
@@ -54,11 +57,14 @@
                 Content="Stop (F6)"
                 Command="local:TransferDirectlyCommands.Stop" />
         <Button Width="100" Height="40" Margin="10,0,0,0"
-                Content="Identify (F7)" />
+                Content="Identify (F7)"
+                Command="local:TransferDirectlyCommands.Identify" />
         <Button Width="100" Height="40" Margin="10,0,0,0"
-                Content="Transfer (F10)" />
+                Content="Transfer (F10)"
+                Command="local:TransferDirectlyCommands.Transfer" />
         <Button Width="130" Height="40" Margin="10,0,0,0"
-                Content="Transfer + Start (F11)" />
+                Content="Transfer + Start (F11)"
+                Command="local:TransferDirectlyCommands.TransferAndStart" />
       </StackPanel>
       <ProgressBar Height="10" Margin="0,5,0,0"
                      Maximum="100"

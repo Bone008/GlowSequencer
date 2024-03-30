@@ -160,7 +160,7 @@ namespace GlowSequencer
             {
                 string sanitizedTrackName = SanitizeString(track.Label);
                 string file = filenameBase + sanitizedTrackName + filenameSuffix;
-                ExportTrack(track, file, startTime);
+                ExportTrackToFile(track, file, startTime);
             }
 
 
@@ -190,7 +190,7 @@ namespace GlowSequencer
             return true;
         }
 
-        public static void ExportTrack(Track track, string filename, float startTime = 0)
+        public static GloCommandContainer ExportTrackToContainer(Track track, float startTime)
         {
             // Algorithm "back-to-front rendering" := every block paints all affected samples with its data
             // Each sample stores "color up to this point" and "color from this point forward" along with the block that set the respective half.
@@ -199,8 +199,12 @@ namespace GlowSequencer
             Sample[] samples = CollectSamples(track, startTime);
             GloCommandContainer commandContainer = SamplesToCommands(samples);
             OptimizeCommands(commandContainer.Commands);
+            return commandContainer;
+        }
 
-            // write to file
+        public static void ExportTrackToFile(Track track, string filename, float startTime)
+        {
+            GloCommandContainer commandContainer = ExportTrackToContainer(track, startTime);
             WriteCommands(commandContainer, filename);
         }
 

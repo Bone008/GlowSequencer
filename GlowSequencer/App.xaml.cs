@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ namespace GlowSequencer
     /// </summary>
     public partial class App : Application
     {
+        private static readonly CultureInfo APP_CULTURE = CultureInfo.CreateSpecificCulture("en-US");
+
         public const string FILENAME_TRANSFER_SETTINGS = "transfer_settings.xml";
 
         public static string GetUserDataDir(bool create = true)
@@ -31,6 +34,11 @@ namespace GlowSequencer
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            CultureInfo.CurrentCulture = APP_CULTURE;
+            CultureInfo.CurrentUICulture = APP_CULTURE;
+            CultureInfo.DefaultThreadCurrentCulture = APP_CULTURE;
+            CultureInfo.DefaultThreadCurrentUICulture = APP_CULTURE;
+
             EventManager.RegisterClassHandler(typeof(Window), Window.PreviewMouseUpEvent, new MouseButtonEventHandler(OnPreviewMouseUp));
             Application.Current.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 

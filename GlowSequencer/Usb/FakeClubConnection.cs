@@ -119,6 +119,7 @@ public class FakeClubConnection : IClubConnection
     public void WriteProgram(string connectedPortId, byte[] programData)
     {
         Debug.WriteLine($"FCC: WriteProgram({connectedPortId}, {programData.Length} bytes)");
+        System.Threading.Thread.Sleep(programData.Length);
     }
 
     public void WriteProgramName(string connectedPortId, string programName)

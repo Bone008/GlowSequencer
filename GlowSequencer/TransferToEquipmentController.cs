@@ -71,7 +71,7 @@ namespace GlowSequencer
                                 versionId,
                                 sanitizedDocumentName));
 
-                            FileSerializer.ExportTrack(tracks[i], file, (float)settings.ExportStartTime.TotalSeconds);
+                            FileSerializer.ExportTrackToFile(tracks[i], file, (float)settings.ExportStartTime.TotalSeconds);
                         }, cancel);
                         ReportProgress(progress, TaskStage.ExportFiles, i + 1, tracks.Count);
                     }

@@ -46,5 +46,16 @@ namespace GlowSequencer.View
         {
             vm.StopDevices();
         }
+
+        private void CommandBinding_CanExecuteTransfer(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = vm.SelectedDevices.Count > 0
+                && vm.SelectedDevices.All(dev => dev.AssignedTrack != null);
+        }
+
+        private async void CommandBinding_ExecuteTransfer(object sender, ExecutedRoutedEventArgs e)
+        {
+            await vm.SendProgramsAsync();
+        }
     }
 }

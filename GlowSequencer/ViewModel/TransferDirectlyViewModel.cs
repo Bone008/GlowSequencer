@@ -1,14 +1,17 @@
 ﻿using ContinuousLinq;
+using GlowSequencer.Model;
+using GlowSequencer.Properties;
 using GlowSequencer.Usb;
 using GlowSequencer.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace GlowSequencer.ViewModel
 {
@@ -72,9 +75,12 @@ namespace GlowSequencer.ViewModel
 
     public class TransferDirectlyViewModel : Observable
     {
+        private const int MAX_CONCURRENT_TRANSFERS = 4;
+
         private readonly MainViewModel main;
         private readonly TransferDirectlyController controller;
 
+        private float _transferProgress = 0f;
         private StringBuilder _logOutput = new StringBuilder();
         private bool _isRefreshingDevices = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
@@ -90,7 +96,7 @@ namespace GlowSequencer.ViewModel
 
         public TimeSpan ExportStartTime { get; set; }
 
-        public float TransferProgress => 0f;
+        public float TransferProgress { get => _transferProgress; set => SetProperty(ref _transferProgress, value); }
         public string LogOutput => _logOutput.ToString();
 
         [Obsolete("only for designer")]
@@ -114,6 +120,8 @@ namespace GlowSequencer.ViewModel
 
             AllDevicesSorted = AllDevices.OrderBy(device => device.Name);
             ConnectedDevices = AllDevicesSorted.Where(device => device.IsConnected);
+
+            ForwardPropertyEvents(nameof(main.CurrentDocument), main, nameof(AllTracks));
         }
 
         public async Task CheckRefreshDevicesAsync()
@@ -165,28 +173,62 @@ namespace GlowSequencer.ViewModel
             }
         }
 
-        public void StartDevices()
+        public void StartDevices() => StartOrStopDevices(controller.StartDevices, "Started");
+
+        public void StopDevices() => StartOrStopDevices(controller.StopDevices, "Stopped");
+
+        private void StartOrStopDevices(Action<IEnumerable<string>> controllerAction, string logLabel)
         {
+            // TODO: concurrency check
             if (SelectedDevices.Any(device => !device.IsConnected))
             {
-                AppendLog("ERROR: Cannot start because disconnected devices are selected!");
+                AppendLog("WARNING: Some of the selected devices are NOT connected!");
+            }
+
+            var selectedPorts = SelectedDevices
+                .Where(vm => vm.IsConnected)
+                .Select(vm => vm.GetModel().Value.connectedPortId)
+                .ToList();
+            try { controllerAction(selectedPorts); }
+            catch (UsbOperationException e)
+            {
+                AppendLog($"ERROR: {e.Message}");
                 return;
             }
-            var selectedPorts = SelectedDevices.Select(vm => vm.GetModel().Value.connectedPortId);
-            controller.StartDevices(selectedPorts);
-            AppendLog($"Started on {StringUtil.Pluralize(SelectedDevices.Count, "device")}!");
+
+            if (selectedPorts.Count < SelectedDevices.Count)
+                AppendLog($"{logLabel} on {selectedPorts.Count} connected out of {StringUtil.Pluralize(SelectedDevices.Count, "selected device")}!");
+            else
+                AppendLog($"{logLabel} on {StringUtil.Pluralize(selectedPorts.Count, "device")}!");
         }
 
-        public void StopDevices()
+        public async Task SendProgramsAsync()
         {
+            // TODO: concurrency check
             if (SelectedDevices.Any(device => !device.IsConnected))
             {
-                AppendLog("ERROR: Cannot stop because disconnected devices are selected!");
-                return;
+                AppendLog("WARNING: Some of the selected devices are NOT connected!");
             }
-            var selectedPorts = SelectedDevices.Select(vm => vm.GetModel().Value.connectedPortId);
-            controller.StopDevices(selectedPorts);
-            AppendLog($"Stopped on {StringUtil.Pluralize(SelectedDevices.Count, "device")}!");
+            // TODO: assigned track null check
+            // TODO: refresh devices check
+
+            var tracksByPortId = SelectedDevices
+                .Where(vm => vm.IsConnected)
+                .ToDictionary(
+                    vm => vm.GetModel().Value.connectedPortId,
+                    vm => vm.AssignedTrack.GetModel());
+
+            var options = new TransferDirectlyController.TransferOptions
+            {
+                documentName = main.DocumentName,
+                startTime = (float)ExportStartTime.TotalSeconds,
+                progress = new Progress<float>(p => TransferProgress = p * 100),
+                log = new Progress<string>(AppendLog),
+                maxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
+            };
+            await controller.SendProgramsAsync(tracksByPortId, options);
+
+            MergeDeviceList(await controller.RefreshDevicesAsync());
         }
 
         private void AppendLog(string line)
