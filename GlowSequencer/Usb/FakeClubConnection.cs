@@ -51,11 +51,9 @@ public class FakeClubConnection : IClubConnection
             .Select(device => device.Value);
     }
 
-    public OperationResult<ConnectedDevice> GetConnectedClubByPortId(string connectedPortId)
+    public ConnectedDevice GetConnectedClubByPortId(string connectedPortId)
     {
-        ConnectedDevice result = LoadClubsFromFile()
-            .Single(device => device.connectedPortId == connectedPortId);
-        return OperationResult.Success(result);
+        return LoadClubsFromFile().Single(device => device.connectedPortId == connectedPortId);
     }
 
     public List<string> GetConnectedPortIds()
@@ -63,75 +61,69 @@ public class FakeClubConnection : IClubConnection
         return LoadClubsFromFile().Select(dev => dev.connectedPortId).ToList();
     }
 
-    public OperationResult<List<ConnectedDevice>> ListConnectedClubs()
+    public List<ConnectedDevice> ListConnectedClubs()
     {
-        return OperationResult.Success(LoadClubsFromFile().ToList());
+        return LoadClubsFromFile().ToList();
     }
 
-    public OperationResult<string> ReadGroupName(string connectedPortId)
+    public string ReadGroupName(string connectedPortId)
     {
-        return OperationResult.Success(GetConnectedClubByPortId(connectedPortId).Data.groupName);
+        return GetConnectedClubByPortId(connectedPortId).groupName;
     }
 
-    public OperationResult<string> ReadName(string connectedPortId)
+    public string ReadName(string connectedPortId)
     {
-        return OperationResult.Success(GetConnectedClubByPortId(connectedPortId).Data.name);
+        return GetConnectedClubByPortId(connectedPortId).name;
     }
 
-    public OperationResult<byte[]> ReadProgram(string connectedPortId, int amountOfBytes)
+    public byte[] ReadProgram(string connectedPortId, int amountOfBytes)
     {
-        return OperationResult.Success(new byte[amountOfBytes]);
+        return new byte[amountOfBytes];
     }
 
-    public OperationResult<byte[]> ReadProgramAutoDetect(string connectedPortId)
+    public byte[] ReadProgramAutoDetect(string connectedPortId)
     {
-        return OperationResult.Success(new byte[42]);
+        return new byte[42];
     }
 
-    public OperationResult<string> ReadProgramName(string connectedPortId)
+    public string ReadProgramName(string connectedPortId)
     {
-        return OperationResult.Success(GetConnectedClubByPortId(connectedPortId).Data.programName);
+        return GetConnectedClubByPortId(connectedPortId).programName;
     }
 
-    public OperationResult SetColor(string connectedPortId, byte r, byte g, byte b)
+    public void SetColor(string connectedPortId, byte r, byte g, byte b)
     {
         Debug.WriteLine($"FCC: SetColor({connectedPortId}, {r}, {g}, {b})");
-        return OperationResult.Success();
     }
 
-    public OperationResult Start(string connectedPortId)
+    public void Start(string connectedPortId)
     {
         Debug.WriteLine($"FCC: Start({connectedPortId})");
-        return OperationResult.Success();
     }
 
-    public OperationResult Stop(string connectedPortId)
+    public void Stop(string connectedPortId)
     {
         Debug.WriteLine($"FCC: Stop({connectedPortId})");
-        return OperationResult.Success();
     }
 
-    public OperationResult WriteGroupName(string connectedPortId, string groupName)
+    public void WriteGroupName(string connectedPortId, string groupName)
     {
         Debug.WriteLine($"FCC: WriteGroupName({connectedPortId}, {groupName})");
-        return OperationResult.Success();
     }
 
-    public OperationResult WriteName(string connectedPortId, string name)
+    public void WriteName(string connectedPortId, string name)
     {
         Debug.WriteLine($"FCC: WriteName({connectedPortId}, {name})");
-        return OperationResult.Success();
     }
 
-    public OperationResult WriteProgram(string connectedPortId, byte[] programData)
+    public void WriteProgram(string connectedPortId, byte[] programData)
     {
         Debug.WriteLine($"FCC: WriteProgram({connectedPortId}, {programData.Length} bytes)");
-        return OperationResult.Success();
     }
 
-    public OperationResult WriteProgramName(string connectedPortId, string programName)
+    public void WriteProgramName(string connectedPortId, string programName)
     {
         Debug.WriteLine($"FCC: WriteProgramName({connectedPortId}, {programName})");
-        return OperationResult.Success();
     }
+
 }
