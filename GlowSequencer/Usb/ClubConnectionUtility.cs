@@ -260,6 +260,36 @@ namespace GlowSequencer.Usb
             }
         }
 
+        public void StartSync(IEnumerable<string> connectedPortIds)
+        {
+            List<UsbDevice> devices = new List<UsbDevice>();
+            try
+            {
+                foreach (string connectedPortId in connectedPortIds)
+                {
+                    UsbDevice device = OpenDevice(connectedPortId);
+                    devices.Add(device);
+                }
+
+                foreach (UsbDevice device in devices)
+                {
+                    StartProgramOnDevice(device);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            finally
+            {
+                foreach (UsbDevice device in devices)
+                {
+                    device.Close();
+                }
+            }
+        }
+
         public void Stop(string connectedPortId)
         {
             SetColor(connectedPortId, 0x00, 0x00, 0x00);
