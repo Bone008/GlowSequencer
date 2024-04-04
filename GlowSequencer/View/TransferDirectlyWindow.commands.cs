@@ -52,9 +52,9 @@ namespace GlowSequencer.View
                 device.AssignedTrack = null;
         }
 
-        private void CommandBinding_ExecuteStart(object sender, ExecutedRoutedEventArgs e)
+        private async void CommandBinding_ExecuteStart(object sender, ExecutedRoutedEventArgs e)
         {
-            vm.StartDevices();
+            await vm.StartDevicesAsync();
         }
 
         private void CommandBinding_ExecuteStop(object sender, ExecutedRoutedEventArgs e)
@@ -76,7 +76,9 @@ namespace GlowSequencer.View
         private async void CommandBinding_ExecuteTransferAndStart(object sender, ExecutedRoutedEventArgs e)
         {
             if (await vm.SendProgramsAsync())
-                vm.StartDevices();
+            {
+                await vm.StartDevicesAsync();
+            }
         }
 
         private void CommandBinding_ExecuteToggleIdentify(object sender, ExecutedRoutedEventArgs e)

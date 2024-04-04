@@ -104,6 +104,8 @@ namespace GlowSequencer.ViewModel
         private bool _isRefreshingDevices = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
         private TimeSpan _exportStartTime = TimeSpan.Zero;
+        private bool _enableMusic = false;
+        private int _musicSystemDelayMs = 200;
         private bool _enableIdentify = false;
 
 
@@ -115,6 +117,8 @@ namespace GlowSequencer.ViewModel
         public ICollection<ConnectedDeviceViewModel> SelectedDevices { get => _selectedDevices; set => SetProperty(ref _selectedDevices, value); }
 
         public TimeSpan ExportStartTime { get => _exportStartTime; set => SetProperty(ref _exportStartTime, value); }
+        public bool EnableMusic { get => _enableMusic; set => SetProperty(ref _enableMusic, value); }
+        public int MusicSystemDelayMs { get => _musicSystemDelayMs; set => SetProperty(ref _musicSystemDelayMs, value); }
 
         public bool HasSavedSettings => main.CurrentDocument.GetModel().TransferSettings != null;
 
@@ -227,9 +231,24 @@ namespace GlowSequencer.ViewModel
             }
         }
 
-        public void StartDevices() => StartOrStopDevices(controller.StartDevices, "Started");
+        public async Task StartDevicesAsync()
+        {
+            if (EnableMusic)
+            {
+                float playTime = (float)MathUtil.Max(ExportStartTime, TimeSpan.Zero).TotalSeconds;
+                main.CurrentDocument.Playback.PlayAt(playTime, updateCursor: false);
+                if (MusicSystemDelayMs > 0)
+                    await Task.Delay(MusicSystemDelayMs);
+            }
 
-        public void StopDevices() => StartOrStopDevices(controller.StopDevices, "Stopped");
+            StartOrStopDevices(controller.StartDevices, "Started");
+        }
+
+        public void StopDevices()
+        {
+            StartOrStopDevices(controller.StopDevices, "Stopped");
+            main.CurrentDocument.Playback.Stop();
+        }
 
         private void StartOrStopDevices(Action<IEnumerable<string>> controllerAction, string logLabel)
         {

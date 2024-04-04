@@ -161,7 +161,7 @@ namespace GlowSequencer
                 {
                     log.Report("Starting internal music ...");
                     float time = (float)MathUtil.Max(settings.ExportStartTime, TimeSpan.Zero).TotalSeconds;
-                    bool result = playback.PlayAt(time);
+                    bool result = playback.PlayAt(time, updateCursor: false);
                     if (!result)
                         log.Report("Error: Could not start internal music!");
                 }

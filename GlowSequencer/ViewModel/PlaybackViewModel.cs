@@ -28,6 +28,7 @@ namespace GlowSequencer.ViewModel
         private readonly AudioPlayback audioPlayback = new AudioPlayback();
         private BufferedAudioFile audioFile = null;
 
+        private bool desyncCursorFromPlayback = false;
         private bool inUpdateCursorPosition = false;
         private CancellationTokenSource renderWaveformCts = null;
 
@@ -77,7 +78,12 @@ namespace GlowSequencer.ViewModel
 
         private void OnCursorPositionChanged()
         {
-            if (!inUpdateCursorPosition && audioPlayback.IsInitialized && audioPlayback.IsPlaying)
+            if (desyncCursorFromPlayback)
+                return;
+            if (inUpdateCursorPosition)
+                return;
+
+            if (audioPlayback.IsInitialized && audioPlayback.IsPlaying)
             {
                 audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
             }
@@ -97,18 +103,19 @@ namespace GlowSequencer.ViewModel
         private void OnPlaybackStopped(object sender, EventArgs e)
         {
             cursorUpdateTimer.Stop();
+            desyncCursorFromPlayback = false; // reset, from now on sync with cursor again
             UpdateCursorPosition();
             Notify(nameof(IsPlaying));
         }
 
         /// <summary>Starts playback at the given time in seconds.</summary>
-        public bool PlayAt(float time)
+        public bool PlayAt(float time, bool updateCursor = true)
         {
             sequencer.CursorPosition = time;
-            return Play();
+            return Play(updateCursor);
         }
 
-        public bool Play()
+        public bool Play(bool updateCursor = true)
         {
             if (!audioPlayback.IsInitialized) return false;
             if (audioPlayback.IsPlaying) return false;
@@ -118,7 +125,17 @@ namespace GlowSequencer.ViewModel
 
             audioPlayback.Seek(sequencer.CursorPosition - MusicTimeOffset);
             audioPlayback.Play();
-            cursorUpdateTimer.Start();
+            if (updateCursor)
+            {
+                cursorUpdateTimer.Start();
+            }
+            else
+            {
+                // Make sure that during "realtime" playback, the user cannot affect the music
+                // position by moving the cursor.
+                desyncCursorFromPlayback = true;
+            }
+
             Notify(nameof(IsPlaying));
             return true;
         }

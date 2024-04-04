@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:GlowSequencer.View"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance vm:TransferDirectlyViewModel, IsDesignTimeCreatable=True}"
+        d:DataContext="{d:DesignInstance vm:TransferDirectlyViewModel, IsDesignTimeCreatable=False}"
         Title="Transfer directly to equipment"
         Width="605" MinWidth="605"
         Height="600"
@@ -60,16 +60,25 @@
       </TextBlock>
     </Label>
 
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,15,0,0">
-      <StackPanel Orientation="Horizontal">
-        <!--<Label Style="{StaticResource s_FormLabelWide}">Start time:</Label>-->
-        <Label>Start time:</Label>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,10,0,0">
+      <StackPanel Orientation="Horizontal" Margin="0,5">
+        <Label Padding="0,5,5,5">Start time:</Label>
         <TextBox Width="150" Text="{Binding ExportStartTime, Converter={StaticResource conv_TimeSpanToString}}" />
         <Button Width="50" Margin="10,0" Click="CursorButton_Click">Cursor</Button>
         <Button Width="50" Click="ZeroButton_Click">Zero</Button>
       </StackPanel>
-
-      <Label>TODO: internal/external music feature</Label>
+      <StackPanel Orientation="Horizontal" Margin="0,5">
+        <CheckBox IsChecked="{Binding EnableMusic}" VerticalContentAlignment="Center" Margin="0,1,0,0">
+          Enable music
+        </CheckBox>
+        <StackPanel Orientation="Horizontal" IsEnabled="{Binding EnableMusic}">
+          <Label>&#x2013; assuming a sound system delay of</Label>
+          <TextBox Text="{Binding MusicSystemDelayMs}" Width="50" Height="26" HorizontalContentAlignment="Right"
+                   ToolTip="How much to correct for the sound system's audio delay.&#10;Increase this value to make the clubs start LATER than the music.&#10;Decrease this value to make the clubs start EARLIER, but not below 0."
+                   />
+          <Label>ms</Label>
+        </StackPanel>
+      </StackPanel>
 
 
       <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
