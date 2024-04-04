@@ -36,6 +36,10 @@ namespace GlowSequencer.Audio
         public BufferedAudioFile(string fileName)
         {
             this.fileName = fileName;
+            // Note: Breaking change from updating NAudio from 1.x to 2.x:
+            // This now uses MediaFoundationReader instead of Mp3FileReader, which reports
+            // only an estimated Length, not an accurate one.
+            // See: https://github.com/naudio/NAudio/issues/955
             reader = new AudioFileReader(fileName);
             data = new float[reader.Length / (reader.WaveFormat.BitsPerSample >> 3)];
             waveFormat = reader.WaveFormat;
@@ -63,6 +67,18 @@ namespace GlowSequencer.Audio
                         }
                         progress?.Report(currentLength / (float)data.Length);
                     } while (numRead > 0);
+
+                    // After NAudio upgrade to 2.x: reader.Length may not perfectly match the actual
+                    // length for MP3 files, so we correct for this after the reader has finished.
+                    // The unread bytes at the end of the buffer just remain 0 samples, this is ok.
+                    if (currentLength != data.Length)
+                    {
+                        lock (lengthLockObject)
+                        {
+                            currentLength = data.Length;
+                            Monitor.PulseAll(lengthLockObject);
+                        }
+                    }
                 }
                 finally
                 {

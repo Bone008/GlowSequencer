@@ -59,10 +59,10 @@ namespace GlowSequencer.Audio
             if (playbackDevice == null)
             {
                 playbackDevice = new WaveOut { DesiredLatency = 200 };
-                playbackDevice.PlaybackStopped += OnPlaybackStopped; ;
+                playbackDevice.PlaybackStopped += OnPlaybackStopped; 
 
-                // Hacky hack to read the volume from the system (should have been implemented by NAudio IMHO).
-                playbackDevice.Volume = WaveOutHelper.GetWaveOutVolume(playbackDevice);
+                // Old hack to read the volume from the system (no longer needed as of NAudio 2.x).
+                //playbackDevice.Volume = WaveOutHelper.GetWaveOutVolume(playbackDevice);
             }
         }
 
