@@ -134,5 +134,10 @@ namespace GlowSequencer.View
         {
             vm.ClearSettings();
         }
+
+        private void ResetAdvanced_Click(object sender, RoutedEventArgs e)
+        {
+            vm.ResetAdvancedSettings();
+        }
     }
 }

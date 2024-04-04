@@ -22,10 +22,10 @@
     <CommandBinding Command="local:TransferDirectlyCommands.ClearAssignedTracks"
                     Executed="CommandBinding_ExecuteClearAssignedTracks" />
     <CommandBinding Command="local:TransferDirectlyCommands.Start"
-                    CanExecute="CommandBinding_CanExecuteIfAnySelected"
+                    CanExecute="CommandBinding_CanExecuteStartStop"
                     Executed="CommandBinding_ExecuteStart" />
     <CommandBinding Command="local:TransferDirectlyCommands.Stop"
-                    CanExecute="CommandBinding_CanExecuteIfAnySelected"
+                    CanExecute="CommandBinding_CanExecuteStartStop"
                     Executed="CommandBinding_ExecuteStop" />
     <CommandBinding Command="local:TransferDirectlyCommands.Transfer"
                     CanExecute="CommandBinding_CanExecuteTransfer"
@@ -67,17 +67,42 @@
         <Button Width="50" Margin="10,0" Click="CursorButton_Click">Cursor</Button>
         <Button Width="50" Click="ZeroButton_Click">Zero</Button>
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Margin="0,5">
-        <CheckBox IsChecked="{Binding EnableMusic}" VerticalContentAlignment="Center" Margin="0,1,5,0">
-          Enable music &#x2013; assuming a sound system delay of
-        </CheckBox>
-        <StackPanel Orientation="Horizontal" IsEnabled="{Binding EnableMusic}">
-          <TextBox Text="{Binding MusicSystemDelayMs}" Width="50" Height="26" HorizontalContentAlignment="Right"
-                   ToolTip="How much to correct for the sound system's audio delay.&#10;Increase this value to make the clubs start LATER than the music.&#10;Decrease this value to make the clubs start EARLIER, but not below 0."
-                   />
-          <Label>ms</Label>
+      <DockPanel>
+        <Expander DockPanel.Dock="Right" Width="150" Padding="5"
+                  Header="Advanced settings"
+                  BorderBrush="#FFABADB3" BorderThickness="1"
+                  HorizontalContentAlignment="Right">
+          <StackPanel Orientation="Vertical">
+            <StackPanel Style="{StaticResource s_FormRow}"
+                        HorizontalAlignment="Right"
+                        ToolTip="How many USB devices to send to at the same time. Decreases total transfer duration but might increase error rate.">
+              <Label Content="Max parallel:" />
+              <TextBox Text="{Binding MaxConcurrentTransfers}" Width="50" HorizontalContentAlignment="Right" />
+            </StackPanel>
+            <StackPanel Style="{StaticResource s_FormRow}"
+                        HorizontalAlignment="Right"
+                        ToolTip="How often to retry sending a program per USB device before giving up.">
+              <Label Content="Max retries:" />
+              <TextBox Text="{Binding MaxTransferRetries}" Width="50" HorizontalContentAlignment="Right" />
+            </StackPanel>
+            <Button Content="Reset" ToolTip="Reset advanced settings to default values."
+                    HorizontalAlignment="Right" Margin="0,5" Width="50"
+                    Click="ResetAdvanced_Click" />
+          </StackPanel>
+        </Expander>
+
+        <StackPanel Orientation="Horizontal" Margin="0,5" VerticalAlignment="Top">
+          <CheckBox IsChecked="{Binding EnableMusic}" VerticalContentAlignment="Center" Margin="0,1,5,0">
+            Enable music &#x2013; assuming a sound system delay of
+          </CheckBox>
+          <StackPanel Orientation="Horizontal" IsEnabled="{Binding EnableMusic}">
+            <TextBox Text="{Binding MusicSystemDelayMs}" Width="50" Height="26" HorizontalContentAlignment="Right"
+             ToolTip="How much to correct for the sound system's audio delay.&#10;Increase this value to make the clubs start LATER than the music.&#10;Decrease this value to make the clubs start EARLIER, but not below 0."
+             />
+            <Label>ms</Label>
+          </StackPanel>
         </StackPanel>
-      </StackPanel>
+      </DockPanel>
 
 
       <StackPanel IsEnabled="{Binding IsUsbBusy, Converter={StaticResource conv_Invert}}"
@@ -109,7 +134,7 @@
 
       <DockPanel>
         <Button DockPanel.Dock="Right" VerticalAlignment="Center" Padding="5,0"
-                Click="ClearLog_Click">X</Button>
+                Click="ClearLog_Click" ToolTip="Clear log">X</Button>
         <Label>Log:</Label>
       </DockPanel>
       <TextBox IsReadOnly="True" Height="100" VerticalContentAlignment="Top"
@@ -132,6 +157,7 @@
               Content="Auto-assign tracks"
               ToolTip="Try to guess which track belongs to which unassigned device based on its name."
               Command="local:TransferDirectlyCommands.AutoAssignTracks" />
+
     </StackPanel>
 
     <ListView Name="devicesList"

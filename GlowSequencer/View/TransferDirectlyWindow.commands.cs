@@ -30,10 +30,9 @@ namespace GlowSequencer.View
 
     public partial class TransferDirectlyWindow
     {
-        private void CommandBinding_CanExecuteIfAnySelected(object sender, CanExecuteRoutedEventArgs e)
+        private void CommandBinding_CanExecuteStartStop(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = !vm.IsUsbBusy
-                && vm.SelectedDevices.Count > 0;
+            e.CanExecute = !vm.IsUsbBusy;
         }
 
         private void CommandBinding_CanExecuteTransfer(object sender, CanExecuteRoutedEventArgs e)

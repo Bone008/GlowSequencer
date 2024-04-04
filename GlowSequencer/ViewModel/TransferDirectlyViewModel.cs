@@ -94,8 +94,6 @@ namespace GlowSequencer.ViewModel
 
     public class TransferDirectlyViewModel : Observable
     {
-        private const int MAX_CONCURRENT_TRANSFERS = 4;
-
         private readonly MainViewModel main;
         private readonly TransferDirectlyController controller;
 
@@ -106,8 +104,12 @@ namespace GlowSequencer.ViewModel
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
         private TimeSpan _exportStartTime = TimeSpan.Zero;
         private bool _enableMusic = false;
-        private int _musicSystemDelayMs = 200;
+        private int _musicSystemDelayMs = TransferSettings.DEFAULT_MUSIC_SYSTEM_DELAY_MS;
         private bool _enableIdentify = false;
+
+        // advanced settings
+        private int _maxConcurrentTransfers = TransferSettings.DEFAULT_MAX_CONCURRENT_TRANSFERS;
+        private int _maxTransferRetries = TransferSettings.DEFAULT_MAX_RETRIES;
 
 
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks => main.CurrentDocument.Tracks;
@@ -119,7 +121,11 @@ namespace GlowSequencer.ViewModel
 
         public TimeSpan ExportStartTime { get => _exportStartTime; set => SetProperty(ref _exportStartTime, value); }
         public bool EnableMusic { get => _enableMusic; set => SetProperty(ref _enableMusic, value); }
-        public int MusicSystemDelayMs { get => _musicSystemDelayMs; set => SetProperty(ref _musicSystemDelayMs, value); }
+        public int MusicSystemDelayMs
+        {
+            get => _musicSystemDelayMs;
+            set => SetProperty(ref _musicSystemDelayMs, Math.Max(0, value));
+        }
 
         public bool HasSavedSettings => main.CurrentDocument.GetModel().TransferSettings != null;
 
@@ -127,6 +133,17 @@ namespace GlowSequencer.ViewModel
 
         // only for forwarding change events
         private ReadOnlyContinuousCollection<Color> AllIdentifyColorDummies { get; set; }
+
+        public int MaxConcurrentTransfers
+        {
+            get => _maxConcurrentTransfers;
+            set => SetProperty(ref _maxConcurrentTransfers, Math.Max(1, value));
+        }
+        public int MaxTransferRetries
+        {
+            get => _maxTransferRetries;
+            set => SetProperty(ref _maxTransferRetries, Math.Max(0, value));
+        }
 
         /// <summary>Mutex for all USB operations to avoid concurrent access to devices.</summary>
         public bool IsUsbBusy { get => _isUsbBusy; private set => SetProperty(ref _isUsbBusy, value); }
@@ -252,8 +269,13 @@ namespace GlowSequencer.ViewModel
         public async Task StartDevicesAsync()
         {
             using var _ = await AcquireUsbLock();
+            
             if (EnableMusic)
             {
+                if (ExportStartTime < TimeSpan.Zero)
+                {
+                    AppendLog("WARNING: Negative start time with music playback is not supported.");
+                }
                 float playTime = (float)MathUtil.Max(ExportStartTime, TimeSpan.Zero).TotalSeconds;
                 main.CurrentDocument.Playback.PlayAt(playTime, updateCursor: false);
                 if (MusicSystemDelayMs > 0)
@@ -322,8 +344,8 @@ namespace GlowSequencer.ViewModel
                 startTime = (float)ExportStartTime.TotalSeconds,
                 progress = new Progress<float>(p => TransferProgress = p * 100),
                 log = new Progress<string>(AppendLog),
-                maxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
-                maxRetries = 3,
+                maxConcurrentTransfers = MaxConcurrentTransfers,
+                maxRetries = MaxTransferRetries,
             };
             bool success = await controller.SendProgramsAsync(tracksByPortId, options);
             await DoRefreshDevicesAsync(); // Refresh to update program names.
@@ -373,9 +395,11 @@ namespace GlowSequencer.ViewModel
             var settings = new TransferSettings
             {
                 ExportStartTime = ExportStartTime,
+                EnableMusic = EnableMusic,
+                MusicSystemDelayMs = MusicSystemDelayMs,
                 // TODO: Probably don't save technical settings in the timeline but in user settings?
-                MaxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
-                MaxRetries = 3,
+                MaxConcurrentTransfers = MaxConcurrentTransfers,
+                MaxRetries = MaxTransferRetries,
                 DeviceConfigs = Enumerable.Select(AllDevices, dev => new TransferSettings.Device
                 {
                     name = dev.Name,
@@ -429,6 +453,10 @@ namespace GlowSequencer.ViewModel
             }
 
             ExportStartTime = settings.ExportStartTime;
+            EnableMusic = settings.EnableMusic;
+            MusicSystemDelayMs = settings.MusicSystemDelayMs;
+            MaxConcurrentTransfers = settings.MaxConcurrentTransfers;
+            MaxTransferRetries = settings.MaxRetries;
 
             // Preserve connected devices.
             List<ConnectedDevice> connectedDevices = Enumerable.Where(AllDevices,
@@ -454,6 +482,12 @@ namespace GlowSequencer.ViewModel
         public void SetStartTimeToCursor()
         {
             ExportStartTime = TimeSpan.FromSeconds(main.CurrentDocument.CursorPosition);
+        }
+
+        public void ResetAdvancedSettings()
+        {
+            MaxConcurrentTransfers = TransferSettings.DEFAULT_MAX_CONCURRENT_TRANSFERS;
+            MaxTransferRetries = TransferSettings.DEFAULT_MAX_RETRIES;
         }
 
         public void ClearLog()
