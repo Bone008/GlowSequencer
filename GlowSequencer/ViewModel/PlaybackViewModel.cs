@@ -111,6 +111,8 @@ namespace GlowSequencer.ViewModel
         /// <summary>Starts playback at the given time in seconds.</summary>
         public bool PlayAt(float time, bool updateCursor = true)
         {
+            if (audioPlayback.IsPlaying)
+                audioPlayback.Stop();
             sequencer.CursorPosition = time;
             return Play(updateCursor);
         }

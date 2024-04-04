@@ -10,8 +10,11 @@ namespace GlowSequencer.Audio
     /// <summary>Encapsulates control over playback and positioning.</summary>
     public class AudioPlayback : IDisposable
     {
+        private static readonly WaveFormat DEFAULT_WAVE_FORMAT = new WaveFormat();
+
         private WaveOut playbackDevice = null;
         private ISeekableSampleProvider sampleProvider = null;
+        private long deviceSamplePositionBase = 0; // the value that GetPosition() returned as we started seeking
         private int lastKnownSeekSample = 0; // the value that was last sent to sampleProvider.Seek(...)
 
         /// <summary>Used to wait for a playback device to be actually stopped.</summary>
@@ -22,13 +25,15 @@ namespace GlowSequencer.Audio
         public bool IsInitialized => sampleProvider != null;
         public bool IsPlaying => playbackDevice?.PlaybackState == PlaybackState.Playing;
 
+        /// <summary>Returns the audio's current playback position in seconds.</summary>
         public double CurrentTime
         {
             get
             {
-                if (sampleProvider == null) return 0;
-                int currentSamplePos = (playbackDevice != null ? lastKnownSeekSample + GetSamplePositionFromDevice() : sampleProvider.Position);
-                return (double)currentSamplePos / sampleProvider.WaveFormat.SampleRate / sampleProvider.WaveFormat.Channels;
+                int currentSamplePos = playbackDevice != null
+                    ? lastKnownSeekSample + GetSamplePositionFromDevice()
+                    : (sampleProvider?.Position ?? 0);
+                return currentSamplePos / GetTotalSamplesPerSecond();
             }
         }
 
@@ -59,7 +64,7 @@ namespace GlowSequencer.Audio
             if (playbackDevice == null)
             {
                 playbackDevice = new WaveOut { DesiredLatency = 200 };
-                playbackDevice.PlaybackStopped += OnPlaybackStopped; 
+                playbackDevice.PlaybackStopped += OnPlaybackStopped;
 
                 // Old hack to read the volume from the system (no longer needed as of NAudio 2.x).
                 //playbackDevice.Volume = WaveOutHelper.GetWaveOutVolume(playbackDevice);
@@ -102,22 +107,28 @@ namespace GlowSequencer.Audio
                 throw new InvalidOperationException("not initialized");
 
             bool wasPlaying = IsPlaying;
-            Action completeSeek = () =>
-            {
-                if (sampleProvider == null) return; // if Clear() was called in the meantime
-                sampleProvider.Seek(lastKnownSeekSample = (int)(timeSeconds * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels));
-                if (wasPlaying) Play();
-            };
-
             if (wasPlaying)
             {
                 Stop();
-                continuationOnStoppedHook = completeSeek;
+                continuationOnStoppedHook = () => FinishSeek(timeSeconds, wasPlaying);
             }
             else
             {
-                completeSeek();
+                FinishSeek(timeSeconds, wasPlaying);
             }
+        }
+
+        private void FinishSeek(double timeSeconds, bool wasPlaying)
+        {
+            // if Clear() was called in the meantime
+            if (sampleProvider == null)
+                return;
+
+            UpdateSamplePositionBase();
+            lastKnownSeekSample = (int)(timeSeconds * GetTotalSamplesPerSecond());
+            sampleProvider.Seek(lastKnownSeekSample);
+            if (wasPlaying)
+                Play();
         }
 
         /// <summary>Stops playback (but doesn't actually reset the CurrentTime).</summary>
@@ -130,6 +141,7 @@ namespace GlowSequencer.Audio
                 // of CurrentTime after stopping.
                 lastKnownSeekSample += GetSamplePositionFromDevice();
                 playbackDevice.Stop();
+                UpdateSamplePositionBase();
             }
         }
 
@@ -142,8 +154,32 @@ namespace GlowSequencer.Audio
 
         private int GetSamplePositionFromDevice()
         {
-            if (playbackDevice == null) return 0;
-            return (int)(playbackDevice.GetPosition() / sizeof(float));
+            if (playbackDevice == null)
+                return 0;
+            long position = playbackDevice.GetPosition() - deviceSamplePositionBase;
+            return (int)(position / sizeof(float));
+        }
+
+        /// <summary>
+        /// Workaround for some NAudio bug triggered when the default output device is changed in Windows.
+        /// Even though this is now officially supported: https://github.com/naudio/NAudio/pull/172
+        /// 
+        /// </summary>
+        private void UpdateSamplePositionBase()
+        {
+            if (playbackDevice != null)
+                deviceSamplePositionBase = playbackDevice.GetPosition();
+        }
+
+        private double GetTotalSamplesPerSecond()
+        {
+            // I don't really understand why, but if the playback device's wave format changes
+            // after switching the output device in Windows, we have to do all conversions based on
+            // its new format, EVEN THOUGH the sample provider's wave format didn't change o.O
+            var waveFormat = playbackDevice?.OutputWaveFormat
+                ?? sampleProvider?.WaveFormat
+                ?? DEFAULT_WAVE_FORMAT;
+            return waveFormat.SampleRate * waveFormat.Channels;
         }
     }
 }
