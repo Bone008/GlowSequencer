@@ -106,6 +106,11 @@ public class FakeClubConnection : IClubConnection
         Debug.WriteLine($"FCC: Start({connectedPortId})");
     }
 
+    public void StartSync(IEnumerable<string> connectedPortIds)
+    {
+        throw new NotImplementedException();
+    }
+
     public void Stop(string connectedPortId)
     {
         Debug.WriteLine($"FCC: Stop({connectedPortId})");
