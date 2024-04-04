@@ -41,12 +41,23 @@ namespace GlowSequencer.View
 
             Closed += (sender, e) => timer.Stop();
 
+            // Help out the command manager with re-enabling the buttons.
+            vm.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(vm.IsUsbBusy))
+                    CommandManager.InvalidateRequerySuggested();
+            };
 
             vm.AllDevicesSorted.CollectionChanged += (sender, e) =>
             {
                 if (selectAll.IsChecked ?? false)
                     devicesList.SelectAll();
             };
+        }
+
+        private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void CursorButton_Click(object sender, RoutedEventArgs e)

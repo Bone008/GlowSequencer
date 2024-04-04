@@ -102,6 +102,7 @@ namespace GlowSequencer.ViewModel
         private float _transferProgress = 0f;
         private StringBuilder _logOutput = new StringBuilder();
         private bool _isRefreshingDevices = false;
+        private bool _isUsbBusy = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
         private TimeSpan _exportStartTime = TimeSpan.Zero;
         private bool _enableMusic = false;
@@ -123,11 +124,12 @@ namespace GlowSequencer.ViewModel
         public bool HasSavedSettings => main.CurrentDocument.GetModel().TransferSettings != null;
 
         public bool EnableIdentify { get => _enableIdentify; set => SetProperty(ref _enableIdentify, value); }
-        
+
         // only for forwarding change events
         private ReadOnlyContinuousCollection<Color> AllIdentifyColorDummies { get; set; }
 
-
+        /// <summary>Mutex for all USB operations to avoid concurrent access to devices.</summary>
+        public bool IsUsbBusy { get => _isUsbBusy; private set => SetProperty(ref _isUsbBusy, value); }
         public float TransferProgress { get => _transferProgress; set => SetProperty(ref _transferProgress, value); }
         public string LogOutput => _logOutput.ToString();
 
@@ -154,7 +156,9 @@ namespace GlowSequencer.ViewModel
 
         public async Task CheckRefreshDevicesAsync()
         {
-            if (_isRefreshingDevices)
+            // Since this is an invisible background operation, it gets its own mutex in addition to
+            // the IsUsbBusy check. This hides the refresh operation from the user.
+            if (_isRefreshingDevices || IsUsbBusy)
                 return;
             if (!controller.HaveConnectedDevicesChanged())
                 return;
@@ -208,6 +212,9 @@ namespace GlowSequencer.ViewModel
 
         private void UpdateIdentifiedDevices()
         {
+            if (IsUsbBusy)
+                return; // probably will result in some outdated state, but cannot really prevent it
+
             var toIdentify = EnableIdentify
                 ? (SelectedDevices.Count > 0 ? SelectedDevices : AllDevices)
                 : Enumerable.Empty<ConnectedDeviceViewModel>();
@@ -223,7 +230,7 @@ namespace GlowSequencer.ViewModel
                     controller.SetDeviceColor(portId, c.R, c.G, c.B);
                     device.LastSentIdentifyColor = c;
                 }
-                else if(!shouldHighlight && device.LastSentIdentifyColor != null)
+                else if (!shouldHighlight && device.LastSentIdentifyColor != null)
                 {
                     controller.StopDevices(new[] { portId });
                     device.LastSentIdentifyColor = null;
@@ -233,6 +240,7 @@ namespace GlowSequencer.ViewModel
 
         public async Task StartDevicesAsync()
         {
+            using var _ = await AcquireUsbLock();
             if (EnableMusic)
             {
                 float playTime = (float)MathUtil.Max(ExportStartTime, TimeSpan.Zero).TotalSeconds;
@@ -244,15 +252,15 @@ namespace GlowSequencer.ViewModel
             StartOrStopDevices(controller.StartDevices, "Started");
         }
 
-        public void StopDevices()
+        public async Task StopDevicesAsync()
         {
+            using var _ = await AcquireUsbLock();
             StartOrStopDevices(controller.StopDevices, "Stopped");
             main.CurrentDocument.Playback.Stop();
         }
 
         private void StartOrStopDevices(Action<IEnumerable<string>> controllerAction, string logLabel)
         {
-            // TODO: concurrency check
             if (SelectedDevices.Any(device => !device.IsConnected))
             {
                 AppendLog("WARNING: Some of the selected devices are NOT connected!");
@@ -282,17 +290,15 @@ namespace GlowSequencer.ViewModel
 
         public async Task<bool> SendProgramsAsync()
         {
-            // TODO: concurrency check
+            using var _ = await AcquireUsbLock();
+
             if (SelectedDevices.Any(device => device.IsConnected && device.AssignedTrack == null))
             {
                 AppendLog("Cannot transfer without assigned tracks for all devices!");
                 return false;
             }
-            if (SelectedDevices.Any(device => !device.IsConnected))
-            {
-                AppendLog("WARNING: Some of the selected devices are NOT connected!");
-            }
 
+            bool showHasDisconnectedWarning = SelectedDevices.Any(device => !device.IsConnected);
             var tracksByPortId = SelectedDevices
                 .Where(vm => vm.IsConnected)
                 .ToDictionary(
@@ -308,15 +314,19 @@ namespace GlowSequencer.ViewModel
                 maxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
                 maxRetries = 3,
             };
-            // TODO exception handling
             bool success = await controller.SendProgramsAsync(tracksByPortId, options);
-
             MergeDeviceList(await controller.RefreshDevicesAsync());
+
+            if (showHasDisconnectedWarning)
+            {
+                AppendLog("WARNING: Some of the selected devices were NOT connected!");
+            }
             return success;
         }
 
         public async Task RenameDeviceAsync(ConnectedDeviceViewModel device, string newName)
         {
+            using var _ = await AcquireUsbLock();
             if (!device.IsConnected)
                 return;
             try
@@ -447,6 +457,19 @@ namespace GlowSequencer.ViewModel
                 _logOutput.AppendLine();
             _logOutput.Append(line);
             Notify(nameof(LogOutput));
+        }
+
+        private async Task<IDisposable> AcquireUsbLock()
+        {
+            // Acquire main mutex.
+            while (IsUsbBusy)
+                await Task.Delay(100);
+            IsUsbBusy = true;
+
+            // Wait for potentially running refresh to finish.
+            while (_isRefreshingDevices)
+                await Task.Delay(100);
+            return new ActionDisposable(() => IsUsbBusy = false);
         }
     }
 }

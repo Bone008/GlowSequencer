@@ -33,6 +33,9 @@ public class FakeClubConnection : IClubConnection
 
     private IEnumerable<ConnectedDevice> LoadClubsFromFile()
     {
+        if (!File.Exists(FILENAME))
+            return Enumerable.Empty<ConnectedDevice>();
+
         return File.ReadAllLines(FILENAME)
             .Select((line, index) =>
             {

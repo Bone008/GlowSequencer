@@ -68,11 +68,10 @@
         <Button Width="50" Click="ZeroButton_Click">Zero</Button>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Margin="0,5">
-        <CheckBox IsChecked="{Binding EnableMusic}" VerticalContentAlignment="Center" Margin="0,1,0,0">
-          Enable music
+        <CheckBox IsChecked="{Binding EnableMusic}" VerticalContentAlignment="Center" Margin="0,1,5,0">
+          Enable music &#x2013; assuming a sound system delay of
         </CheckBox>
         <StackPanel Orientation="Horizontal" IsEnabled="{Binding EnableMusic}">
-          <Label>&#x2013; assuming a sound system delay of</Label>
           <TextBox Text="{Binding MusicSystemDelayMs}" Width="50" Height="26" HorizontalContentAlignment="Right"
                    ToolTip="How much to correct for the sound system's audio delay.&#10;Increase this value to make the clubs start LATER than the music.&#10;Decrease this value to make the clubs start EARLIER, but not below 0."
                    />
@@ -81,10 +80,11 @@
       </StackPanel>
 
 
-      <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+      <StackPanel IsEnabled="{Binding IsUsbBusy, Converter={StaticResource conv_Invert}}"
+                  Orientation="Horizontal" Margin="0,15,0,0">
         <Button Width="100" Height="40"
                 Content="Start (F5)"
-                ToolTip="Play the stored program on all selected devices."
+                ToolTip="Start playback of the stored program on all selected devices."
                 Command="local:TransferDirectlyCommands.Start"/>
         <Button Width="100" Height="40" Margin="10,0,0,0"
                 Content="Stop (F6)"
