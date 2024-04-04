@@ -610,7 +610,11 @@ namespace GlowSequencer.View
             diag.FilterIndex = 0;
 
             if (sequencer.Playback.MusicFileName != null)
-                diag.InitialDirectory = Path.GetDirectoryName(sequencer.Playback.MusicFileName);
+            {
+                string directory = Path.GetDirectoryName(sequencer.Playback.MusicFileName);
+                if (Directory.Exists(directory))
+                    diag.InitialDirectory = directory;
+            }
 
             if (diag.ShowDialog(this) ?? false)
             {
