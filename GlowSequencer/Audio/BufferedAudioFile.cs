@@ -59,14 +59,15 @@ namespace GlowSequencer.Audio
                     {
                         if (reader == null) break; // we were disposed
 
-                        numRead = reader.Read(data, currentLength, READ_BLOCK_SIZE);
+                        int readCount = Math.Min(READ_BLOCK_SIZE, data.Length - currentLength);
+                        numRead = reader.Read(data, currentLength, readCount);
                         lock (lengthLockObject)
                         {
                             currentLength += numRead;
                             Monitor.PulseAll(lengthLockObject);
                         }
                         progress?.Report(currentLength / (float)data.Length);
-                    } while (numRead > 0);
+                    } while (numRead > 0 && currentLength < data.Length);
 
                     // After NAudio upgrade to 2.x: reader.Length may not perfectly match the actual
                     // length for MP3 files, so we correct for this after the reader has finished.
