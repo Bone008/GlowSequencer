@@ -57,11 +57,7 @@ public class TransferDirectlyController
 
     public void StartDevices(IEnumerable<string> portIds)
     {
-        // TODO: change to bulk start for better sync
-        foreach (string portId in portIds)
-        {
-            usbController.Start(portId);
-        }
+        usbController.StartSync(portIds);
     }
 
     public void StopDevices(IEnumerable<string> portIds)
