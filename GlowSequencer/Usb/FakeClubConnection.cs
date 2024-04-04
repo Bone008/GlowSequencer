@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GlowSequencer.Usb;
@@ -15,8 +16,11 @@ namespace GlowSequencer.Usb;
 public class FakeClubConnection : IClubConnection
 {
     private const string FILENAME = "fake_connected_clubs.txt";
+    private const string MAGIC_HARD_FAIL_STRING = "YOU_FAILED_IN_LIFE";
 
     private static Dictionary<string, string> s_programNameOverridesByPort = new();
+
+    private bool _hardFailMode = false;
 
     public FakeClubConnection()
     {
@@ -36,7 +40,9 @@ public class FakeClubConnection : IClubConnection
         if (!File.Exists(FILENAME))
             return Enumerable.Empty<ConnectedDevice>();
 
-        return File.ReadAllLines(FILENAME)
+        string[] lines = File.ReadAllLines(FILENAME);
+        _hardFailMode = lines.Any(line => line.Contains(MAGIC_HARD_FAIL_STRING) && !line.StartsWith("#"));
+        return lines
             .Select((line, index) =>
             {
                 // Skip empty lines and comments, but still count their line number.
@@ -76,63 +82,88 @@ public class FakeClubConnection : IClubConnection
 
     public string ReadGroupName(string connectedPortId)
     {
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
         return GetConnectedClubByPortId(connectedPortId).groupName;
     }
 
     public string ReadName(string connectedPortId)
     {
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
         return GetConnectedClubByPortId(connectedPortId).name;
     }
 
     public byte[] ReadProgram(string connectedPortId, int amountOfBytes)
     {
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
         return new byte[amountOfBytes];
     }
 
     public byte[] ReadProgramAutoDetect(string connectedPortId)
     {
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
         return new byte[42];
     }
 
     public string ReadProgramName(string connectedPortId)
     {
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
         return GetConnectedClubByPortId(connectedPortId).programName;
     }
 
     public void SetColor(string connectedPortId, byte r, byte g, byte b)
     {
         Debug.WriteLine($"FCC: SetColor({connectedPortId}, {r}, {g}, {b})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
     }
 
     public void Start(string connectedPortId)
     {
         Debug.WriteLine($"FCC: Start({connectedPortId})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
     }
 
     public void StartSync(IEnumerable<string> connectedPortIds)
     {
         Debug.WriteLine($"FCC: StartSync({string.Join(", ", connectedPortIds)})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
     }
 
     public void Stop(string connectedPortId)
     {
         Debug.WriteLine($"FCC: Stop({connectedPortId})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
     }
 
     public void WriteGroupName(string connectedPortId, string groupName)
     {
         Debug.WriteLine($"FCC: WriteGroupName({connectedPortId}, {groupName})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
     }
 
     public void WriteName(string connectedPortId, string name)
     {
         Debug.WriteLine($"FCC: WriteName({connectedPortId}, {name})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
     }
 
     public void WriteProgram(string connectedPortId, byte[] programData)
     {
         Debug.WriteLine($"FCC: WriteProgram({connectedPortId}, {programData.Length} bytes)");
-        System.Threading.Thread.Sleep(programData.Length);
+        Thread.Sleep(programData.Length);
+
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
         if (new Random().Next(0, 3) == 0)
             throw new UsbOperationException("Random simulated transmission failure");
     }
@@ -140,6 +171,9 @@ public class FakeClubConnection : IClubConnection
     public void WriteProgramName(string connectedPortId, string programName)
     {
         Debug.WriteLine($"FCC: WriteProgramName({connectedPortId}, {programName})");
+        if (_hardFailMode)
+            throw new UsbOperationException("SIMULATED HARD FAILURE");
+
         s_programNameOverridesByPort[connectedPortId] = programName;
     }
 

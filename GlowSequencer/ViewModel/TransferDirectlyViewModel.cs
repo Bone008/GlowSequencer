@@ -162,7 +162,11 @@ namespace GlowSequencer.ViewModel
                 return;
             if (!controller.HaveConnectedDevicesChanged())
                 return;
+            await DoRefreshDevicesAsync();
+        }
 
+        private async Task DoRefreshDevicesAsync()
+        {
             _isRefreshingDevices = true;
             try
             {
@@ -224,16 +228,23 @@ namespace GlowSequencer.ViewModel
                     continue;
                 string portId = device.GetModel().Value.connectedPortId;
                 bool shouldHighlight = toIdentify.Contains(device);
-                if (shouldHighlight && device.LastSentIdentifyColor != device.IdentifyColor)
+                try
                 {
-                    Color c = device.IdentifyColor;
-                    controller.SetDeviceColor(portId, c.R, c.G, c.B);
-                    device.LastSentIdentifyColor = c;
+                    if (shouldHighlight && device.LastSentIdentifyColor != device.IdentifyColor)
+                    {
+                        Color c = device.IdentifyColor;
+                        controller.SetDeviceColor(portId, c.R, c.G, c.B);
+                        device.LastSentIdentifyColor = c;
+                    }
+                    else if (!shouldHighlight && device.LastSentIdentifyColor != null)
+                    {
+                        controller.StopDevices(new[] { portId });
+                        device.LastSentIdentifyColor = null;
+                    }
                 }
-                else if (!shouldHighlight && device.LastSentIdentifyColor != null)
+                catch (UsbOperationException e)
                 {
-                    controller.StopDevices(new[] { portId });
-                    device.LastSentIdentifyColor = null;
+                    AppendLog($"ERROR setting identify color: {e.Message}");
                 }
             }
         }
@@ -315,7 +326,7 @@ namespace GlowSequencer.ViewModel
                 maxRetries = 3,
             };
             bool success = await controller.SendProgramsAsync(tracksByPortId, options);
-            MergeDeviceList(await controller.RefreshDevicesAsync());
+            await DoRefreshDevicesAsync(); // Refresh to update program names.
 
             if (showHasDisconnectedWarning)
             {

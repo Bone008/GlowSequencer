@@ -43,7 +43,6 @@ public class TransferDirectlyController
     /// <summary>Reads data about all connected devices and returns them as a list.</summary>
     public async Task<List<ConnectedDevice>> RefreshDevicesAsync()
     {
-        // TODO: catch read errors here or not?
         List<ConnectedDevice> connectedDevices = await Task.Run(
             () => usbController.ListConnectedClubs());
         _knownConnectedPorts = connectedDevices.Select(device => device.connectedPortId).ToHashSet();
@@ -73,6 +72,10 @@ public class TransferDirectlyController
         usbController.SetColor(portId, r, g, b);
     }
 
+    /// <summary>
+    /// NOTE: This is the only method in this class that does its own error handling!
+    /// For all OTHER communications, UsbOperationException must be caught.
+    /// </summary>
     public Task<bool> SendProgramsAsync(IDictionary<string, Track> tracksByPortId, TransferOptions options)
     {
         return Task.Run(() => SendPrograms(tracksByPortId, options));
@@ -87,9 +90,8 @@ public class TransferDirectlyController
         int totalCount = tracksByPortId.Count;
         int successCount = 0;
         int totalRetries = 0;
-        void ReportSuccess(int numRetries)
+        void ReportSuccess()
         {
-            Interlocked.Add(ref totalRetries, numRetries);
             int c = Interlocked.Increment(ref successCount);
             options.progress.Report((float)c / tracksByPortId.Count);
         }
@@ -124,17 +126,20 @@ public class TransferDirectlyController
                     usbController.WriteProgram(portId, programData);
                     usbController.WriteProgramName(portId, programName);
                     options.log.Report($"Sent to {deviceName} the program \"{programName}\" ({programData.Length:#,###} bytes).");
-                    ReportSuccess(failures);
+                    ReportSuccess();
                     success = true;
                 }
                 catch (UsbOperationException e)
                 {
                     Debug.WriteLine($"Transmission failure: {e}");
                     failures++;
-                    string retrying = failures <= options.maxRetries
+                    bool retrying = failures <= options.maxRetries;
+                    if (retrying)
+                        Interlocked.Increment(ref totalRetries);
+                    string prefix = retrying
                         ? $"RETRYING {failures}/{options.maxRetries}"
                         : "FAILED TOO OFTEN";
-                    options.log.Report($"({retrying}) Transmission failure to {deviceName}: {e.Message}");
+                    options.log.Report($"({prefix}) Transmission failure to {deviceName}: {e.Message}");
                 }
             } while (!success && failures <= options.maxRetries);
         });
