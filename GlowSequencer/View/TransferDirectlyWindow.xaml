@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
         xmlns:local="clr-namespace:GlowSequencer.View"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:TransferDirectlyViewModel, IsDesignTimeCreatable=True}"
         Title="Transfer directly to equipment"
@@ -32,7 +33,22 @@
     <CommandBinding Command="local:TransferDirectlyCommands.TransferAndStart"
                     CanExecute="CommandBinding_CanExecuteTransfer"
                     Executed="CommandBinding_ExecuteTransferAndStart" />
+    <CommandBinding Command="local:TransferDirectlyCommands.ToggleIdentify"
+                    Executed="CommandBinding_ExecuteToggleIdentify" />
   </Window.CommandBindings>
+
+  <Window.Resources>
+    <Style TargetType="ToggleButton">
+      <Style.Triggers>
+        <Trigger Property="IsChecked" Value="True">
+          <Setter Property="BorderThickness" Value="3" />
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+    <Style TargetType="Button">
+      <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+    </Style>
+  </Window.Resources>
 
   <DockPanel Margin="10">
     <Label DockPanel.Dock="Top">
@@ -59,18 +75,23 @@
       <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
         <Button Width="100" Height="40"
                 Content="Start (F5)"
-                Command="local:TransferDirectlyCommands.Start" />
+                ToolTip="Play the stored program on all selected devices."
+                Command="local:TransferDirectlyCommands.Start"/>
         <Button Width="100" Height="40" Margin="10,0,0,0"
                 Content="Stop (F6)"
+                ToolTip="Stop playback on all selected devices."
                 Command="local:TransferDirectlyCommands.Stop" />
-        <Button Width="100" Height="40" Margin="10,0,0,0"
+        <ToggleButton Width="100" Height="40" Margin="10,0,0,0"
                 Content="Identify (F7)"
-                Command="local:TransferDirectlyCommands.Identify" />
+                ToolTip="Toggle the highlighting of the selected devices."
+                IsChecked="{Binding EnableIdentify}" />
         <Button Width="100" Height="40" Margin="10,0,0,0"
                 Content="Transfer (F10)"
+                ToolTip="Transfer the assigned tracks to all selected devices."
                 Command="local:TransferDirectlyCommands.Transfer" />
         <Button Width="130" Height="40" Margin="10,0,0,0"
                 Content="Transfer + Start (F11)"
+                ToolTip="Transfer the assigned tracks to all selected devices, and then start playback."
                 Command="local:TransferDirectlyCommands.TransferAndStart" />
       </StackPanel>
       <ProgressBar Height="10" Margin="0,5,0,0"
@@ -91,13 +112,16 @@
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,5,0,0">
       <Button Width="150" Height="26"
               Content="Save this configuration"
+              ToolTip="Remember the current list of connected devices and their assigned tracks and colors."
               Click="SaveSettings_Click" />
       <Button Width="150" Height="26" Margin="5,0,0,0"
               Content="Clear saved configuration"
+              ToolTip="Forget the stored list of expected devices and clear their assigned tracks."
               IsEnabled="{Binding HasSavedSettings}"
               Click="ClearSettings_Click" />
       <Button Width="150" Height="26" Margin="25,0,0,0"
               Content="Auto-assign tracks"
+              ToolTip="Try to guess which track belongs to which unassigned device based on its name."
               Command="local:TransferDirectlyCommands.AutoAssignTracks" />
     </StackPanel>
 
@@ -105,7 +129,8 @@
               SelectionMode="Extended"
               ScrollViewer.VerticalScrollBarVisibility="Visible"
               ItemsSource="{Binding AllDevicesSorted}"
-              SelectionChanged="devicesList_SelectionChanged">
+              SelectionChanged="devicesList_SelectionChanged"
+              d:ItemsSource="{d:SampleData ItemCount=5}">
       <ListView.InputBindings>
         <KeyBinding Key="Delete" Command="local:TransferDirectlyCommands.ClearAssignedTracks"/>
       </ListView.InputBindings>
@@ -149,6 +174,15 @@
                 <ComboBox ItemsSource="{Binding Path=DataContext.AllTracks, RelativeSource={RelativeSource AncestorType=ListView}}"
                           DisplayMemberPath="Label"
                           SelectedItem="{Binding AssignedTrack}" />
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+          <GridViewColumn Header="Identify" Width="45">
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <xctk:ColorPicker ShowDropDownButton="False"
+                                  SelectedColor="{Binding IdentifyColor}"
+                                  ToolTip="Which color to use when Identify is turned on." />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>

@@ -72,6 +72,11 @@ public class TransferDirectlyController
         }
     }
 
+    public void SetDeviceColor(string portId, byte r, byte g, byte b)
+    {
+        usbController.SetColor(portId, r, g, b);
+    }
+
     public Task<bool> SendProgramsAsync(IDictionary<string, Track> tracksByPortId, TransferOptions options)
     {
         return Task.Run(() => SendPrograms(tracksByPortId, options));

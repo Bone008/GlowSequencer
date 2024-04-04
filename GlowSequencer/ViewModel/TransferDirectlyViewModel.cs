@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace GlowSequencer.ViewModel
 {
@@ -19,10 +20,14 @@ namespace GlowSequencer.ViewModel
         private string _name; // Stored seperately from the model for the persistent & disconnected case.
         private bool _isPersistent = false;
         private TrackViewModel _assignedTrack = null;
+        private Color _identifyColor = TransferSettings.DEFAULT_IDENTIFY_COLOR.ToViewColor();
+        private Color? _lastSentIdentifyColor = null;
 
         public string Name { get => _name; set => SetProperty(ref _name, value); }
         public bool IsPersistent { get => _isPersistent; set => SetProperty(ref _isPersistent, value); }
         public TrackViewModel AssignedTrack { get => _assignedTrack; set => SetProperty(ref _assignedTrack, value); }
+        public Color IdentifyColor { get => _identifyColor; set => SetProperty(ref _identifyColor, value); }
+        public Color? LastSentIdentifyColor { get => _lastSentIdentifyColor; set => SetProperty(ref _lastSentIdentifyColor, value); }
 
         public bool IsConnected => model != null;
         public string ProgramName => model != null ? model.Value.programName : "⚠️ DISCONNECTED";
@@ -45,10 +50,16 @@ namespace GlowSequencer.ViewModel
 
         public void SetModel(ConnectedDevice newModel)
         {
-            if (!IsPersistent && IsConnected && (model.Value.connectedPortId != newModel.connectedPortId))
-                throw new ArgumentException("Cannot change the port ID of a connected device VM.");
             if (Name != newModel.name)
                 throw new ArgumentException("Cannot change the name of a connected device VM.");
+            if (IsConnected && (model.Value.connectedPortId != newModel.connectedPortId))
+            {
+                // Changing port ID is allowed for persistent entries, but resets its highlight state.
+                if (IsPersistent)
+                    LastSentIdentifyColor = null;
+                else
+                    throw new ArgumentException("Cannot change the port ID of a connected device VM.");
+            }
 
             model = newModel;
             Notify(nameof(IsConnected));
@@ -60,6 +71,7 @@ namespace GlowSequencer.ViewModel
             model = null;
             Notify(nameof(IsConnected));
             Notify(nameof(ProgramName));
+            LastSentIdentifyColor = null;
         }
 
         public bool MatchesDevice(ConnectedDevice other)
@@ -92,6 +104,8 @@ namespace GlowSequencer.ViewModel
         private bool _isRefreshingDevices = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
         private TimeSpan _exportStartTime = TimeSpan.Zero;
+        private bool _enableIdentify = false;
+
 
         public ReadOnlyContinuousCollection<TrackViewModel> AllTracks => main.CurrentDocument.Tracks;
         public ObservableCollection<ConnectedDeviceViewModel> AllDevices { get; } = new();
@@ -104,22 +118,14 @@ namespace GlowSequencer.ViewModel
 
         public bool HasSavedSettings => main.CurrentDocument.GetModel().TransferSettings != null;
 
+        public bool EnableIdentify { get => _enableIdentify; set => SetProperty(ref _enableIdentify, value); }
+        
+        // only for forwarding change events
+        private ReadOnlyContinuousCollection<Color> AllIdentifyColorDummies { get; set; }
+
+
         public float TransferProgress { get => _transferProgress; set => SetProperty(ref _transferProgress, value); }
         public string LogOutput => _logOutput.ToString();
-
-        [Obsolete("only for designer")]
-        public TransferDirectlyViewModel() : this(null)
-        {
-            if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
-            {
-                MergeDeviceList(new List<ConnectedDevice>
-                {
-                    new() { connectedPortId = "LP5", name = "Test 01", programName = "Test01.glo" },
-                    new() { connectedPortId = "LP6", name = "Test 02", programName = "Test02.glo" },
-                    new() { connectedPortId = "LP7", name = "Test 03", programName = "Test03.glo" },
-                });
-            }
-        }
 
         public TransferDirectlyViewModel(MainViewModel main)
         {
@@ -128,8 +134,16 @@ namespace GlowSequencer.ViewModel
 
             AllDevicesSorted = AllDevices.OrderBy(device => device.Name);
             ConnectedDevices = AllDevicesSorted.Where(device => device.IsConnected);
+            AllIdentifyColorDummies = AllDevices.Select(device => device.IdentifyColor);
 
-            ForwardPropertyEvents(nameof(main.CurrentDocument), main, nameof(AllTracks));
+            ForwardPropertyEvents(nameof(EnableIdentify), this, UpdateIdentifiedDevices);
+            ForwardPropertyEvents(nameof(SelectedDevices), this, UpdateIdentifiedDevices);
+            ForwardCollectionEvents(AllDevices, UpdateIdentifiedDevices);
+            ForwardCollectionEvents(AllIdentifyColorDummies, UpdateIdentifiedDevices);
+
+            ForwardPropertyEvents(nameof(main.CurrentDocument), main,
+                nameof(AllTracks),
+                nameof(HasSavedSettings));
             ForwardPropertyEvents(nameof(main.CurrentDocument), main, LoadSettings);
             LoadSettings();
         }
@@ -146,6 +160,11 @@ namespace GlowSequencer.ViewModel
             {
                 List<ConnectedDevice> currentDevices = await controller.RefreshDevicesAsync();
                 MergeDeviceList(currentDevices);
+            }
+            catch (UsbOperationException e)
+            {
+                AppendLog($"ERROR refreshing device list: {e.Message}");
+                Debug.WriteLine(e);
             }
             finally
             {
@@ -183,6 +202,31 @@ namespace GlowSequencer.ViewModel
             }
         }
 
+        private void UpdateIdentifiedDevices()
+        {
+            var toIdentify = EnableIdentify
+                ? (SelectedDevices.Count > 0 ? SelectedDevices : AllDevices)
+                : Enumerable.Empty<ConnectedDeviceViewModel>();
+            foreach (var device in AllDevices)
+            {
+                if (!device.IsConnected)
+                    continue;
+                string portId = device.GetModel().Value.connectedPortId;
+                bool shouldHighlight = toIdentify.Contains(device);
+                if (shouldHighlight && device.LastSentIdentifyColor != device.IdentifyColor)
+                {
+                    Color c = device.IdentifyColor;
+                    controller.SetDeviceColor(portId, c.R, c.G, c.B);
+                    device.LastSentIdentifyColor = c;
+                }
+                else if(!shouldHighlight && device.LastSentIdentifyColor != null)
+                {
+                    controller.StopDevices(new[] { portId });
+                    device.LastSentIdentifyColor = null;
+                }
+            }
+        }
+
         public void StartDevices() => StartOrStopDevices(controller.StartDevices, "Started");
 
         public void StopDevices() => StartOrStopDevices(controller.StopDevices, "Stopped");
@@ -194,6 +238,11 @@ namespace GlowSequencer.ViewModel
             {
                 AppendLog("WARNING: Some of the selected devices are NOT connected!");
             }
+
+            // Starting/stopping resets the highlighted color, we should reflect that.
+            // Do this before the actual action to make sure we reset even if there are partial errors.
+            foreach (var device in SelectedDevices)
+                device.LastSentIdentifyColor = null;
 
             var selectedPorts = SelectedDevices
                 .Where(vm => vm.IsConnected)
@@ -215,12 +264,15 @@ namespace GlowSequencer.ViewModel
         public async Task<bool> SendProgramsAsync()
         {
             // TODO: concurrency check
+            if (SelectedDevices.Any(device => device.IsConnected && device.AssignedTrack == null))
+            {
+                AppendLog("Cannot transfer without assigned tracks for all devices!");
+                return false;
+            }
             if (SelectedDevices.Any(device => !device.IsConnected))
             {
                 AppendLog("WARNING: Some of the selected devices are NOT connected!");
             }
-            // TODO: assigned track null check
-            // TODO: refresh devices check
 
             var tracksByPortId = SelectedDevices
                 .Where(vm => vm.IsConnected)
@@ -237,6 +289,7 @@ namespace GlowSequencer.ViewModel
                 maxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
                 maxRetries = 3,
             };
+            // TODO exception handling
             bool success = await controller.SendProgramsAsync(tracksByPortId, options);
 
             MergeDeviceList(await controller.RefreshDevicesAsync());
@@ -283,14 +336,12 @@ namespace GlowSequencer.ViewModel
                 // TODO: Probably don't save technical settings in the timeline but in user settings?
                 MaxConcurrentTransfers = MAX_CONCURRENT_TRANSFERS,
                 MaxRetries = 3,
-                // Remember the assigned tracks. ToLookup is necessary to gracefully ignore duplicates.
-                AssignedTracksByDeviceName = AllDevices.ToLookup(
-                        dev => dev.Name,
-                        dev => dev.AssignedTrack?.GetModel()
-                    ).ToDictionary(
-                        lookup => lookup.Key,
-                        lookup => lookup.First()
-                    )
+                DeviceConfigs = Enumerable.Select(AllDevices, dev => new TransferSettings.Device
+                {
+                    name = dev.Name,
+                    assignedTrack = dev.AssignedTrack?.GetModel(),
+                    identifyColor = dev.IdentifyColor.ToGloColor(),
+                }).ToList(),
             };
 
             main.CurrentDocument.GetModel().TransferSettings = settings;
@@ -345,12 +396,13 @@ namespace GlowSequencer.ViewModel
                 .Select(device => device.GetModel().Value).ToList();
 
             AllDevices.Clear();
-            foreach (var kvp in settings.AssignedTracksByDeviceName)
+            foreach (var config in settings.DeviceConfigs)
             {
-                AllDevices.Add(new ConnectedDeviceViewModel(kvp.Key)
+                AllDevices.Add(new ConnectedDeviceViewModel(config.name)
                 {
                     IsPersistent = true,
-                    AssignedTrack = AllTracks.FirstOrDefault(t => t.GetModel() == kvp.Value),
+                    AssignedTrack = AllTracks.FirstOrDefault(t => t.GetModel() == config.assignedTrack),
+                    IdentifyColor = config.identifyColor.ToViewColor(),
                 });
             }
             MergeDeviceList(connectedDevices);

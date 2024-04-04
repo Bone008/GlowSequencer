@@ -20,8 +20,8 @@ namespace GlowSequencer.View
             "", "Start", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F5) });
         public static readonly RoutedUICommand Stop = new RoutedUICommand(
             "", "Stop", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F6) });
-        public static readonly RoutedUICommand Identify = new RoutedUICommand(
-            "", "Identify", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F7) });
+        public static readonly RoutedUICommand ToggleIdentify = new RoutedUICommand(
+            "", "ToggleIdentify", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F7) });
         public static readonly RoutedUICommand Transfer = new RoutedUICommand(
             "", "Transfer", typeof(TransferDirectlyCommands), new InputGestureCollection { new KeyGesture(Key.F10) });
         public static readonly RoutedUICommand TransferAndStart = new RoutedUICommand(
@@ -77,6 +77,11 @@ namespace GlowSequencer.View
         {
             if (await vm.SendProgramsAsync())
                 vm.StartDevices();
+        }
+
+        private void CommandBinding_ExecuteToggleIdentify(object sender, ExecutedRoutedEventArgs e)
+        {
+            vm.EnableIdentify = !vm.EnableIdentify;
         }
     }
 }

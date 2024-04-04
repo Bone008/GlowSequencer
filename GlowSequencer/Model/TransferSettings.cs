@@ -14,10 +14,19 @@ namespace GlowSequencer.Model;
 /// </summary>
 public class TransferSettings
 {
+    public static readonly GloColor DEFAULT_IDENTIFY_COLOR = GloColor.White;
+
+    public class Device
+    {
+        public string name;
+        public Track assignedTrack;
+        public GloColor identifyColor;
+    }
+
     private static readonly TransferSettings DEFAULT = new TransferSettings();
 
-    // NOTE: This class should be effectively treated readonly!
-    public IDictionary<string, Track> AssignedTracksByDeviceName { get; set; } = new Dictionary<string, Track>();
+    // NOTE: This class should be effectively treated as readonly for UI purposes!
+    public IReadOnlyList<Device> DeviceConfigs { get; set; } = new List<Device>(0);
     public TimeSpan ExportStartTime { get; set; } = TimeSpan.Zero;
     public int MaxConcurrentTransfers { get; set; } = 4;
     public int MaxRetries { get; set; } = 3;
@@ -25,10 +34,10 @@ public class TransferSettings
     /// <summary>Removes all assigned references to the given track.</summary>
     public void PurgeTrackReferences(Track track)
     {
-        foreach (var pair in AssignedTracksByDeviceName.ToList())
+        foreach (var config in DeviceConfigs)
         {
-            if (pair.Value == track)
-                AssignedTracksByDeviceName[pair.Key] = null;
+            if (config.assignedTrack == track)
+                config.assignedTrack = null;
         }
     }
 
@@ -39,11 +48,13 @@ public class TransferSettings
             new XElement("max-concurrent-transfers", MaxConcurrentTransfers),
             new XElement("max-retries", MaxRetries));
 
-        foreach (var pair in AssignedTracksByDeviceName)
+        foreach (var config in DeviceConfigs)
         {
             element.Add(new XElement("device",
-                new XAttribute("name", pair.Key),
-                new XElement("track-reference", pair.Value?.GetIndex())));
+                new XElement("name", config.name),
+                new XElement("track-reference", config.assignedTrack?.GetIndex()),
+                new XElement("identify-color", config.identifyColor.ToHexString())
+            ));
         }
         return element;
     }
@@ -59,9 +70,13 @@ public class TransferSettings
             MaxConcurrentTransfers = (int?)element.Element("max-concurrent-transfers") ?? DEFAULT.MaxConcurrentTransfers,
             MaxRetries = (int?)element.Element("max-retries") ?? DEFAULT.MaxRetries,
 
-            AssignedTracksByDeviceName = element.Elements("device").ToDictionary(
-                deviceElement => (string)deviceElement.Attribute("name"),
-                deviceElement => TrackFromXML(timeline, deviceElement)),
+            DeviceConfigs = element.Elements("device").Select(deviceElement => new Device
+            {
+                name = (string)deviceElement.Element("name") ?? "",
+                assignedTrack = TrackFromXML(timeline, deviceElement),
+                identifyColor = GloColor.FromHexString(
+                    (string)deviceElement.Element("identify-color") ?? DEFAULT_IDENTIFY_COLOR.ToHexString()),
+            }).ToList(),
         };
     }
 
