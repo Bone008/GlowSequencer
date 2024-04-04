@@ -51,6 +51,7 @@ namespace GlowSequencer.Usb
         void WriteProgram(string connectedPortId, byte[] programData);
 
         void Start(string connectedPortId);
+        void StartSync(IEnumerable<string> connectedPortIds);
         void Stop(string connectedPortId);
         void SetColor(string connectedPortId, byte r, byte g, byte b);
     }
