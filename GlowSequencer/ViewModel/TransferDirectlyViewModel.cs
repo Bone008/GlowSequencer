@@ -180,6 +180,9 @@ namespace GlowSequencer.ViewModel
             if (!controller.HaveConnectedDevicesChanged())
                 return;
             await DoRefreshDevicesAsync();
+
+            // update identify colors after lock is released
+            UpdateIdentifiedDevices();
         }
 
         private async Task DoRefreshDevicesAsync()
@@ -269,7 +272,7 @@ namespace GlowSequencer.ViewModel
         public async Task StartDevicesAsync()
         {
             using var _ = await AcquireUsbLock();
-            
+
             if (EnableMusic)
             {
                 if (ExportStartTime < TimeSpan.Zero)
