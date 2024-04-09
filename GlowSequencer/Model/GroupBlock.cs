@@ -38,22 +38,11 @@ namespace GlowSequencer.Model
                     foreach (Block b in e.NewItems)
                     {
                         ForwardPropertyEvents(nameof(b.TrackNotificationPlaceholder), b, RecalcTracks);
-                        b.ColorModifierFn = TransformChildColor;
                     }
                 }
 
-                if (e.OldItems != null)
-                    foreach (Block b in e.OldItems)
-                        b.ColorModifierFn = null;
-
                 RecalcTracks();
             };
-
-
-            Action notifyChildrenCol = () => { foreach (var child in _children) child.NotifyColorModifierFn(); };
-            ForwardPropertyEvents(nameof(Duration), this, notifyChildrenCol);
-            ForwardPropertyEvents(nameof(OverlayStartColor), this, notifyChildrenCol);
-            ForwardPropertyEvents(nameof(OverlayEndColor), this, notifyChildrenCol);
         }
 
 

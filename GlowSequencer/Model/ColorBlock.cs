@@ -14,16 +14,9 @@ namespace GlowSequencer.Model
 
         public GloColor Color { get { return _color; } set { SetProperty(ref _color, value); } }
 
-        public GloColor RenderedColor1 { get { return (ColorModifierFn != null ? ColorModifierFn(StartTime, _color) : _color); } }
-        public GloColor RenderedColor2 { get { return (ColorModifierFn != null ? ColorModifierFn(GetEndTime(), _color) : _color); } }
-
         public ColorBlock(Timeline timeline, params Track[] tracks)
             : base(timeline, tracks)
         {
-            ForwardPropertyEvents(nameof(Color), this, nameof(RenderedColor1), nameof(RenderedColor2));
-            ForwardPropertyEvents(nameof(ColorModifierFn), this, nameof(RenderedColor1), nameof(RenderedColor2));
-            ForwardPropertyEvents(nameof(StartTime), this, () => { if (ColorModifierFn != null) { Notify(nameof(RenderedColor1)); Notify(nameof(RenderedColor2)); } });
-            ForwardPropertyEvents(nameof(Duration), this, () => { if (ColorModifierFn != null) { Notify(nameof(RenderedColor2)); } });
         }
 
         internal override IEnumerable<FileSerializer.PrimitiveBlock> BakePrimitive(Track track)

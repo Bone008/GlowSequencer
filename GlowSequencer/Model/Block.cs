@@ -20,8 +20,6 @@ namespace GlowSequencer.Model
         private MusicSegment _segmentContext;
         private ObservableCollection<Track> _tracks = new ObservableCollection<Track>();
 
-        private Func<float, GloColor, GloColor> _colorModifierFn = null;
-
         public float StartTime { get { return _startTime; } set { SetProperty(ref _startTime, Math.Max(0, value)); } }
         public float Duration { get { return _duration; } set { SetProperty(ref _duration, Math.Max(GetMinDuration(), value)); } }
 
@@ -31,10 +29,6 @@ namespace GlowSequencer.Model
 
         /// <summary>Pseudo-property that always returns true but will be notified whenever the Tracks collection changes.</summary>
         public bool TrackNotificationPlaceholder { get { return true; } }
-
-        /// <summary>This was the start of the implementation of "color overlays" for groups,
-        /// I think, but it never worked out properly.</summary>
-        public Func<float, GloColor, GloColor> ColorModifierFn { get { return _colorModifierFn; } set { SetProperty(ref _colorModifierFn, value); } }
 
 
         public Block(Timeline timeline, params Track[] tracks)
@@ -47,11 +41,6 @@ namespace GlowSequencer.Model
             _tracks.CollectionChanged += (sender, e) => Notify(nameof(TrackNotificationPlaceholder));
 
             _segmentContext = timeline.DefaultMusicSegment;
-        }
-
-        public void NotifyColorModifierFn()
-        {
-            Notify(nameof(ColorModifierFn));
         }
 
         public float GetEndTime()
@@ -85,7 +74,6 @@ namespace GlowSequencer.Model
             if (!Tracks.Contains(track)) throw new ArgumentException("invalid track");
 #endif
 
-            // Note: If ColorModifierFn becomes relevant, we could apply it generically to the result here.
             return GetColorAtLocalTimeCore(time - StartTime, track);
         }
 

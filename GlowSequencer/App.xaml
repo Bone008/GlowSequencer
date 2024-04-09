@@ -132,10 +132,7 @@
                     <!--<Border Style="{StaticResource s_TimelineBorderedBlock}" Background="{Binding RenderedColor, Converter={StaticResource conv_ColorToBrush}}" />-->
                     <Border Style="{StaticResource s_TimelineBorderedBlock}">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5" ColorInterpolationMode="SRgbLinearInterpolation">
-                                <GradientStop Color="{Binding RenderedColor1, Converter={StaticResource conv_MoreVibrantColor}}" Offset="0"/>
-                                <GradientStop Color="{Binding RenderedColor2, Converter={StaticResource conv_MoreVibrantColor}}" Offset="1"/>
-                            </LinearGradientBrush>
+                            <SolidColorBrush Color="{Binding Color, Converter={StaticResource conv_MoreVibrantColor}}" />
                         </Border.Background>
                     </Border>
                 </DataTemplate>
