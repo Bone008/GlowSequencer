@@ -28,7 +28,7 @@ namespace GlowSequencer.Model
         public ObservableCollection<Track> Tracks { get { return _tracks; } }
 
         /// <summary>Pseudo-property that always returns true but will be notified whenever the Tracks collection changes.</summary>
-        public bool TrackNotificationPlaceholder { get { return true; } }
+        public bool TrackNotificationPlaceholder => true;
 
 
         public Block(Timeline timeline, params Track[] tracks)

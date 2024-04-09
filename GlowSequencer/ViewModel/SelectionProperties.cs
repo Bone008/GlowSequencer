@@ -129,6 +129,11 @@ namespace GlowSequencer.ViewModel
                 case nameof(ColorBlockViewModel.Color): Notify(nameof(Color)); break;
                 case nameof(RampBlockViewModel.StartColor): Notify(nameof(StartColor)); break;
                 case nameof(RampBlockViewModel.EndColor): Notify(nameof(EndColor)); break;
+
+                case nameof(BlockViewModel.TrackNotificationPlaceholder):
+                    foreach (TrackAffiliationData affiliation in TrackAffiliation)
+                        affiliation.OnTrackBlocksChanged();
+                    break;
             }
         }
 
@@ -223,16 +228,10 @@ namespace GlowSequencer.ViewModel
                 _track = track;
 
                 ForwardCollectionEvents(context.selectedBlocks, nameof(AffiliationState));
-                CollectionChangedEventManager.AddHandler(track.Blocks, OnTrackBlocksChanged);
             }
 
-            private void OnTrackBlocksChanged(object sender, NotifyCollectionChangedEventArgs e)
+            internal void OnTrackBlocksChanged()
             {
-                // TODO: There is a display bug left when a group is selected and the "all" or "invert"
-                // button is pressed. The new checkboxes end up in indeterminate state instead of checked,
-                // since this notifier is only called the first time the GroupBlockViewModel's Tracks are
-                // recalculated. At this point, not ALL of the group's blocks have been added to the track yet.
-                // I couldn't find a good way to listen to every change of every group child though ...
                 Notify(nameof(AffiliationState));
             }
 

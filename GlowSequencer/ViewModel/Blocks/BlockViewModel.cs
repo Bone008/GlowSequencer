@@ -67,7 +67,8 @@ namespace GlowSequencer.ViewModel
 
             ForwardPropertyEvents(nameof(model.SegmentContext), model, nameof(SegmentContext), nameof(IsSegmentActive));
             // track affiliation
-            ForwardCollectionEvents(model.Tracks, nameof(DisplayTopOffset), nameof(DisplayHeight), nameof(DisplayClip));
+            ForwardPropertyEvents(nameof(model.TrackNotificationPlaceholder), model, nameof(TrackNotificationPlaceholder));
+            ForwardCollectionEvents(model.Tracks, NotifyTrackRelatedProperties);
             // tracks in general
             // moved to OnTracksCollectionChanged(), called by the sequencer, because when this view model is constructed, the "Tracks" collection may still be under construction
             //CollectionChangedEventManager.AddHandler(sequencer.Tracks, (sender, e) => { Notify(nameof(DisplayTopOffset)); Notify(nameof(DisplayHeight)); Notify(nameof(DisplayClip)); });
@@ -110,6 +111,9 @@ namespace GlowSequencer.ViewModel
             set { sequencer.ActionManager.RecordSetProperty(model, m => m.SegmentContext, (value == null ? null : value.GetModel())); }
             //set { model.SegmentContext = (value == null ? null : value.GetModel()); }
         }
+
+        /// <inheritdoc cref="Model.Block.TrackNotificationPlaceholder"/>
+        public bool TrackNotificationPlaceholder => true;
 
         public double DisplayOffset => StartTime * sequencer.TimePixelScale;
         public double DisplayTopOffset => model.Tracks.Min(t => t.GetIndex()) * globalParams.TrackDisplayHeight;
