@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:GlowSequencer.View"
         mc:Ignorable="d"
         Title="Block properties" ShowInTaskbar="False"
+        local:WindowSettings.Save="True"
         DataContext="{StaticResource vm_Main}">
     <Grid DataContext="{Binding CurrentDocument}">
         <ContentPresenter Content="{Binding SelectionData}" ContentTemplate="{StaticResource GenericProperties}"

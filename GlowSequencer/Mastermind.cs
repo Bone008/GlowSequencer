@@ -18,6 +18,9 @@ namespace GlowSequencer
         private static PoppedOutSelectionDataWindow winPoppedOutSelectionData = null;
         private static PoppedOutVisualizationWindow winPoppedOutVisualization = null;
 
+        public static Window PoppedOutSelectionDataWindow => winPoppedOutSelectionData;
+        public static Window PoppedOutVisualizationWindow => winPoppedOutVisualization;
+
         private static void OpenWindow<T>(ref T win, Action closeHandler) where T : Window, new()
         {
             OpenWindow(ref win, () => new T(), closeHandler);

@@ -247,6 +247,7 @@
     <Compile Include="View\Elements\WaveformControl.xaml.cs">
       <DependentUpon>WaveformControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\WindowSettings.cs" />
     <Page Include="View\Elements\PipetteButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

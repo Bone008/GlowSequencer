@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("Glow Sequencer")]
 [assembly: AssemblyDescription("Visual tool to program LED equipment.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Lukas Bonauer")]
+[assembly: AssemblyCompany(null)]
 [assembly: AssemblyProduct("GlowSequencer")]
 [assembly: AssemblyCopyright("Copyright © Lukas Bonauer")]
 [assembly: AssemblyTrademark("")]

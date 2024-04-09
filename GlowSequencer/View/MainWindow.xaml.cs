@@ -2,6 +2,7 @@
 using GlowSequencer.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -67,8 +68,39 @@ namespace GlowSequencer.View
             InitializeComponent();
             main = (MainViewModel)DataContext;
 
+            SourceInitialized += (sender, e) => { RestoreWorkspaceSettings(); };
+            Closing += (sender, e) => { if (!e.Cancel) SaveWorkspaceSettings(); };
+
             sequencer.SetViewportState(trackBlocksScroller.HorizontalOffset, trackBlocksScroller.ActualWidth);
             timeline.Focus();
+        }
+
+        private void RestoreWorkspaceSettings()
+        {
+            var settings = Properties.Settings.Default;
+            if (settings.PropsPoppedOut)
+            {
+                ButtonPopOut_Click(this, default);
+
+            }
+
+            main.CurrentDocument.Visualization.IsEnabled = settings.VisualizationEnabled;
+            if (settings.VisualizationPoppedOut)
+            {
+                ButtonPopOut2_Click(this, default);
+            }
+        }
+
+        private void SaveWorkspaceSettings()
+        {
+            var settings = Properties.Settings.Default;
+            settings.PropsPoppedOut = Mastermind.PoppedOutSelectionDataWindow != null;
+            settings.VisualizationPoppedOut = Mastermind.PoppedOutVisualizationWindow != null;
+            settings.VisualizationEnabled = main.CurrentDocument.Visualization.IsEnabled;
+            settings.Save();
+
+            Mastermind.PoppedOutSelectionDataWindow?.Close();
+            Mastermind.PoppedOutVisualizationWindow?.Close();
         }
 
         private void trackLabelsScroller_ScrollChanged(object sender, ScrollChangedEventArgs e)
