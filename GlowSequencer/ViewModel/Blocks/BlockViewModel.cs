@@ -179,6 +179,7 @@ namespace GlowSequencer.ViewModel
 
         public void AddToTrack(TrackViewModel track)
         {
+            Debug.Assert(this is not GroupBlockViewModel);
             if (!model.Tracks.Contains(track.GetModel()))
             {
                 sequencer.ActionManager.RecordAdd(model.Tracks, track.GetModel());
@@ -188,6 +189,7 @@ namespace GlowSequencer.ViewModel
 
         public void RemoveFromTrack(TrackViewModel track)
         {
+            Debug.Assert(this is not GroupBlockViewModel);
             if (model.Tracks.Count > 1 && model.Tracks.Contains(track.GetModel()))
             {
                 sequencer.ActionManager.RecordRemove(model.Tracks, track.GetModel());

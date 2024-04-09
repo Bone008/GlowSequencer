@@ -128,7 +128,7 @@ namespace GlowSequencer.View
         {
             ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
             e.CanExecute = (sequencer.SelectedBlocks.Any()
-                            && props.TrackAffiliation.Any(aff => aff.CanModify && !aff.AffiliationState.GetValueOrDefault(false)));
+                            && props.TrackAffiliation.Any(aff => !aff.AffiliationState.GetValueOrDefault(false)));
         }
 
         private void CommandBinding_CanExecuteIfNote(object sender, CanExecuteRoutedEventArgs e)
@@ -436,8 +436,8 @@ namespace GlowSequencer.View
             ViewModel.SelectionProperties props = (ViewModel.SelectionProperties)e.Parameter;
             using (sequencer.ActionManager.CreateTransaction(false))
             {
-                var toTrue = props.TrackAffiliation.Where(aff => aff.AffiliationState.HasValue && !aff.AffiliationState.Value).ToList();
-                var toFalse = props.TrackAffiliation.Where(aff => aff.AffiliationState.HasValue && aff.AffiliationState.Value).ToList();
+                var toTrue = props.TrackAffiliation.Where(aff => aff.AffiliationState == false).ToList();
+                var toFalse = props.TrackAffiliation.Where(aff => aff.AffiliationState == true).ToList();
 
                 foreach (var aff in toTrue) aff.AffiliationState = true;
                 foreach (var aff in toFalse) aff.AffiliationState = false;

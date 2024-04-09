@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace GlowSequencer.ViewModel
             get { return true; }
         }
 
-        public ReadOnlyContinuousCollection<TrackAffiliationData> TrackAffiliation { get { return sequencer.Tracks.Select(t => new TrackAffiliationData(this, t)); } }
+        public ReadOnlyContinuousCollection<TrackAffiliationData> TrackAffiliation { get; private set; }
 
         public TimeUnit StartTimeComplex { get { return AggregateTime(b => b.StartTime, (b, value) => b.StartTime = value, TimeUnit.WrapAbsolute); } }
         public TimeUnit EndTimeComplex { get { return AggregateTime(b => b.EndTime, (b, value) => b.EndTime = value, TimeUnit.WrapAbsolute); } }
@@ -75,6 +76,8 @@ namespace GlowSequencer.ViewModel
             selectedBlocks = sequencer.SelectedBlocks;
             selectedBlocks.CollectionChanged += selectedBlocks_CollectionChanged;
 
+            TrackAffiliation = sequencer.Tracks.Select(t => new TrackAffiliationData(this, t));
+
             ForwardPropertyEvents(nameof(SegmentContext), this, () =>
             {
                 if (!sequencer.SynchronizeActiveWithSelection || !IsMusicSegmentModifiable) return;
@@ -105,7 +108,6 @@ namespace GlowSequencer.ViewModel
             Notify(nameof(TypeLabel));
             Notify(nameof(SegmentContext));
             Notify(nameof(IsMusicSegmentModifiable));
-            Notify(nameof(TrackAffiliation));
             Notify(nameof(StartTimeComplex));
             Notify(nameof(EndTimeComplex));
             Notify(nameof(DurationComplex));
@@ -182,33 +184,37 @@ namespace GlowSequencer.ViewModel
 
         public class TrackAffiliationData : Observable
         {
-            private SelectionProperties context;
-            private TrackViewModel _track;
+            private readonly SelectionProperties context;
+            private readonly TrackViewModel _track;
 
-            public TrackViewModel Track { get { return _track; } }
+            public TrackViewModel Track => _track;
 
             public bool? AffiliationState
             {
                 get
                 {
-                    return (context.selectedBlocks.Any(b => b.GetModel().Tracks.Contains(_track.GetModel())) ?
-                      (context.selectedBlocks.All(b => b.GetModel().Tracks.Contains(_track.GetModel())) ? true : (bool?)null) :
-                      false);
+                    var flatBlocks = GetFlatBlocks();
+                    if (!flatBlocks.Any(b => b.GetModel().Tracks.Contains(_track.GetModel())))
+                        return false;
+                    if (flatBlocks.All(b => b.GetModel().Tracks.Contains(_track.GetModel())))
+                        return true;
+                    return null;
                 }
                 set
                 {
                     if (!value.HasValue)
                         return;
-
-                    foreach (var b in context.selectedBlocks)
-                        if (value.Value) b.AddToTrack(_track);
-                        else b.RemoveFromTrack(_track);
+                    using (context.sequencer.ActionManager.CreateTransaction(false))
+                    {
+                        foreach (var b in GetFlatBlocks())
+                        {
+                            if (value.Value)
+                                b.AddToTrack(_track);
+                            else
+                                b.RemoveFromTrack(_track);
+                        }
+                    }
                 }
-            }
-
-            public bool CanModify
-            {
-                get { return !context.selectedBlocks.OfType<GroupBlockViewModel>().Any(); }
             }
 
             public TrackAffiliationData(SelectionProperties context, TrackViewModel track)
@@ -216,7 +222,25 @@ namespace GlowSequencer.ViewModel
                 this.context = context;
                 _track = track;
 
-                CollectionChangedEventManager.AddHandler(track.Blocks, (sender, e) => Notify(nameof(AffiliationState)));
+                ForwardCollectionEvents(context.selectedBlocks, nameof(AffiliationState));
+                CollectionChangedEventManager.AddHandler(track.Blocks, OnTrackBlocksChanged);
+            }
+
+            private void OnTrackBlocksChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                // TODO: There is a display bug left when a group is selected and the "all" or "invert"
+                // button is pressed. The new checkboxes end up in indeterminate state instead of checked,
+                // since this notifier is only called the first time the GroupBlockViewModel's Tracks are
+                // recalculated. At this point, not ALL of the group's blocks have been added to the track yet.
+                // I couldn't find a good way to listen to every change of every group child though ...
+                Notify(nameof(AffiliationState));
+            }
+
+            /// <summary>Returns the selected blocks, unpacking groups into a flat list.</summary>
+            private IEnumerable<BlockViewModel> GetFlatBlocks()
+            {
+                return context.selectedBlocks
+                    .SelectMany(b => b is GroupBlockViewModel group ? group.Children : Enumerable.Repeat(b, 1));
             }
         }
     }

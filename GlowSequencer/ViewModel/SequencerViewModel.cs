@@ -124,8 +124,8 @@ namespace GlowSequencer.ViewModel
 
             ActionManager = new GuiLabs.Undo.ActionManager();
             SelectedBlocks = new ObservableCollection<BlockViewModel>();
-            SelectionData = new SelectionProperties(this);
             Tracks = model.Tracks.Select(g => new TrackViewModel(this, g));
+            SelectionData = new SelectionProperties(this); // must be after Tracks initialization
             MusicSegments = model.MusicSegments.Select(seg => new MusicSegmentViewModel(this, seg));
             AllBlocks = model.Blocks.Select(b => BlockViewModel.FromModel(this, b));
 
