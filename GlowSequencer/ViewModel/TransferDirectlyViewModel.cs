@@ -313,17 +313,28 @@ namespace GlowSequencer.ViewModel
                 .Where(vm => vm.IsConnected)
                 .Select(vm => vm.GetModel().Value.connectedPortId)
                 .ToList();
-            try { controllerAction(selectedPorts); }
+
+            var sw = new Stopwatch();
+            sw.Start();
+            try
+            {
+                controllerAction(selectedPorts);
+            }
             catch (UsbOperationException e)
             {
                 AppendLog($"ERROR: {e.Message}");
                 return;
             }
+            finally
+            {
+                sw.Stop();
+            }
 
+            string durationStr = $"USB duration: {sw.Elapsed.TotalSeconds:0.0} s";
             if (selectedPorts.Count < SelectedDevices.Count)
-                AppendLog($"{logLabel} on {selectedPorts.Count} connected out of {StringUtil.Pluralize(SelectedDevices.Count, "selected device")}!");
+                AppendLog($"{logLabel} on {selectedPorts.Count} connected out of {StringUtil.Pluralize(SelectedDevices.Count, "selected device")}! ({durationStr})");
             else
-                AppendLog($"{logLabel} on {StringUtil.Pluralize(selectedPorts.Count, "device")}!");
+                AppendLog($"{logLabel} on {StringUtil.Pluralize(selectedPorts.Count, "device")}! ({durationStr})");
         }
 
         public async Task<bool> SendProgramsAsync()
