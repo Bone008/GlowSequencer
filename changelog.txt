@@ -4,6 +4,22 @@
 
 Changelog
 
+v1.9.0 (2024-04-11):
+- Added "Transfer directly to equipment" feature
+ * Allows controlling clubs/devices over USB without third-party software
+ * Bulk transfer sequences to equipment
+ * Start & stop playback (including active music file)
+ * Identify connected clubs with assignable colors
+ * Directly transfer in bright/dark color mode without changing the actual blocks
+ * Save expected configuration of clubs to highlight missing ones
+ * When all clubs are selected (F12), also select freshly connected clubs
+- Improve music playback after transfer to be less CPU-intensive and less prone to stuttering
+- Follow changes to Windows audio output device automatically
+- Allow changing track assignments of grouped blocks
+- Remember layout of main and popped out windows across program restarts
+- Bugfix: Fix error in "Load music" dialog when hard drive letter is unavailable
+- Now requires .NET Framework 4.8 instead of 4.5
+
 v1.8.1 (2019-11-05):
 - Added failure detection & retry logic to automatic transfers.
 - Added "Dark mode" utility to facilitate filming rehearsals.
