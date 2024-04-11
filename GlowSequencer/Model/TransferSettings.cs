@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GlowSequencer.Util;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -31,6 +32,7 @@ public class TransferSettings
     // NOTE: This class should be effectively treated as readonly for UI purposes!
     public IReadOnlyList<Device> DeviceConfigs { get; set; } = new List<Device>(0);
     public TimeSpan ExportStartTime { get; set; } = TimeSpan.Zero;
+    public ColorTransformMode ColorMode { get; set; } = ColorTransformMode.None;
     public bool EnableMusic { get; set; } = false;
     public int MusicSystemDelayMs { get; set; } = 200;
 
@@ -51,6 +53,7 @@ public class TransferSettings
     {
         element.Add(
             new XElement("export-start-time", ExportStartTime),
+            new XElement("color-mode", ColorMode.ToString()),
             new XElement("start-music",
                 new XAttribute("enabled", EnableMusic),
                 new XElement("system-delay-ms", MusicSystemDelayMs)),
@@ -77,6 +80,7 @@ public class TransferSettings
         return new TransferSettings
         {
             ExportStartTime = (TimeSpan?)element.Element("export-start-time") ?? DEFAULT.ExportStartTime,
+            ColorMode = element.ElementAsEnum("color-mode", DEFAULT.ColorMode),
             EnableMusic = (bool?)musicElement.Attribute("enabled") ?? DEFAULT.EnableMusic,
             MusicSystemDelayMs = (int?)musicElement.Element("system-delay-ms") ?? DEFAULT.MusicSystemDelayMs,
             MaxConcurrentTransfers = (int?)element.Element("max-concurrent-transfers") ?? DEFAULT.MaxConcurrentTransfers,

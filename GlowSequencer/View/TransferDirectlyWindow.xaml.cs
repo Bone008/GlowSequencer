@@ -33,6 +33,8 @@ namespace GlowSequencer.View
             DataContext = vm = new TransferDirectlyViewModel(main);
             InitializeComponent();
 
+            MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
+
             // Periodically refresh devices list.
             DispatcherTimer timer = new();
             timer.Interval = DEVICES_REFRESH_INTERVAL;

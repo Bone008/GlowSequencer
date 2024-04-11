@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:model="clr-namespace:GlowSequencer.Model"
         xmlns:vm="clr-namespace:GlowSequencer.ViewModel"
         xmlns:local="clr-namespace:GlowSequencer.View"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
@@ -10,7 +11,7 @@
         d:DataContext="{d:DesignInstance vm:TransferDirectlyViewModel, IsDesignTimeCreatable=False}"
         Title="Transfer directly to equipment"
         Width="605" MinWidth="605"
-        Height="600"
+        Height="770"
         Icon="/GlowSequencer;component/Resources/icon.ico"
         WindowStartupLocation="CenterOwner">
 
@@ -51,6 +52,22 @@
   </Window.Resources>
 
   <DockPanel Margin="10">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,5">
+      <Button Width="150" Height="26"
+              Content="Save this configuration"
+              ToolTip="Remember the current list of connected devices, their assigned tracks and colors, and other settings."
+              Click="SaveSettings_Click" />
+      <Button Width="150" Height="26" Margin="5,0,0,0"
+              Content="Clear saved configuration"
+              ToolTip="Forget the stored list of expected devices and clear their assigned tracks."
+              IsEnabled="{Binding HasSavedSettings}"
+              Click="ClearSettings_Click" />
+      <Button Width="150" Height="26" Margin="25,0,0,0"
+              Content="Auto-assign tracks"
+              ToolTip="Try to guess which track belongs to which unassigned device based on its name."
+              Command="local:TransferDirectlyCommands.AutoAssignTracks" />
+    </StackPanel>
+    
     <Label DockPanel.Dock="Top">
       <TextBlock>
         Devices
@@ -60,12 +77,26 @@
       </TextBlock>
     </Label>
 
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,10,0,0">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,5,0,0">
       <StackPanel Orientation="Horizontal" Margin="0,5">
-        <Label Padding="0,5,5,5">Start time:</Label>
+        <Label Padding="0,5,5,5" Width="75">Start time:</Label>
         <TextBox Width="150" Text="{Binding ExportStartTime, Converter={StaticResource conv_TimeSpanToString}}" />
         <Button Width="50" Margin="10,0" Click="CursorButton_Click">Cursor</Button>
         <Button Width="50" Click="ZeroButton_Click">Zero</Button>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,5">
+        <Label Padding="0,5,5,5" Width="75">Color mode:</Label>
+        <ComboBox Width="150" Text="test"
+                  SelectedValue="{Binding ColorMode, Mode=TwoWay}"
+                  SelectedValuePath="Tag">
+          <ComboBoxItem Tag="{x:Static model:ColorTransformMode.None}" Content="normal" />
+          <ComboBoxItem Tag="{x:Static model:ColorTransformMode.Brighten}"
+                        Content="bright mode"
+                        ToolTip="Bright mode increases the brightness of all dark colors to at least 20 (out of 255) to allow rehearsing in bright environments." />
+          <ComboBoxItem Tag="{x:Static model:ColorTransformMode.Darken}"
+                        Content="dark mode"
+                        ToolTip="Dark mode limits the maximum brightness of all colors in order to at most 10 (out of 255) to reduce overexposure while filming." />
+        </ComboBox>
       </StackPanel>
       <DockPanel>
         <Expander DockPanel.Dock="Right" Width="150" Padding="5"
@@ -81,7 +112,7 @@
             </StackPanel>
             <StackPanel Style="{StaticResource s_FormRow}"
                         HorizontalAlignment="Right"
-                        ToolTip="How often to retry sending a program per USB device before giving up.">
+                        ToolTip="How often to retry sending a program to each USB device before giving up.">
               <Label Content="Max retries:" />
               <TextBox Text="{Binding MaxTransferRetries}" Width="50" HorizontalContentAlignment="Right" />
             </StackPanel>
@@ -141,23 +172,6 @@
                TextWrapping="Wrap" VerticalScrollBarVisibility="Visible"
                Text="{Binding LogOutput, Mode=OneWay}"
                TextChanged="Log_TextChanged" />
-    </StackPanel>
-
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,5,0,0">
-      <Button Width="150" Height="26"
-              Content="Save this configuration"
-              ToolTip="Remember the current list of connected devices and their assigned tracks and colors."
-              Click="SaveSettings_Click" />
-      <Button Width="150" Height="26" Margin="5,0,0,0"
-              Content="Clear saved configuration"
-              ToolTip="Forget the stored list of expected devices and clear their assigned tracks."
-              IsEnabled="{Binding HasSavedSettings}"
-              Click="ClearSettings_Click" />
-      <Button Width="150" Height="26" Margin="25,0,0,0"
-              Content="Auto-assign tracks"
-              ToolTip="Try to guess which track belongs to which unassigned device based on its name."
-              Command="local:TransferDirectlyCommands.AutoAssignTracks" />
-
     </StackPanel>
 
     <ListView Name="devicesList"

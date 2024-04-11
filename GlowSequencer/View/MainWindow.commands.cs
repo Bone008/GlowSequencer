@@ -306,7 +306,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteBrightMode(object sender, ExecutedRoutedEventArgs e)
         {
-            var brightModeVm = new BrightModeViewModel(sequencer, BrightModeType.Brighten);
+            var brightModeVm = new BrightModeViewModel(sequencer, Model.ColorTransformMode.Brighten);
 
             var result = MessageBox.Show(
                 "Bright mode increases the brightness of all dark colors to allow rehearsing in bright environments. "
@@ -328,7 +328,7 @@ namespace GlowSequencer.View
 
         private void CommandBinding_ExecuteDarkMode(object sender, ExecutedRoutedEventArgs e)
         {
-            var brightModeVm = new BrightModeViewModel(sequencer, BrightModeType.Darken);
+            var brightModeVm = new BrightModeViewModel(sequencer, Model.ColorTransformMode.Darken);
 
             var result = MessageBox.Show(
                 "Dark mode limits the maximum brightness of all colors in order to allow better filming. "

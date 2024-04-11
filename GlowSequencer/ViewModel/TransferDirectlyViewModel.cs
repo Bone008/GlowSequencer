@@ -103,6 +103,7 @@ namespace GlowSequencer.ViewModel
         private bool _isUsbBusy = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
         private TimeSpan _exportStartTime = TimeSpan.Zero;
+        private ColorTransformMode _colorMode = ColorTransformMode.None;
         private bool _enableMusic = false;
         private int _musicSystemDelayMs = TransferSettings.DEFAULT_MUSIC_SYSTEM_DELAY_MS;
         private bool _enableIdentify = false;
@@ -120,6 +121,7 @@ namespace GlowSequencer.ViewModel
         public ICollection<ConnectedDeviceViewModel> SelectedDevices { get => _selectedDevices; set => SetProperty(ref _selectedDevices, value); }
 
         public TimeSpan ExportStartTime { get => _exportStartTime; set => SetProperty(ref _exportStartTime, value); }
+        public ColorTransformMode ColorMode { get => _colorMode; set => SetProperty(ref _colorMode, value); }
         public bool EnableMusic { get => _enableMusic; set => SetProperty(ref _enableMusic, value); }
         public int MusicSystemDelayMs
         {
@@ -345,6 +347,7 @@ namespace GlowSequencer.ViewModel
             {
                 documentName = main.DocumentName,
                 startTime = (float)ExportStartTime.TotalSeconds,
+                colorMode = ColorMode,
                 progress = new Progress<float>(p => TransferProgress = p * 100),
                 log = new Progress<string>(AppendLog),
                 maxConcurrentTransfers = MaxConcurrentTransfers,
@@ -398,6 +401,7 @@ namespace GlowSequencer.ViewModel
             var settings = new TransferSettings
             {
                 ExportStartTime = ExportStartTime,
+                ColorMode = ColorMode,
                 EnableMusic = EnableMusic,
                 MusicSystemDelayMs = MusicSystemDelayMs,
                 // TODO: Probably don't save technical settings in the timeline but in user settings?
@@ -456,6 +460,7 @@ namespace GlowSequencer.ViewModel
             }
 
             ExportStartTime = settings.ExportStartTime;
+            ColorMode = settings.ColorMode;
             EnableMusic = settings.EnableMusic;
             MusicSystemDelayMs = settings.MusicSystemDelayMs;
             MaxConcurrentTransfers = settings.MaxConcurrentTransfers;

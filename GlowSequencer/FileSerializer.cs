@@ -190,13 +190,17 @@ namespace GlowSequencer
             return true;
         }
 
-        public static GloCommandContainer ExportTrackToContainer(Track track, float startTime)
+        public static GloCommandContainer ExportTrackToContainer(
+            Track track,
+            float startTime,
+            ColorTransformMode colorMode = ColorTransformMode.None
+        )
         {
             // Algorithm "back-to-front rendering" := every block paints all affected samples with its data
             // Each sample stores "color up to this point" and "color from this point forward" along with the block that set the respective half.
             // After painting is complete, all samples that just pass through a single block are redundant.
 
-            Sample[] samples = CollectSamples(track, startTime);
+            Sample[] samples = CollectSamples(track, startTime, colorMode);
             GloCommandContainer commandContainer = SamplesToCommands(samples);
             OptimizeCommands(commandContainer.Commands);
             return commandContainer;
@@ -209,7 +213,7 @@ namespace GlowSequencer
         }
 
 
-        private static Sample[] CollectSamples(Track track, float exportStartTime)
+        private static Sample[] CollectSamples(Track track, float exportStartTime, ColorTransformMode colorMode)
         {
             // IMPORTANT: this uses the Timeline.Blocks collection, NOT the Track.Blocks collection;
             // the latter is only a view, which does not preserve ordering, so multi-layer blocks are broken when using Track.Blocks;
@@ -224,8 +228,9 @@ namespace GlowSequencer
             // ticksOffset is ignored in the main painting phase, but time values are shifted at the post-filter stage
 
             List<PrimitiveBlock> allBlocks = blocks.SelectMany(b => b.BakePrimitive(track)).ToList();
-            int length = allBlocks.Max(b => (int?)b.endTime) ?? 0;
+            TransformBlockColors(allBlocks, colorMode);
 
+            int length = allBlocks.Max(b => (int?)b.endTime) ?? 0;
             var samples = new Sample[length + 1];
             for (int i = 0; i < samples.Length; i++)
                 samples[i].ticks = i;
@@ -274,6 +279,15 @@ namespace GlowSequencer
             }
 
             return samples;
+        }
+
+        private static void TransformBlockColors(IList<PrimitiveBlock> primitives, ColorTransformMode colorMode)
+        {
+            foreach (var block in primitives)
+            {
+                block.startColor = GloColor.TransformToMode(block.startColor, colorMode);
+                block.endColor = GloColor.TransformToMode(block.endColor, colorMode);
+            }
         }
 
         private static GloCommandContainer SamplesToCommands(Sample[] samples)

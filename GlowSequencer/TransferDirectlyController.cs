@@ -16,6 +16,7 @@ public class TransferDirectlyController
     {
         public string documentName;
         public float startTime;
+        public ColorTransformMode colorMode;
         public IProgress<float> progress;
         public IProgress<string> log;
         public int maxConcurrentTransfers;
@@ -112,7 +113,7 @@ public class TransferDirectlyController
                 versionId,
                 sanitizedDocumentName);
 
-            GloCommand program = FileSerializer.ExportTrackToContainer(track, options.startTime);
+            GloCommand program = FileSerializer.ExportTrackToContainer(track, options.startTime, options.colorMode);
             byte[] programData = ProgramConverter.ConvertToBytes(program);
 
             string deviceName = "unknown";

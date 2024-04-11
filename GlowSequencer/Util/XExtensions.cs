@@ -14,6 +14,20 @@ namespace GlowSequencer.Util
             return elem.Element(name) ?? new XElement(name);
         }
 
+        /// <summary>Gets a (possibly existing) child element and safely casts it as an enum.</summary>
+        public static TEnum ElementAsEnum<TEnum>(
+            this XElement elem,
+            XName name,
+            TEnum defaultValue = default
+        ) where TEnum : struct
+        {
+            TEnum result = defaultValue;
+            var child = elem.Element(name);
+            if (child != null)
+                Enum.TryParse(child.Value, out result);
+            return result;
+        }
+
 
 
 

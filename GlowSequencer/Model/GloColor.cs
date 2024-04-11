@@ -6,8 +6,21 @@ using System.Threading.Tasks;
 
 namespace GlowSequencer.Model
 {
+    public enum ColorTransformMode
+    {
+        // Warning: Serialized by string in TransferSettings, careful with renaming!
+        None,
+        Brighten,
+        Darken
+    }
+
     public struct GloColor
     {
+        /// <summary>Threshold of the brightest channel of a color. In bright mode, all darker colors will be brigthened to reach this threshold.</summary>
+        private const int TOO_DARK_THRESHOLD = 20;
+        /// <summary>Threshold of the brightest channel of a color. In dark mode, all brighter colors will be darkened to reach this threshold.</summary>
+        private const int TOO_BRIGHT_THRESHOLD = 10;
+
         public static GloColor Black { get { return GloColor.FromRGB(0, 0, 0); } }
         public static GloColor White { get { return GloColor.FromRGB(255, 255, 255); } }
 
@@ -132,6 +145,29 @@ namespace GlowSequencer.Model
                 return c1;
 
             return (1 - pct) * c1 + pct * c2;
+        }
+
+        /// <summary>Returns a copy of this color, potentially adjusted to bright/dark mode.</summary>
+        public static GloColor TransformToMode(GloColor color, ColorTransformMode mode)
+        {
+            if (mode == ColorTransformMode.None)
+                return color;
+
+            int brightestValue = Math.Max(color.r, Math.Max(color.g, color.b));
+            // Do not modify black or colors that are already bright/dark enough.
+            if (brightestValue == 0)
+                return color;
+            if (mode == ColorTransformMode.Brighten && brightestValue >= TOO_DARK_THRESHOLD)
+                return color;
+            if (mode == ColorTransformMode.Darken && brightestValue <= TOO_BRIGHT_THRESHOLD)
+                return color;
+
+            int targetBrightness = (mode == ColorTransformMode.Brighten ? TOO_DARK_THRESHOLD : TOO_BRIGHT_THRESHOLD);
+            float factor = (float)targetBrightness / brightestValue;
+            return FromRGB(
+                    (int)Math.Round(color.r * factor),
+                    (int)Math.Round(color.g * factor),
+                    (int)Math.Round(color.b * factor));
         }
 
     }
