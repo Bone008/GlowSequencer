@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
@@ -352,7 +353,8 @@ namespace GlowSequencer.Usb
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(name);
             if (nameBytes.Length > 64)
             {
-                throw new UsbOperationException($"Name <{name}> is too long! Max 64 bytes allowed.");
+                Debug.WriteLine($"WARNING: Truncating name <{name}>! Max 64 bytes allowed.");
+                nameBytes = TruncateUtf8Data(nameBytes, 64);
             }
 
             CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 });
@@ -380,7 +382,8 @@ namespace GlowSequencer.Usb
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(groupName);
             if (nameBytes.Length > 4)
             {
-                throw new ArgumentException($"Group name <{groupName}> is too long! Max 4 bytes allowed.");
+                Debug.WriteLine($"WARNING: Truncating group name <{groupName}>! Max 4 bytes allowed.");
+                nameBytes = TruncateUtf8Data(nameBytes, 4);
             }
             CommunicationUtility.WriteContinuously(device, header, nameBytes, 4, new byte[] { 0x05 });
         }
@@ -407,7 +410,8 @@ namespace GlowSequencer.Usb
             byte[] nameBytes = System.Text.Encoding.UTF8.GetBytes(programName);
             if (nameBytes.Length > 64)
             {
-                throw new ArgumentException($"Program name <{programName}> is too long! Max 64 bytes allowed.");
+                Debug.WriteLine($"WARNING: Truncating program name <{programName}>! Max 64 bytes allowed.");
+                nameBytes = TruncateUtf8Data(nameBytes, 64);
             }
             CommunicationUtility.WriteContinuously(device, header, nameBytes, 8, new byte[] { 0x05 });
         }
@@ -499,6 +503,24 @@ namespace GlowSequencer.Usb
                 CommunicationUtility.WriteContinuously(device, header, chunk, transmissionAmount, new byte[] { 0x02 });
                 header.Address += (ushort)chunkSize;
             }
+        }
+
+        private static byte[] TruncateUtf8Data(byte[] data, int maxLength)
+        {
+            Debug.Assert(data.Length > maxLength);
+            int safeLength = maxLength;
+            // If the first truncated byte is part of a multi-byte sequence ...
+            if ((data[maxLength] & 0xC0) == 0x80)
+            {
+                // remove all bytes whose two highest bits are 10
+                // and one more (start of multi-byte sequence - highest bits should be 11)
+                while (--safeLength > 0 && (data[safeLength] & 0xC0) == 0x80)
+                    ;
+            }
+
+            byte[] truncatedBytes = new byte[safeLength];
+            Array.Copy(data, truncatedBytes, safeLength);
+            return truncatedBytes;
         }
     }
 }
