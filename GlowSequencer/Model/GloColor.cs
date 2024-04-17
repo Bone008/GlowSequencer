@@ -75,17 +75,18 @@ namespace GlowSequencer.Model
         }
 
 
-        public static GloColor operator *(double a, GloColor c)
-        {
-            int r = (int)Math.Round(a * c.r);
-            int g = (int)Math.Round(a * c.g);
-            int b = (int)Math.Round(a * c.b);
-            return new GloColor(r, g, b);
-        }
-        public static GloColor operator *(GloColor c, double a)
-        {
-            return a * c;
-        }
+        // Note: Removed operator because it makes it easy to introduce rounding errors.
+        //public static GloColor operator *(double a, GloColor c)
+        //{
+        //    int r = (int)Math.Round(a * c.r);
+        //    int g = (int)Math.Round(a * c.g);
+        //    int b = (int)Math.Round(a * c.b);
+        //    return new GloColor(r, g, b);
+        //}
+        //public static GloColor operator *(GloColor c, double a)
+        //{
+        //    return a * c;
+        //}
 
         public static GloColor operator *(GloColor c1, GloColor c2)
         {
@@ -144,7 +145,11 @@ namespace GlowSequencer.Model
             if (c1 == c2)
                 return c1;
 
-            return (1 - pct) * c1 + pct * c2;
+            //return (1 - pct) * c1 + pct * c2;
+            int r = (int)Math.Round((1.0 - pct) * c1.r + pct * c2.r);
+            int g = (int)Math.Round((1.0 - pct) * c1.g + pct * c2.g);
+            int b = (int)Math.Round((1.0 - pct) * c1.b + pct * c2.b);
+            return new GloColor(r, g, b);
         }
 
         /// <summary>Returns a copy of this color, potentially adjusted to bright/dark mode.</summary>
