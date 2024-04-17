@@ -99,6 +99,7 @@ namespace GlowSequencer.ViewModel
 
         private float _transferProgress = 0f;
         private StringBuilder _logOutput = new StringBuilder();
+        private string _logOutputStr = "";
         private bool _isRefreshingDevices = false;
         private bool _isUsbBusy = false;
         private ICollection<ConnectedDeviceViewModel> _selectedDevices = new List<ConnectedDeviceViewModel>(0);
@@ -150,7 +151,7 @@ namespace GlowSequencer.ViewModel
         /// <summary>Mutex for all USB operations to avoid concurrent access to devices.</summary>
         public bool IsUsbBusy { get => _isUsbBusy; private set => SetProperty(ref _isUsbBusy, value); }
         public float TransferProgress { get => _transferProgress; set => SetProperty(ref _transferProgress, value); }
-        public string LogOutput => _logOutput.ToString();
+        public string LogOutput => _logOutputStr;
 
         public TransferDirectlyViewModel(MainViewModel main)
         {
@@ -178,13 +179,23 @@ namespace GlowSequencer.ViewModel
             // Since this is an invisible background operation, it gets its own mutex in addition to
             // the IsUsbBusy check. This hides the refresh operation from the user.
             if (_isRefreshingDevices || IsUsbBusy)
+            {
+                AppendLog("[Refresh] Skipping refresh since USB is busy.");
                 return;
-            if (!controller.HaveConnectedDevicesChanged())
+            }
+            var sw = new Stopwatch();
+            sw.Start();
+            if (!await controller.HaveConnectedDevicesChangedAsync())
+            {
+                AppendLog($"[Refresh] No refresh, still {ConnectedDevices.Count} connected [took {sw.Elapsed.TotalSeconds:0.00} s].");
                 return;
+            }
             await DoRefreshDevicesAsync();
+            AppendLog($"[Refresh] List refreshed, now {ConnectedDevices.Count} connected [took {sw.Elapsed.TotalSeconds:0.00} s].");
 
-            // update identify colors after lock is released
-            UpdateIdentifiedDevices();
+            // update identify colors after lock is released. it's already called by the change events,
+            // but at that point IsUsbBusy is still true.
+            await UpdateIdentifiedDevicesAsync();
         }
 
         private async Task DoRefreshDevicesAsync()
@@ -238,8 +249,21 @@ namespace GlowSequencer.ViewModel
 
         private void UpdateIdentifiedDevices()
         {
+            // The sync version needs to exist for the property notifications.
+            UpdateIdentifiedDevicesAsync().Forget();
+        }
+
+        private async Task UpdateIdentifiedDevicesAsync()
+        {
+            // Might result in some outdated state, but identify isn't important enough to
+            // keep running while USB contention seems heavy. This can also be called in quick
+            // succession, so this also avoids re-entrancy problems.
             if (IsUsbBusy)
-                return; // probably will result in some outdated state, but cannot really prevent it
+                return;
+
+            // Calculate a delta of which devices need to be updated.
+            Dictionary<string, Color?> changedColorsByPort = new();
+            Dictionary<string, ConnectedDeviceViewModel> changedDevicesByPort = new();
 
             var toIdentify = EnableIdentify
                 ? (SelectedDevices.Count > 0 ? SelectedDevices : AllDevices)
@@ -250,24 +274,33 @@ namespace GlowSequencer.ViewModel
                     continue;
                 string portId = device.GetModel().Value.connectedPortId;
                 bool shouldHighlight = toIdentify.Contains(device);
-                try
+                if (shouldHighlight && device.LastSentIdentifyColor != device.IdentifyColor)
                 {
-                    if (shouldHighlight && device.LastSentIdentifyColor != device.IdentifyColor)
-                    {
-                        Color c = device.IdentifyColor;
-                        controller.SetDeviceColor(portId, c.R, c.G, c.B);
-                        device.LastSentIdentifyColor = c;
-                    }
-                    else if (!shouldHighlight && device.LastSentIdentifyColor != null)
-                    {
-                        controller.StopDevices(new[] { portId });
-                        device.LastSentIdentifyColor = null;
-                    }
+                    changedColorsByPort[portId] = device.IdentifyColor;
+                    changedDevicesByPort[portId] = device;
                 }
-                catch (UsbOperationException e)
+                else if (!shouldHighlight && device.LastSentIdentifyColor != null)
                 {
-                    AppendLog($"ERROR setting identify color: {e.Message}");
+                    changedColorsByPort[portId] = null;
+                    changedDevicesByPort[portId] = device;
                 }
+            }
+
+            if (changedColorsByPort.Count == 0)
+                return;
+
+            using var _ = await AcquireUsbLock();
+            Dictionary<string, bool> results = await controller.SetDeviceColorsAsync(
+                    changedColorsByPort, MaxConcurrentTransfers);
+            // Only update LastSentIdentifyColor for successful operations.
+            foreach (var kvp in results)
+            {
+                if (!kvp.Value)
+                {
+                    AppendLog($"ERROR: Failed to set color on device {kvp.Key}!");
+                    continue;
+                }
+                changedDevicesByPort[kvp.Key].LastSentIdentifyColor = changedColorsByPort[kvp.Key];
             }
         }
 
@@ -287,17 +320,17 @@ namespace GlowSequencer.ViewModel
                     await Task.Delay(MusicSystemDelayMs);
             }
 
-            StartOrStopDevices(controller.StartDevices, "Started");
+            await StartOrStopDevicesAsync(controller.StartDevicesAsync, "Started");
         }
 
         public async Task StopDevicesAsync()
         {
             using var _ = await AcquireUsbLock();
-            StartOrStopDevices(controller.StopDevices, "Stopped");
+            await StartOrStopDevicesAsync(controller.StopDevicesAsync, "Stopped");
             main.CurrentDocument.Playback.Stop();
         }
 
-        private void StartOrStopDevices(Action<IEnumerable<string>> controllerAction, string logLabel)
+        private async Task StartOrStopDevicesAsync(Func<IEnumerable<string>, Task> controllerAction, string logLabel)
         {
             if (SelectedDevices.Any(device => !device.IsConnected))
             {
@@ -318,7 +351,7 @@ namespace GlowSequencer.ViewModel
             sw.Start();
             try
             {
-                controllerAction(selectedPorts);
+                await controllerAction(selectedPorts);
             }
             catch (UsbOperationException e)
             {
@@ -512,6 +545,7 @@ namespace GlowSequencer.ViewModel
         public void ClearLog()
         {
             _logOutput.Clear();
+            _logOutputStr = "";
             Notify(nameof(LogOutput));
         }
 
@@ -519,7 +553,11 @@ namespace GlowSequencer.ViewModel
         {
             if (_logOutput.Length > 0)
                 _logOutput.AppendLine();
+
+            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            _logOutput.Append("[").Append(timestamp).Append("] ");
             _logOutput.Append(line);
+            _logOutputStr = _logOutput.ToString();
             Notify(nameof(LogOutput));
         }
 

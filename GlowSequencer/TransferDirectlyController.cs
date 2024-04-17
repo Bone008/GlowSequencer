@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using GlowSequencer.Model;
 using GlowSequencer.Usb;
 
@@ -35,9 +37,9 @@ public class TransferDirectlyController
             usbController = new ClubConnectionUtility();
     }
 
-    public bool HaveConnectedDevicesChanged()
+    public async Task<bool> HaveConnectedDevicesChangedAsync()
     {
-        List<string> connectedPorts = usbController.GetConnectedPortIds();
+        List<string> connectedPorts = await Task.Run(usbController.GetConnectedPortIds);
         return !_knownConnectedPorts.SetEquals(connectedPorts);
     }
 
@@ -55,26 +57,65 @@ public class TransferDirectlyController
         return Task.Run(() => usbController.WriteName(portId, newName));
     }
 
-    public void StartDevices(IEnumerable<string> portIds)
+    public Task StartDevicesAsync(IEnumerable<string> portIds)
     {
-        usbController.StartSync(portIds);
+        return Task.Run(() => usbController.StartSync(portIds));
     }
 
-    public void StopDevices(IEnumerable<string> portIds)
+    public Task StopDevicesAsync(IEnumerable<string> portIds)
     {
-        foreach (string portId in portIds)
+        return Task.Run(() =>
         {
-            usbController.Stop(portId);
-        }
-    }
-
-    public void SetDeviceColor(string portId, byte r, byte g, byte b)
-    {
-        usbController.SetColor(portId, r, g, b);
+            foreach (string portId in portIds)
+            {
+                usbController.Stop(portId);
+            }
+        });
     }
 
     /// <summary>
-    /// NOTE: This is the only method in this class that does its own error handling!
+    /// NOTE: This method does its own error handling!
+    /// For all OTHER communications, UsbOperationException must be caught.
+    /// </summary>
+    /// <returns>A dictionary containing the success/fail status for each portId.</returns>
+    public Task<Dictionary<string, bool>> SetDeviceColorsAsync(Dictionary<string, Color?> colorsByPortId, int maxConcurrentTransfers)
+    {
+        return Task.Run(() => SetDeviceColors(colorsByPortId, maxConcurrentTransfers));
+    }
+
+    private Dictionary<string, bool> SetDeviceColors(Dictionary<string, Color?> colorsByPortId, int maxConcurrentTransfers)
+    {
+        var results = new ConcurrentDictionary<string, bool>();
+
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = maxConcurrentTransfers };
+        Parallel.ForEach(colorsByPortId, parallelOptions, kvp =>
+        {
+            string portId = kvp.Key;
+            Color? color = kvp.Value;
+            try
+            {
+                if (color.HasValue)
+                {
+                    Color c = color.Value;
+                    usbController.SetColor(portId, c.R, c.G, c.B);
+                }
+                else
+                {
+                    usbController.Stop(portId);
+                }
+                results[portId] = true;
+            }
+            catch (UsbOperationException e)
+            {
+                Debug.WriteLine($"Failed to set color for {portId}:\n{e}");
+                results[portId] = false;
+            }
+        });
+        return new Dictionary<string, bool>(results);
+    }
+
+    /// <summary>
+    /// NOTE: This method does its own error handling!
     /// For all OTHER communications, UsbOperationException must be caught.
     /// </summary>
     public Task<bool> SendProgramsAsync(IDictionary<string, Track> tracksByPortId, TransferOptions options)

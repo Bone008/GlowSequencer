@@ -72,12 +72,15 @@ public class FakeClubConnection : IClubConnection
 
     public List<string> GetConnectedPortIds()
     {
+        Thread.Sleep(500);
         return LoadClubsFromFile().Select(dev => dev.connectedPortId).ToList();
     }
 
     public List<ConnectedDevice> ListConnectedClubs()
     {
-        return LoadClubsFromFile().ToList();
+        var result = LoadClubsFromFile().ToList();
+        Thread.Sleep(300 * result.Count);
+        return result;
     }
 
     public string ReadGroupName(string connectedPortId)
@@ -117,6 +120,7 @@ public class FakeClubConnection : IClubConnection
 
     public void SetColor(string connectedPortId, byte r, byte g, byte b)
     {
+        Thread.Sleep(300);
         Debug.WriteLine($"FCC: SetColor({connectedPortId}, {r}, {g}, {b})");
         if (_hardFailMode)
             throw new UsbOperationException("SIMULATED HARD FAILURE");
@@ -124,6 +128,7 @@ public class FakeClubConnection : IClubConnection
 
     public void Start(string connectedPortId)
     {
+        Thread.Sleep(100);
         Debug.WriteLine($"FCC: Start({connectedPortId})");
         if (_hardFailMode)
             throw new UsbOperationException("SIMULATED HARD FAILURE");
@@ -131,6 +136,7 @@ public class FakeClubConnection : IClubConnection
 
     public void StartSync(IEnumerable<string> connectedPortIds)
     {
+        Thread.Sleep(120 * connectedPortIds.Count());
         Debug.WriteLine($"FCC: StartSync({string.Join(", ", connectedPortIds)})");
         if (_hardFailMode)
             throw new UsbOperationException("SIMULATED HARD FAILURE");
@@ -138,6 +144,7 @@ public class FakeClubConnection : IClubConnection
 
     public void Stop(string connectedPortId)
     {
+        Thread.Sleep(100);
         Debug.WriteLine($"FCC: Stop({connectedPortId})");
         if (_hardFailMode)
             throw new UsbOperationException("SIMULATED HARD FAILURE");

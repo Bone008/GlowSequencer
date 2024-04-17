@@ -34,21 +34,21 @@ namespace GlowSequencer.Usb
 
         public ConnectedDevice GetConnectedClubByPortId(string connectedPortId)
         {
-            UsbDevice device = null;
+            UsbDevice? device = null;
             try
             {
                 device = OpenDevice(connectedPortId);
                 Console.WriteLine($"Reading device: {connectedPortId}");
 
                 string name = ReadNameFromDevice(device);
-                string groupName = ReadGroupNameFromDevice(device);
+                //string groupName = ReadGroupNameFromDevice(device); // removed in hopes of improving refresh lag a bit
                 string programName = ReadProgramNameFromDevice(device);
 
                 ConnectedDevice connectedDevice = new ConnectedDevice()
                 {
                     connectedPortId = connectedPortId,
                     name = name,
-                    groupName = groupName,
+                    groupName = "",
                     programName = programName,
                 };
                 return connectedDevice;

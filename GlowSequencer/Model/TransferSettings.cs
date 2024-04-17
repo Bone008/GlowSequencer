@@ -34,7 +34,7 @@ public class TransferSettings
     public TimeSpan ExportStartTime { get; set; } = TimeSpan.Zero;
     public ColorTransformMode ColorMode { get; set; } = ColorTransformMode.None;
     public bool EnableMusic { get; set; } = false;
-    public int MusicSystemDelayMs { get; set; } = 200;
+    public int MusicSystemDelayMs { get; set; } = 50;
 
     public int MaxConcurrentTransfers { get; set; } = 4;
     public int MaxRetries { get; set; } = 3;

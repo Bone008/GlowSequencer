@@ -22,7 +22,7 @@ namespace GlowSequencer.View
     /// </summary>
     public partial class TransferDirectlyWindow : Window
     {
-        public static readonly TimeSpan DEVICES_REFRESH_INTERVAL = TimeSpan.FromSeconds(1);
+        public static readonly TimeSpan DEVICES_REFRESH_INTERVAL = TimeSpan.FromSeconds(5);
 
         private readonly TransferDirectlyViewModel vm;
 
