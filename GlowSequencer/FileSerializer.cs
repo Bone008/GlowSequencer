@@ -272,10 +272,11 @@ namespace GlowSequencer
             }
 
             // make absolutely sure all colors are in [0..255] range
-            foreach (var s in samples)
+            // do NOT use foreach since it will copy the Sample structs ...
+            for (int i = 0; i < samples.Length; i++)
             {
-                s.colBefore.Normalize();
-                s.colAfter.Normalize();
+                samples[i].colBefore.Normalize();
+                samples[i].colAfter.Normalize();
             }
 
             return samples;
