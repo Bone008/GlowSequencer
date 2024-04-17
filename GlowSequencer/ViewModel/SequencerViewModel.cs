@@ -653,7 +653,7 @@ namespace GlowSequencer.ViewModel
 
                 // remove from transfer settings, note that this will not be undoable,
                 // but tracking track assignments with the action manager seems a bit overkill.
-                model.TransferSettings.PurgeTrackReferences(track);
+                model.TransferSettings?.PurgeTrackReferences(track);
 
                 ActionManager.RecordRemove(model.Tracks, track);
                 //model.Tracks.Remove(track);
