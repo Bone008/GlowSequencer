@@ -307,6 +307,8 @@ namespace GlowSequencer.ViewModel
         public async Task StartDevicesAsync()
         {
             using var _ = await AcquireUsbLock();
+            // Start clubs before music because this might be a slow operation.
+            await StartOrStopDevicesAsync(controller.StartDevicesAsync, "Started");
 
             if (EnableMusic)
             {
@@ -315,12 +317,14 @@ namespace GlowSequencer.ViewModel
                     AppendLog("WARNING: Negative start time with music playback is not supported.");
                 }
                 float playTime = (float)MathUtil.Max(ExportStartTime, TimeSpan.Zero).TotalSeconds;
+                // Start playing directly from the delayed position.
+                // This might skip the first part, which could be bad if it contains the beeps.
+                // But we probably cannot reliably start the music BEFORE the clubs, since we do not
+                // know how long connecting to the clubs will take.
+                // If this is insufficient, consider a "PrepareStart() + ExecuteStart()" approach.
+                playTime += MusicSystemDelayMs / 1000f;
                 main.CurrentDocument.Playback.PlayAt(playTime, updateCursor: false);
-                if (MusicSystemDelayMs > 0)
-                    await Task.Delay(MusicSystemDelayMs);
             }
-
-            await StartOrStopDevicesAsync(controller.StartDevicesAsync, "Started");
         }
 
         public async Task StopDevicesAsync()
