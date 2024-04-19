@@ -26,6 +26,7 @@ namespace GlowSequencer.View
 
         private readonly TransferDirectlyViewModel vm;
 
+        private DispatcherTimer _refreshTimer;
         private bool _syntheticSelectionChange = false;
 
         public TransferDirectlyWindow(MainViewModel main)
@@ -36,12 +37,16 @@ namespace GlowSequencer.View
             MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
 
             // Periodically refresh devices list.
-            DispatcherTimer timer = new();
-            timer.Interval = DEVICES_REFRESH_INTERVAL;
-            timer.Tick += async (sender, e) => await vm.CheckRefreshDevicesAsync();
-            timer.Start();
+            _refreshTimer = new();
+            _refreshTimer.Interval = DEVICES_REFRESH_INTERVAL;
+            _refreshTimer.Tick += async (sender, e) => await vm.CheckRefreshDevicesAsync();
+            _refreshTimer.Start();
 
-            Closed += (sender, e) => timer.Stop();
+            Closed += (sender, e) =>
+            {
+                _refreshTimer.Stop();
+                vm.WriteLogsToFile();
+            };
 
             // Help out the command manager with re-enabling the buttons.
             vm.PropertyChanged += (sender, e) =>
@@ -55,11 +60,6 @@ namespace GlowSequencer.View
                 if (selectAll.IsChecked ?? false)
                     devicesList.SelectAll();
             };
-        }
-
-        private void Vm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         private void CursorButton_Click(object sender, RoutedEventArgs e)
@@ -125,6 +125,12 @@ namespace GlowSequencer.View
         private void ClearLog_Click(object sender, RoutedEventArgs e)
         {
             vm.ClearLog();
+        }
+        private void ShowLogDirectory_Click(object sender, RoutedEventArgs e)
+        {
+            vm.WriteLogsToFile();
+            // start explorer in logs directory
+            Process.Start("explorer.exe", vm.GetLogsDirectory());
         }
 
         private void SaveSettings_Click(object sender, RoutedEventArgs e)

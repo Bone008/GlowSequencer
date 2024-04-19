@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -548,9 +549,23 @@ namespace GlowSequencer.ViewModel
 
         public void ClearLog()
         {
+            WriteLogsToFile();
             _logOutput.Clear();
             _logOutputStr = "";
             Notify(nameof(LogOutput));
+        }
+
+        public void WriteLogsToFile()
+        {
+            string fullLogStr = _logOutputStr;
+            string filename = $"transfer-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log";
+            string logFile = Path.Combine(GetLogsDirectory(), filename);
+            Task.Run(() => File.WriteAllText(logFile, fullLogStr)).Forget();
+        }
+
+        public string GetLogsDirectory()
+        {
+            return App.GetUserDataDir();
         }
 
         private void AppendLog(string line)

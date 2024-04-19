@@ -166,6 +166,8 @@
       <DockPanel>
         <Button DockPanel.Dock="Right" VerticalAlignment="Center" Padding="5,0"
                 Click="ClearLog_Click" ToolTip="Clear log">X</Button>
+        <Button DockPanel.Dock="Right" VerticalAlignment="Center" Padding="5,0" Margin="0,0,5,0"
+                Click="ShowLogDirectory_Click" ToolTip="Open log file directory">Show in explorer</Button>
         <Label>Log:</Label>
       </DockPanel>
       <TextBox IsReadOnly="True" Height="100" VerticalContentAlignment="Top"
