@@ -28,7 +28,7 @@ namespace GlowSequencer.Usb
                 }
                 set
                 {
-                    if(command == 0x02 && value < 16384)
+                    if(command is 0x03 or 0x02 && value < 16384)
                     {
                         throw new ArgumentOutOfRangeException("Address must be greater than 0x0040 (16384) for command 0x02");
                     }
