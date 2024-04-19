@@ -4,6 +4,12 @@
 
 Changelog
 
+v1.9.1 (2024-04-19):
+- Fixed excessive lag in new transfer dialog.
+- Fixed rounding error that exported invalid glo programs.
+- Hopefully improved synchronization when starting devices with music.
+
+
 v1.9.0 (2024-04-11):
 - Added "Transfer directly to equipment" feature
  * Allows controlling clubs/devices over USB without third-party software
