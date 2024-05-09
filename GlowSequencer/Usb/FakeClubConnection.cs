@@ -84,7 +84,7 @@ public class FakeClubConnection : IClubConnection
     public List<ConnectedDevice> ListConnectedClubs()
     {
         var result = LoadClubsFromFile().ToList();
-        Thread.Sleep(300 * result.Count);
+        Thread.Sleep(100 * result.Count);
         return result;
     }
 

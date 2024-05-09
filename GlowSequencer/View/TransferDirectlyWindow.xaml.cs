@@ -32,15 +32,13 @@ namespace GlowSequencer.View
         public TransferDirectlyWindow(MainViewModel main)
         {
             DataContext = vm = new TransferDirectlyViewModel(main);
-            InitializeComponent();
-
             MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
 
             // Periodically refresh devices list.
             _refreshTimer = new();
             _refreshTimer.Interval = DEVICES_REFRESH_INTERVAL;
             _refreshTimer.Tick += async (sender, e) => await vm.CheckRefreshDevicesAsync();
-            _refreshTimer.Start();
+            // Timer will be started by the checkbox callback.
 
             Closed += (sender, e) =>
             {
@@ -60,6 +58,20 @@ namespace GlowSequencer.View
                 if (selectAll.IsChecked ?? false)
                     devicesList.SelectAll();
             };
+
+            InitializeComponent();
+        }
+
+
+        private async void autoRefresh_CheckedChange(object sender, RoutedEventArgs e)
+        {
+            if (autoRefresh.IsChecked ?? false)
+            {
+                _refreshTimer.Start();
+                await vm.CheckRefreshDevicesAsync();
+            }
+            else
+                _refreshTimer.Stop();
         }
 
         private void CursorButton_Click(object sender, RoutedEventArgs e)

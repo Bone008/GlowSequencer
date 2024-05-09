@@ -13,6 +13,7 @@ namespace GlowSequencer.ViewModel
         private double _trackDisplayHeight = 35;
         private WaveformDisplayMode _currentWaveformDisplayMode = WaveformDisplayMode.Linear;
         private Xceed.Wpf.Toolkit.ColorMode _currentColorMode;
+        private bool _transferDirectlyAutoRefresh = true;
 
 
         public bool EnableSnapping { get { return _enableSnapping; } set { SetProperty(ref _enableSnapping, value); } }
@@ -25,6 +26,8 @@ namespace GlowSequencer.ViewModel
 
         /// <summary>Canvas or Palette mode for color pickers</summary>
         public Xceed.Wpf.Toolkit.ColorMode CurrentColorMode { get { return _currentColorMode; } set { _currentColorMode = value; } }
+
+        public bool TransferDirectlyAutoRefresh { get { return _transferDirectlyAutoRefresh; } set { SetProperty(ref _transferDirectlyAutoRefresh, value); } }
 
         // TODO here the "synchronize units" toggle could be implemented neatly
 
