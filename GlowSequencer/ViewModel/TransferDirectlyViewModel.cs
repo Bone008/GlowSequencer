@@ -547,6 +547,12 @@ namespace GlowSequencer.ViewModel
             MaxTransferRetries = TransferSettings.DEFAULT_MAX_RETRIES;
         }
 
+        public void Dispose()
+        {
+            WriteLogsToFile();
+            controller.DisconnectAllAsync().Forget();
+        }
+
         public void ClearLog()
         {
             WriteLogsToFile();

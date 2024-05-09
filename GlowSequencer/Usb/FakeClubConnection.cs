@@ -65,6 +65,11 @@ public class FakeClubConnection : IClubConnection
             .Select(device => device.Value);
     }
 
+    public void DisconnectAll()
+    {
+        Debug.WriteLine("FCC: DisconnectAll()");
+    }
+
     public ConnectedDevice GetConnectedClubByPortId(string connectedPortId)
     {
         return LoadClubsFromFile().Single(device => device.connectedPortId == connectedPortId);

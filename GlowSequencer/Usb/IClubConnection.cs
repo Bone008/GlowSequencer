@@ -23,10 +23,12 @@ namespace GlowSequencer.Usb
 
     public interface IClubConnection
     {
+        /// <summary>Safely releases all remaining open device connections.</summary>
+        void DisconnectAll();
+
         /// <summary>
         /// lookup in the usb registry for all port-device ids connected. Does not open device (?).
         /// The portId is not specific for a device! Switching the usb ports of two devices will result in the same ids but for the other device.
-        /// Untested: Can be used to detect connection changes which should potentially trigger a new ListConnectedClubs or GetConnectedClubByPortId call.
         /// </summary>
         /// <returns></returns>
         List<string> GetConnectedPortIds();

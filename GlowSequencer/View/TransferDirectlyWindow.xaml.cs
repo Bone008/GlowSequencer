@@ -45,7 +45,7 @@ namespace GlowSequencer.View
             Closed += (sender, e) =>
             {
                 _refreshTimer.Stop();
-                vm.WriteLogsToFile();
+                vm.Dispose();
             };
 
             // Help out the command manager with re-enabling the buttons.

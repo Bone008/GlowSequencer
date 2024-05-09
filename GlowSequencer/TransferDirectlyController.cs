@@ -204,4 +204,9 @@ public class TransferDirectlyController
             .Select(_ => ALPHABET[r.Next(ALPHABET.Length)])
             .ToArray());
     }
+
+    public Task DisconnectAllAsync()
+    {
+        return Task.Run(usbController.DisconnectAll);
+    }
 }
