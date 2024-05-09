@@ -70,6 +70,11 @@ public class FakeClubConnection : IClubConnection
         Debug.WriteLine("FCC: DisconnectAll()");
     }
 
+    public void InvalidateDeviceData(string connectedPortId)
+    {
+        Debug.WriteLine($"FCC: InvalidateDeviceData({connectedPortId})");
+    }
+
     public ConnectedDevice GetConnectedClubByPortId(string connectedPortId)
     {
         return LoadClubsFromFile().Single(device => device.connectedPortId == connectedPortId);
@@ -188,5 +193,4 @@ public class FakeClubConnection : IClubConnection
 
         s_programNameOverridesByPort[connectedPortId] = programName;
     }
-
 }

@@ -120,6 +120,15 @@ namespace GlowSequencer.Usb
             return connectedDevice;
         }
 
+        public void InvalidateDeviceData(string connectedPortId)
+        {
+            // Clear the metadata, but keep the device handle open.
+            if (_devicesByPortId.TryGetValue(connectedPortId, out DeviceReference deviceRef))
+            {
+                _devicesByPortId[connectedPortId] = new DeviceReference(deviceRef.usbDevice, null);
+            }
+        }
+
         public string ReadName(string connectedPortId)
         {
             try

@@ -403,7 +403,10 @@ namespace GlowSequencer.ViewModel
                 maxRetries = MaxTransferRetries,
             };
             bool success = await controller.SendProgramsAsync(tracksByPortId, options);
-            await DoRefreshDevicesAsync(); // Refresh to update program names.
+
+            // Refresh to update program names.
+            controller.InvalidateDeviceDataForPorts(tracksByPortId.Keys);
+            await DoRefreshDevicesAsync();
 
             if (showHasDisconnectedWarning)
             {

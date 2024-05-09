@@ -26,6 +26,10 @@ namespace GlowSequencer.Usb
         /// <summary>Safely releases all remaining open device connections.</summary>
         void DisconnectAll();
 
+        /// <summary>Invalidates the cached metadata for the given port id without disconnecting.</summary>
+        void InvalidateDeviceData(string connectedPortId);
+
+
         /// <summary>
         /// lookup in the usb registry for all port-device ids connected. Does not open device (?).
         /// The portId is not specific for a device! Switching the usb ports of two devices will result in the same ids but for the other device.

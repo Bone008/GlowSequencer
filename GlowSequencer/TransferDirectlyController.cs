@@ -148,7 +148,6 @@ public class TransferDirectlyController
             string portId = kvp.Key;
             Track track = kvp.Value;
 
-            // TODO: byte limit truncation
             string programName = string.Format("{0}_{1}_{2}.bin",
                 FileSerializer.SanitizeString(track.Label),
                 versionId,
@@ -203,6 +202,14 @@ public class TransferDirectlyController
         return new string(Enumerable.Range(0, length)
             .Select(_ => ALPHABET[r.Next(ALPHABET.Length)])
             .ToArray());
+    }
+
+    public void InvalidateDeviceDataForPorts(IEnumerable<string> connectedPortIds)
+    {
+        foreach (string portId in connectedPortIds)
+        {
+            usbController.InvalidateDeviceData(portId);
+        }
     }
 
     public Task DisconnectAllAsync()
