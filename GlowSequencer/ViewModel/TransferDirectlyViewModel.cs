@@ -175,7 +175,7 @@ namespace GlowSequencer.ViewModel
             LoadSettings();
         }
 
-        public async Task CheckRefreshDevicesAsync()
+        public async Task CheckRefreshDevicesAsync(bool forceRefresh = false)
         {
             // Since this is an invisible background operation, it gets its own mutex in addition to
             // the IsUsbBusy check. This hides the refresh operation from the user.
@@ -186,7 +186,7 @@ namespace GlowSequencer.ViewModel
             }
             var sw = new Stopwatch();
             sw.Start();
-            if (!await controller.HaveConnectedDevicesChangedAsync())
+            if (!forceRefresh && !await controller.HaveConnectedDevicesChangedAsync())
             {
                 AppendLog($"[Refresh] No refresh, still {ConnectedDevices.Count} connected [took {sw.Elapsed.TotalSeconds:0.00} s].");
                 return;

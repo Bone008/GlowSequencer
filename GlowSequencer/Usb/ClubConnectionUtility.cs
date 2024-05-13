@@ -50,7 +50,7 @@ namespace GlowSequencer.Usb
         /// </summary>
         private UsbRegDeviceList GetAllDeviceRegistries()
         {
-            if (_lastUsbRegDeviceList == null || _lastUsbRegDeviceListStopwatch.Elapsed < MAX_TIME_TO_CACHE_DEVICE_LIST)
+            if (_lastUsbRegDeviceList == null || _lastUsbRegDeviceListStopwatch.Elapsed > MAX_TIME_TO_CACHE_DEVICE_LIST)
             {
                 _lastUsbRegDeviceList = UsbDevice.AllDevices;
                 _lastUsbRegDeviceListStopwatch.Restart();

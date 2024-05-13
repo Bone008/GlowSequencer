@@ -68,7 +68,7 @@ namespace GlowSequencer.View
             if (autoRefresh.IsChecked ?? false)
             {
                 _refreshTimer.Start();
-                await vm.CheckRefreshDevicesAsync();
+                await vm.CheckRefreshDevicesAsync(true);
             }
             else
                 _refreshTimer.Stop();
@@ -86,7 +86,11 @@ namespace GlowSequencer.View
 
         private void Log_TextChanged(object sender, TextChangedEventArgs e)
         {
-            ((TextBox)sender).ScrollToEnd();
+            TextBox logTextBox = ((TextBox)sender);
+            if (logTextBox.VerticalOffset + logTextBox.ViewportHeight >= logTextBox.ExtentHeight - 50)
+            {
+                logTextBox.ScrollToEnd();
+            }
         }
 
         private void devicesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
